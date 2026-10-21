@@ -79,7 +79,7 @@ for rak_id, data in st.session_state.inventory.items():
         st.caption(f"Catatan: {data['log']}")
     with col3:
         if data["status"] == "OK":
-            st.markdown('<span class="badge-ok">AMMAN (OK)</span>', unsafe_allow_html=True)
+            st.markdown('<span class="badge-ok">AMAN (OK)</span>', unsafe_allow_html=True)
         else:
             st.markdown('<span class="badge-error">DISPLACEMENT ERROR</span>', unsafe_allow_html=True)
     st.write("---")
