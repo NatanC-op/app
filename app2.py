@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 # Configuration
-st.set_page_config(page_title="Smart Label & Dynamic Pricing", layout="wide", page_icon="🏷️")
+st.set_page_config(page_title="Storify - Smart Label & Dynamic Pricing", layout="wide", page_icon="🏷️")
 
 # Inisialisasi State
 if "lang" not in st.session_state:
@@ -18,13 +18,12 @@ if "page" not in st.session_state:
 if "selected_rak" not in st.session_state:
     st.session_state.selected_rak = None
 
-# Simulasi Akun Login (Decoy Account)
 if "user" not in st.session_state:
     st.session_state.user = {"name": "James Arthur", "role": "OWNER", "email": "james.arthur@gmail.com"}
 
 if "logs" not in st.session_state:
     st.session_state.logs = [
-        {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "IoT & E-Paper Cloud system successfully initialized."}
+        {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "Storify IoT & E-Paper Cloud system successfully initialized."}
     ]
 
 if "original_prices" not in st.session_state:
@@ -39,9 +38,9 @@ if "flash_sale_end" not in st.session_state:
 # ----------------- TERJEMAHAN KATA MENYELURUH (DICTIONARY) -----------------
 t = {
     "ID": {
-        "title": "🏷️ Smart Label & Dynamic Pricing",
+        "title": "🏷️ Storify - Smart Retail & Dynamic Pricing",
         "caption": "Solusi Retail Phygital Modern: Manajemen Harga Otomatis & E-Paper IoT Dashboard",
-        "sidebar_title": "⚙️ Panel Kontrol Toko",
+        "sidebar_title": "⚙️ Panel Kontrol Storify",
         "lang_label": "Bahasa / Language",
         "theme_label": "Mode Tema",
         "section_shelf": "📦 Live Monitoring Rak & Smart Label",
@@ -51,14 +50,14 @@ t = {
         "cat_label": "Filter Kategori",
         "all_cat": "Semua Kategori",
         "search_label": "Cari Produk...",
-        "guide_title": "ℹ️ Panduan Presentasi & Cara Pakai Aplikasi",
+        "guide_title": "ℹ️ Panduan Presentasi & Cara Pakai Storify",
         "btn_back": "⬅️ Kembali ke Beranda",
         "access_denied": "Akses Dibatasi: Hanya Owner dan Manager yang dapat melihat Audit Log & Pengaturan Lanjutan.",
     },
     "EN": {
-        "title": "🏷️ Smart Label & Dynamic Pricing",
+        "title": "🏷️ Storify - Smart Retail & Dynamic Pricing",
         "caption": "Modern Phygital Retail Solution: Automated Pricing & E-Paper IoT Dashboard",
-        "sidebar_title": "⚙️ Store Control Panel",
+        "sidebar_title": "⚙️ Storify Control Panel",
         "lang_label": "Language",
         "theme_label": "Theme Mode",
         "section_shelf": "📦 Live Shelf Monitoring & Smart Labels",
@@ -68,7 +67,7 @@ t = {
         "cat_label": "Filter Category",
         "all_cat": "All Categories",
         "search_label": "Search products...",
-        "guide_title": "ℹ️ Presentation Guide & How to Use",
+        "guide_title": "ℹ️ Storify Presentation Guide & How to Use",
         "btn_back": "⬅️ Back to Dashboard",
         "access_denied": "Access Restricted: Only Owners and Managers can view Audit Logs & Advanced Settings.",
     }
@@ -77,7 +76,7 @@ t = {
 lang = st.session_state.lang
 theme = st.session_state.theme
 
-# Dynamic CSS Styling Menyeluruh yang Super Elegan (Light / Dark Mode Fix)
+# Dynamic CSS Styling dengan Kontras Teks Sempurna (Anti Hilang di Dark Mode)
 if theme == "Dark":
     bg_color = "#090d16"
     card_bg = "#111827"
@@ -85,58 +84,55 @@ if theme == "Dark":
     subtext_color = "#9ca3af"
     border_color = "#1f2937"
     price_bg = "#030712"
-    input_bg = "#1f2937"
 else:
-    bg_color = "#f4f6f9"
+    bg_color = "#f8fafc"
     card_bg = "#ffffff"
-    text_color = "#111827"
-    subtext_color = "#4b5563"
-    border_color = "#e5e7eb"
-    price_bg = "#f0fdf4"
-    input_bg = "#ffffff"
+    text_color = "#0f172a"
+    subtext_color = "#475569"
+    border_color = "#e2e8f0"
+    price_bg = "#f1f5f9"
 
 st.markdown(f"""
 <style>
-    .stApp {{ background-color: {bg_color}; color: {text_color}; }}
+    .stApp {{ background-color: {bg_color}; }}
     
+    /* Memastikan seluruh elemen teks mengikuti warna tema secara akurat */
     h1, h2, h3, h4, h5, h6, p, span, label, div {{
-        color: {text_color};
+        color: {text_color} !important;
     }}
     
     .card {{
         background-color: {card_bg};
         padding: 24px;
-        border-radius: 18px;
+        border-radius: 16px;
         border: 1px solid {border_color};
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         margin-bottom: 20px;
-        transition: all 0.3s ease-in-out;
+        transition: all 0.3s ease;
     }}
     .card:hover {{
         border-color: #3b82f6;
-        box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
     }}
     .price-tag {{
         font-size: 20px; font-weight: 800; color: #2563eb;
-        background: {price_bg}; padding: 10px 16px; border-radius: 12px; display: inline-block;
+        background: {price_bg}; padding: 8px 14px; border-radius: 10px; display: inline-block;
         border: 1px solid {border_color};
     }}
     .log-terminal {{
-        background-color: #030712; color: #38bdf8; padding: 20px;
-        border-radius: 14px; font-family: monospace; font-size: 13px; max-height: 250px; overflow-y: auto;
+        background-color: #030712; color: #38bdf8; padding: 18px;
+        border-radius: 12px; font-family: monospace; font-size: 13px; max-height: 220px; overflow-y: auto;
         border: 1px solid #1f2937;
-        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.5);
     }}
     .user-badge {{
         background-color: {card_bg};
         border: 1px solid {border_color};
         padding: 16px 20px;
-        border-radius: 16px;
-        margin-bottom: 24px;
+        border-radius: 14px;
+        margin-bottom: 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -216,11 +212,11 @@ current_role_display = st.session_state.user['role']
 st.markdown(f"""
 <div class="user-badge">
     <div>
-        👤 <b>{st.session_state.user['name']}</b> <span style="color:#3b82f6; font-size:12px; font-weight:bold;">[{current_role_display}]</span><br>
+        👤 <b style="color: {text_color};">{st.session_state.user['name']}</b> <span style="color:#3b82f6; font-size:12px; font-weight:bold;">[{current_role_display}]</span><br>
         <span style="font-size:12px; color:{subtext_color};">{st.session_state.user['email']}</span>
     </div>
     <div style="font-size:12px; background:#10b981; color:white; padding:6px 12px; border-radius:20px; font-weight:bold;">
-        🟢 Active Session
+        🟢 Storify Active Session
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -286,7 +282,7 @@ if is_privileged:
                     st.session_state.inventory[r]["price"] = int(st.session_state.inventory[r]["price"] * (1 - disc_percent / 100))
                 st.session_state.flash_sale_active = True
                 st.session_state.flash_sale_end = time.time() + duration_sec
-                log_msg = f"[{st.session_state.user['name']}] Bulk Flash Sale {disc_percent}% activated ({duration_sec}s)!"
+                log_msg = f"[{st.session_state.user['name']}] Storify Bulk Flash Sale {disc_percent}% activated ({duration_sec}s)!"
                 st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "WARNING", "action": log_msg})
                 st.rerun()
         else:
@@ -319,7 +315,7 @@ if st.session_state.page == "detail":
         st.session_state.page = "home"
         st.rerun()
         
-    st.markdown(f"## 📊 Analytics & Product Detail: {rak_key}")
+    st.markdown(f"## 📊 Storify Analytics & Product Detail: {rak_key}")
     
     d_col1, d_col2 = st.columns([1, 2])
     with d_col1:
@@ -344,12 +340,6 @@ if st.session_state.page == "detail":
 # =========================================================================
 # HALAMAN 2: BERANDA / DASHBOARD UTAMA
 # =========================================================================
-with st.expander(t[lang]["guide_title"], expanded=False):
-    st.markdown("""
-    * **Role-Based Access:** Owners and Managers have full access to audit logs, bulk discounts, and product management. Staff members are restricted to stock management (Restock).
-    * **Single Item Discount:** Click `✏️ Quick Edit & Discount` on any product card to adjust individual pricing or apply quick item discounts.
-    * **Live Product Images:** Each item includes a realistic product image mock for a true phygital retail experience.
-    """)
 
 # Filter Kategori & Search Bar
 filter_c1, filter_c2 = st.columns([2, 2])
@@ -416,7 +406,6 @@ else:
                             st.write("Special Item Discount:")
                             d_col1, d_col2, d_col3 = st.columns(3)
                             
-                            # Logika Diskon Satuan yang Diperbaiki (Menggunakan State/Callback Aman)
                             if d_col1.button("10% OFF", key=f"d10_{rak_id}"):
                                 new_p = int(data["price"] * 0.9)
                                 st.session_state.inventory[rak_id]["price"] = new_p
