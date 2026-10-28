@@ -2,7 +2,7 @@ import streamlit as st
 import time
 
 # Configuration
-st.set_page_config(page_title="Smart Label & Stock Synchronizer", layout="wide", page_icon="🏷️")
+st.set_page_config(page_title="Smart Label & Stock Management", layout="wide", page_icon="🏷️")
 
 # Inisialisasi Bahasa di Session State
 if "lang" not in st.session_state:
@@ -11,58 +11,34 @@ if "lang" not in st.session_state:
 # ----------------- TERJEMAHAN KATA (DICTIONARY) -----------------
 t = {
     "ID": {
-        "title": "🏷️ Smart Label & Stock Synchronizer",
-        "caption": "Solusi Retail Modern: Sinkronisasi Stok Otomatis & Dynamic Pricing via Smart Label",
-        "sidebar_title": "⚙️ Panel Simulasi & Kontrol",
-        "btn_sim_error": "🚨 Simulasikan Salah Taruh (Rak B2)",
-        "btn_reset": "🔄 Reset Sistem",
+        "title": "🏷️ Smart Label & Stock Management",
+        "caption": "Solusi Retail Modern: Manajemen Stok & Dynamic Pricing via Smart Label",
+        "sidebar_title": "⚙️ Pengaturan & Manajemen Produk",
         "lang_label": "Pilih Bahasa / Language",
         "m1": "Status Sistem", "m1_sub": "Online",
-        "m2": "Total Produk", "m2_sub": "3 Rak Aktif",
-        "m3": "Status Rak", "m3_sub": "Rak Aman",
-        "m4": "Promo Aktif", "m4_sub": "2 Barang",
+        "m2": "Total Produk", "m2_sub": "Rak Aktif",
+        "m3": "Status Rak", "m3_sub": "Semua Aman",
+        "m4": "Auto-Pricing", "m4_sub": "Aktif",
         "section_shelf": "📦 Live Monitoring Rak & Smart Label",
         "weight_label": "Stok Aktual",
         "price_label": "Harga Label (E-Paper)",
-        "btn_edit_price": "✏️ Ubah Harga",
         "status_ok": "NORMAL",
-        "status_err": "ANOMALI / SALAH TARUH",
-        "section_ai": "📷 Verifikasi Kamera & AI Vision",
-        "btn_scan": "🔍 Jalankan AI Scanner (Cek Rak B2)",
-        "scan_loading": "AI sedang memindai rak via Computer Vision...",
-        "ai_result": "🎯 Hasil Analisis AI:",
-        "btn_resolve": "✅ Selesaikan & Sinkronkan Stok",
-        "resolved_msg": "Rak B2 berhasil disinkronkan kembali!",
-        "normal_msg": "Semua rak dalam kondisi normal.",
-        "modal_title": "Ubah Harga Smart Label",
-        "save_price": "Simpan Harga Baru"
+        "status_err": "PERHATIAN",
     },
     "EN": {
-        "title": "🏷️ Smart Label & Stock Synchronizer",
-        "caption": "Modern Retail Solution: Automated Stock Sync & Dynamic Pricing via Smart Labels",
-        "sidebar_title": "⚙️ Simulation & Control Panel",
-        "btn_sim_error": "🚨 Simulate Misplacement (Shelf B2)",
-        "btn_reset": "🔄 Reset System",
+        "title": "🏷️ Smart Label & Stock Management",
+        "caption": "Modern Retail Solution: Stock Management & Dynamic Pricing via Smart Labels",
+        "sidebar_title": "⚙️ Product Settings & Management",
         "lang_label": "Select Language",
         "m1": "System Status", "m1_sub": "Online",
-        "m2": "Total Products", "m2_sub": "3 Active Shelves",
+        "m2": "Total Products", "m2_sub": "Active Shelves",
         "m3": "Shelf Status", "m3_sub": "All Clear",
-        "m4": "Active Promos", "m4_sub": "2 Items",
+        "m4": "Auto-Pricing", "m4_sub": "Active",
         "section_shelf": "📦 Live Shelf Monitoring & Smart Labels",
         "weight_label": "Actual Stock",
         "price_label": "Smart Label Price",
-        "btn_edit_price": "✏️ Change Price",
         "status_ok": "NORMAL",
-        "status_err": "ANOMALY / MISPLACED",
-        "section_ai": "📷 AI Camera Verification",
-        "btn_scan": "🔍 Run AI Scanner (Check Shelf B2)",
-        "scan_loading": "AI is analyzing the shelf via Computer Vision...",
-        "ai_result": "🎯 AI Analysis Result:",
-        "btn_resolve": "✅ Resolve & Sync Stock",
-        "resolved_msg": "Shelf B2 successfully synchronized!",
-        "normal_msg": "All shelves are in normal condition.",
-        "modal_title": "Update Smart Label Price",
-        "save_price": "Save New Price"
+        "status_err": "ATTENTION",
     }
 }
 
@@ -84,10 +60,6 @@ st.markdown("""
         background-color: #10b981; color: white; padding: 6px 12px;
         border-radius: 6px; font-weight: bold; font-size: 13px; display: inline-block;
     }
-    .badge-error {
-        background-color: #ef4444; color: white; padding: 6px 12px;
-        border-radius: 6px; font-weight: bold; font-size: 13px; display: inline-block;
-    }
     .price-tag {
         font-size: 18px; font-weight: bold; color: #1e293b;
         background: #f1f5f9; padding: 6px 12px; border-radius: 8px; display: inline-block;
@@ -95,12 +67,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# State Management (Data Produk & Harga)
+# State Management (Data Produk, Stok, & Harga)
 if "inventory" not in st.session_state:
     st.session_state.inventory = {
-        "Rak A1 (Kopi)": {"item": "Kopi Sachet 25g", "qty": 20, "price": 15000, "status": "OK", "note": "Normal"},
-        "Rak B2 (Snack)": {"item": "Keripik Singkong 100g", "qty": 10, "price": 12000, "status": "OK", "note": "Normal"},
-        "Rak C3 (Minuman)": {"item": "Air Mineral 600ml", "qty": 5, "price": 5000, "status": "OK", "note": "Normal"},
+        "Rak A1": {"item": "Kopi Sachet 25g", "qty": 20, "price": 15000, "status": "OK", "note": "Normal"},
+        "Rak B2": {"item": "Keripik Singkong 100g", "qty": 10, "price": 12000, "status": "OK", "note": "Normal"},
+        "Rak C3": {"item": "Air Mineral 600ml", "qty": 5, "price": 5000, "status": "OK", "note": "Normal"},
     }
 
 # Header & Pilihan Bahasa
@@ -114,87 +86,87 @@ with col_head2:
         st.session_state.lang = selected_lang
         st.rerun()
 
-# Sidebar Panel Simulasi
+# Sidebar: Fitur Tambah / Edit / Rename Produk, Stok, dan Harga Langsung dari App
 st.sidebar.header(t[lang]["sidebar_title"])
-if st.sidebar.button(t[lang]["btn_sim_error"]):
-    st.session_state.inventory["Rak B2 (Snack)"]["status"] = "ERROR"
-    st.session_state.inventory["Rak B2 (Snack)"]["note"] = "Salah Taruh Barang Terdeteksi"
-    st.sidebar.error("Simulasi anomali diaktifkan!")
 
-if st.sidebar.button(t[lang]["btn_reset"]):
-    st.session_state.inventory["Rak B2 (Snack)"]["status"] = "OK"
-    st.session_state.inventory["Rak B2 (Snack)"]["note"] = "Normal"
-    st.sidebar.info("Sistem di-reset.")
+with st.sidebar.expander("➕ Tambah Rak / Produk Baru", expanded=False):
+    new_rak_id = st.text_input("Nama/Kode Rak (Cth: Rak D4)", "Rak D4")
+    new_item_name = st.text_input("Nama Produk", "Teh Botol 350ml")
+    new_qty = st.number_input("Jumlah Stok", min_value=0, value=15, step=1)
+    new_price = st.number_input("Harga (Rp)", min_value=0, value=4000, step=500)
+    
+    if st.button("Simpan Produk Baru"):
+        if new_rak_id:
+            st.session_state.inventory[new_rak_id] = {
+                "item": new_item_name,
+                "qty": new_qty,
+                "price": new_price,
+                "status": "OK",
+                "note": "Baru ditambahkan"
+            }
+            st.sidebar.success(f"Rak {new_rak_id} berhasil ditambahkan!")
+            time.sleep(0.5)
+            st.rerun()
+
+with st.sidebar.expander("✏️ Edit / Rename Produk & Harga", expanded=True):
+    if st.session_state.inventory:
+        target_rak = st.selectbox("Pilih Rak yang Ingin Diedit", list(st.session_state.inventory.keys()))
+        
+        current_data = st.session_state.inventory[target_rak]
+        edited_item_name = st.text_input("Ubah Nama Produk", current_data["item"])
+        edited_qty = st.number_input("Ubah Jumlah Stok", min_value=0, value=current_data["qty"], step=1)
+        edited_price = st.number_input("Ubah Harga (Rp)", min_value=0, value=current_data["price"], step=500)
+        
+        if st.button("Perbarui Data Rak"):
+            st.session_state.inventory[target_rak]["item"] = edited_item_name
+            st.session_state.inventory[target_rak]["qty"] = edited_qty
+            st.session_state.inventory[target_rak]["price"] = edited_price
+            st.sidebar.success(f"Data {target_rak} berhasil diperbarui!")
+            time.sleep(0.5)
+            st.rerun()
+            
+        if st.button("🗑️ Hapus Rak Ini", type="secondary"):
+            del st.session_state.inventory[target_rak]
+            st.sidebar.warning(f"Rak {target_rak} telah dihapus.")
+            time.sleep(0.5)
+            st.rerun()
+    else:
+        st.sidebar.info("Belum ada data rak.")
 
 # Ringkasan Metrik Atas
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Cloud Sync", t[lang]["m1_sub"], "Wi-Fi Active")
-c2.metric(t[lang]["m2"], "3 Item", t[lang]["m2_sub"])
-errors = sum(1 for v in st.session_state.inventory.values() if v["status"] == "ERROR")
-c3.metric(t[lang]["m3"], f"{errors} Isu" if errors > 0 else "Aman", t[lang]["m3_sub"])
-c4.metric(t[lang]["m4"], "2 Item", "Auto-Pricing")
+c1.metric("Cloud Sync", t[lang]["m1_sub"], "Active")
+c2.metric(t[lang]["m2"], f"{len(st.session_state.inventory)} Rak", t[lang]["m2_sub"])
+c3.metric(t[lang]["m3"], "Normal", t[lang]["m3_sub"])
+c4.metric(t[lang]["m4"], "E-Paper Ready", "Sync OK")
 
 st.divider()
 
 # Live Monitoring Shelf & Smart Label
 st.subheader(t[lang]["section_shelf"])
 
-for rak_id, data in st.session_state.inventory.items():
-    with st.container():
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
-        
-        with col1:
-            st.markdown(f"### 📍 {rak_id}")
-            st.write(f"**Produk:** {data['item']}")
+if not st.session_state.inventory:
+    st.info("Belum ada rak/produk tersedia. Silakan tambahkan melalui sidebar di sebelah kiri.")
+else:
+    for rak_id, data in st.session_state.inventory.items():
+        with st.container():
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
             
-        with col2:
-            st.write(f"📦 **{t[lang]['weight_label']}:** {data['qty']} Pcs")
-            st.caption(f"Catatan: {data['note']}")
-            
-        with col3:
-            st.write(f"🏷️ **{t[lang]['price_label']}**")
-            st.markdown(f'<div class="price-tag">Rp {data["price"]:,}</div>', unsafe_allow_html=True)
-            
-        with col4:
-            st.write("")
-            status = data["status"]
-            if status == "OK":
-                st.markdown(f'<span class="badge-ok">{t[lang]["status_ok"]}</span>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<span class="badge-error">{t[lang]["status_err"]}</span>', unsafe_allow_html=True)
+            with col1:
+                st.markdown(f"### 📍 {rak_id}")
+                st.write(f"**Produk:** {data['item']}")
                 
-        st.markdown('</div>', unsafe_allow_html=True)
-
-st.divider()
-
-# AI Camera Verification & Dynamic Pricing Section
-st.subheader(t[lang]["section_ai"])
-
-if st.button(t[lang]["btn_scan"], type="primary"):
-    if st.session_state.inventory["Rak B2 (Snack)"]["status"] == "ERROR":
-        with st.spinner(t[lang]["scan_loading"]):
-            time.sleep(1.2)
-        st.warning(t[lang]["ai_result"])
-        st.json({
-            "detected_stock": "Keripik Singkong + 1 Barang Asing",
-            "smart_label_sync": "Otomatis memperbarui harga & stok di E-Paper Display."
-        })
-        if st.button(t[lang]["btn_resolve"]):
-            st.session_state.inventory["Rak B2 (Snack)"]["status"] = "OK"
-            st.session_state.inventory["Rak B2 (Snack)"]["note"] = "Normal (Disinkronkan via AI)"
-            st.success(t[lang]["resolved_msg"])
-            time.sleep(0.8)
-            st.rerun()
-    else:
-        st.info(t[lang]["normal_msg"])
-
-# Fitur Ubah Harga Cepat untuk Smart Label
-with st.expander("⚙️ Pengaturan Ubah Harga Smart Label (Dynamic Pricing)"):
-    selected_rak = st.selectbox("Pilih Rak / Produk", list(st.session_state.inventory.keys()))
-    new_price = st.number_input("Harga Baru (Rp)", min_value=1000, step=500, value=st.session_state.inventory[selected_rak]["price"])
-    if st.button("Perbarui Harga Smart Label"):
-        st.session_state.inventory[selected_rak]["price"] = new_price
-        st.success(f"Harga untuk {selected_rak} berhasil diubah secara real-time ke perangkat Smart Label!")
-        time.sleep(1)
-        st.rerun()
+            with col2:
+                st.write(f"📦 **{t[lang]['weight_label']}:** {data['qty']} Pcs")
+                st.caption(f"Status: {data['note']}")
+                
+            with col3:
+                st.write(f"🏷️ **{t[lang]['price_label']}**")
+                st.markdown(f'<div class="price-tag">Rp {data["price"]:,}</div>', unsafe_allow_html=True)
+                
+            with col4:
+                st.write("")
+                st.markdown(f'<span class="badge-ok">{t[lang]["status_ok"]}</span>', unsafe_allow_html=True)
+                    
+            st.markdown('</div>', unsafe_allow_html=True)
