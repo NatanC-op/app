@@ -12,6 +12,9 @@ if "lang" not in st.session_state:
 if "theme" not in st.session_state:
     st.session_state.theme = "Light"
 
+if "store_name" not in st.session_state:
+    st.session_state.store_name = "Storify - Cabang Utama"
+
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
@@ -38,7 +41,6 @@ if "flash_sale_end" not in st.session_state:
 # ----------------- TERJEMAHAN KATA MENYELURUH (DICTIONARY) -----------------
 t = {
     "ID": {
-        "title": "🏷️ Storify - Smart Retail & Dynamic Pricing",
         "caption": "Solusi Retail Phygital Modern: Manajemen Harga Otomatis & E-Paper IoT Dashboard",
         "sidebar_title": "⚙️ Panel Kontrol Storify",
         "lang_label": "Bahasa / Language",
@@ -50,12 +52,10 @@ t = {
         "cat_label": "Filter Kategori",
         "all_cat": "Semua Kategori",
         "search_label": "Cari Produk...",
-        "guide_title": "ℹ️ Panduan Presentasi & Cara Pakai Storify",
         "btn_back": "⬅️ Kembali ke Beranda",
         "access_denied": "Akses Dibatasi: Hanya Owner dan Manager yang dapat melihat Audit Log & Pengaturan Lanjutan.",
     },
     "EN": {
-        "title": "🏷️ Storify - Smart Retail & Dynamic Pricing",
         "caption": "Modern Phygital Retail Solution: Automated Pricing & E-Paper IoT Dashboard",
         "sidebar_title": "⚙️ Storify Control Panel",
         "lang_label": "Language",
@@ -67,7 +67,6 @@ t = {
         "cat_label": "Filter Category",
         "all_cat": "All Categories",
         "search_label": "Search products...",
-        "guide_title": "ℹ️ Storify Presentation Guide & How to Use",
         "btn_back": "⬅️ Back to Dashboard",
         "access_denied": "Access Restricted: Only Owners and Managers can view Audit Logs & Advanced Settings.",
     }
@@ -76,46 +75,53 @@ t = {
 lang = st.session_state.lang
 theme = st.session_state.theme
 
-# Dynamic CSS Styling dengan Kontras Teks Sempurna (Anti Hilang di Dark Mode)
+# Dynamic CSS Styling dengan Perbaikan Total Warna Widget di Dark Mode
 if theme == "Dark":
-    bg_color = "#090d16"
+    bg_color = "#0b0f19"
     card_bg = "#111827"
     text_color = "#f9fafb"
     subtext_color = "#9ca3af"
-    border_color = "#1f2937"
+    border_color = "#374151"
     price_bg = "#030712"
+    input_bg = "#1f2937"
+    input_text = "#ffffff"
 else:
     bg_color = "#f8fafc"
     card_bg = "#ffffff"
     text_color = "#0f172a"
     subtext_color = "#475569"
-    border_color = "#e2e8f0"
+    border_color = "#cbd5e1"
     price_bg = "#f1f5f9"
+    input_bg = "#ffffff"
+    input_text = "#0f172a"
 
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_color}; }}
     
-    /* Memastikan seluruh elemen teks mengikuti warna tema secara akurat */
-    h1, h2, h3, h4, h5, h6, p, span, label, div {{
+    /* Paksa seluruh teks & label agar selalu terlihat jelas */
+    h1, h2, h3, h4, h5, h6, p, span, label, div, .stMarkdown {{
         color: {text_color} !important;
+    }}
+    
+    /* Perbaikan total kontras kotak input & selectbox Streamlit di Dark Mode */
+    input, textarea, div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        -webkit-text-fill-color: {input_text} !important;
+        border-color: {border_color} !important;
     }}
     
     .card {{
         background-color: {card_bg};
-        padding: 24px;
+        padding: 20px;
         border-radius: 16px;
         border: 1px solid {border_color};
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-    }}
-    .card:hover {{
-        border-color: #3b82f6;
-        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 16px;
     }}
     .price-tag {{
-        font-size: 20px; font-weight: 800; color: #2563eb;
+        font-size: 19px; font-weight: 800; color: #3b82f6;
         background: {price_bg}; padding: 8px 14px; border-radius: 10px; display: inline-block;
         border: 1px solid {border_color};
     }}
@@ -127,7 +133,7 @@ st.markdown(f"""
     .user-badge {{
         background-color: {card_bg};
         border: 1px solid {border_color};
-        padding: 16px 20px;
+        padding: 14px 18px;
         border-radius: 14px;
         margin-bottom: 20px;
         display: flex;
@@ -189,10 +195,10 @@ if st.session_state.flash_sale_active and current_time_epoch > st.session_state.
     msg = "Bulk Flash Sale ended. Prices restored to normal." if lang == "EN" else "Waktu Flash Sale Massal habis. Harga kembali normal."
     st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": msg})
 
-# Header & Kontrol Atas
+# Header & Kontrol Atas (Nama Toko Dinamis / Bisa Direname)
 col_head1, col_head2 = st.columns([3, 2])
 with col_head1:
-    st.title(t[lang]["title"])
+    st.title(f"🏷️ {st.session_state.store_name}")
     st.caption(t[lang]["caption"])
 with col_head2:
     sub_c1, sub_c2 = st.columns(2)
@@ -207,7 +213,7 @@ with col_head2:
             st.session_state.theme = sel_theme
             st.rerun()
 
-# Widget Profil Akun (Decoy Account Switcher)
+# Widget Profil Akun
 current_role_display = st.session_state.user['role']
 st.markdown(f"""
 <div class="user-badge">
@@ -223,6 +229,15 @@ st.markdown(f"""
 
 # Sidebar Pengaturan & Hak Akses Berdasarkan Jabatan
 st.sidebar.header(t[lang]["sidebar_title"])
+
+# FITUR RENAME NAMA TOKO (STORIFY - NAMATOKO)
+with st.sidebar.expander("🏪 Ubah Nama Toko (Rename Store)", expanded=False):
+    new_store_name = st.text_input("Nama Toko / Cabang", st.session_state.store_name)
+    if st.button("Perbarui Nama Toko"):
+        st.session_state.store_name = new_store_name
+        st.sidebar.success("Nama toko berhasil diubah!")
+        time.sleep(0.3)
+        st.rerun()
 
 with st.sidebar.expander("👤 Switch User Account", expanded=False):
     selected_account = st.selectbox("Select Account", ["James Arthur (Owner)", "Sarah Connor (Manager)", "William Alexander (Staff Gudang)"])
