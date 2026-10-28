@@ -101,7 +101,6 @@ with st.sidebar.expander("➕ Tambah / Edit Produk & Kategori", expanded=False):
         st.session_state.inventory[target_rak] = {
             "item": item_name, "category": category_name, "qty": qty_val, "price": price_val
         }
-        # Tambah ke log
         current_time = datetime.now().strftime("%H:%M:%S")
         st.session_state.logs.insert(0, {"time": current_time, "action": f"Produk baru ditambahkan: {item_name} di {target_rak}"})
         st.sidebar.success(f"Data {target_rak} berhasil disimpan!")
@@ -119,8 +118,19 @@ with st.sidebar.expander("⚡ Diskon Massal (Flash Sale)", expanded=False):
         time.sleep(0.5)
         st.rerun()
 
-# Filter Berdasarkan Kategori di Halaman Utama
-categories = [t[lang]["all_cat"]] + list(set(d["category"] for d in st.session_state.inventory.values()))
+# Tombol untuk Reset Data jika terjadi error cache session
+if st.sidebar.button("🔄 Reset Data Inventory"):
+    st.session_state.inventory = {
+        "Rak A1": {"item": "Kopi Sachet 25g", "category": "Makanan & Minuman", "qty": 20, "price": 15000},
+        "Rak B2": {"item": "Keripik Singkong 100g", "category": "Makanan & Minuman", "qty": 4, "price": 12000},
+        "Rak C3": {"item": "Air Mineral 600ml", "category": "Makanan & Minuman", "qty": 15, "price": 5000},
+        "Rak D4": {"item": "Deterjen Bubuk 800g", "category": "Kebutuhan Rumah Tangga", "qty": 8, "price": 25000},
+    }
+    st.sidebar.success("Data di-reset ke default!")
+    st.rerun()
+
+# Filter Berdasarkan Kategori dengan pengaman .get()
+categories = [t[lang]["all_cat"]] + list(set(d.get("category", "Umum") for d in st.session_state.inventory.values()))
 selected_category = st.selectbox(t[lang]["cat_label"], categories)
 
 st.divider()
@@ -128,7 +138,7 @@ st.divider()
 # Live Monitoring Shelf & Smart Label
 st.subheader(t[lang]["section_shelf"])
 
-filtered_inventory = {k: v for k, v in st.session_state.inventory.items() if selected_category == t[lang]["all_cat"] or v["category"] == selected_category}
+filtered_inventory = {k: v for k, v in st.session_state.inventory.items() if selected_category == t[lang]["all_cat"] or v.get("category", "Umum") == selected_category}
 
 if not filtered_inventory:
     st.info("Tidak ada produk dalam kategori ini.")
@@ -141,7 +151,7 @@ else:
             with col1:
                 st.markdown(f"### 📍 {rak_id}")
                 st.write(f"**Produk:** {data['item']}")
-                st.caption(f"📂 Kategori: {data['category']}")
+                st.caption(f"📂 Kategori: {data.get('category', 'Umum')}")
                 
             with col2:
                 st.write(f"📦 **{t[lang]['weight_label']}:** {data['qty']} Pcs")
@@ -156,7 +166,7 @@ else:
                 
             with col4:
                 st.write("")
-                if st.button("➕ Restock", key=f"rest_ {rak_id}"):
+                if st.button("➕ Restock", key=f"rest_{rak_id}"):
                     st.session_state.inventory[rak_id]["qty"] += 10
                     current_time = datetime.now().strftime("%H:%M:%S")
                     st.session_state.logs.insert(0, {"time": current_time, "action": f"Restock +10 pcs untuk {data['item']} ({rak_id})"})
@@ -169,7 +179,7 @@ st.divider()
 # Bagian Log Aktivitas Sistem (Audit Trail)
 st.subheader(t[lang]["section_log"])
 log_text = ""
-for log in st.session_state.logs[:10]: # Tampilkan 10 log terbaru
+for log in st.session_state.logs[:10]:
     log_text += f"[{log['time']}] {log['action']}\n"
 
 st.markdown(f'<div class="log-box">{log_text}</div>', unsafe_allow_html=True)
