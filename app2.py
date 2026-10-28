@@ -75,16 +75,18 @@ t = {
 lang = st.session_state.lang
 theme = st.session_state.theme
 
-# Dynamic CSS Styling dengan Perbaikan Total Warna Widget di Dark Mode
+# Dynamic CSS Styling Premium (Fix Total Tombol & Input di Dark Mode)
 if theme == "Dark":
-    bg_color = "#0b0f19"
+    bg_color = "#090d16"
     card_bg = "#111827"
     text_color = "#f9fafb"
     subtext_color = "#9ca3af"
     border_color = "#374151"
-    price_bg = "#030712"
+    price_bg = "#1f2937"
     input_bg = "#1f2937"
     input_text = "#ffffff"
+    btn_bg = "#2563eb"
+    btn_text = "#ffffff"
 else:
     bg_color = "#f8fafc"
     card_bg = "#ffffff"
@@ -94,34 +96,56 @@ else:
     price_bg = "#f1f5f9"
     input_bg = "#ffffff"
     input_text = "#0f172a"
+    btn_bg = "#eff6ff"
+    btn_text = "#1e3a8a"
 
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_color}; }}
     
-    /* Paksa seluruh teks & label agar selalu terlihat jelas */
+    /* Paksa seluruh teks & label agar konsisten */
     h1, h2, h3, h4, h5, h6, p, span, label, div, .stMarkdown {{
         color: {text_color} !important;
     }}
     
-    /* Perbaikan total kontras kotak input & selectbox Streamlit di Dark Mode */
+    /* Perbaikan total kontras input & selectbox Streamlit */
     input, textarea, div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         color: {input_text} !important;
         -webkit-text-fill-color: {input_text} !important;
         border-color: {border_color} !important;
+        border-radius: 8px !important;
+    }}
+    
+    /* Styling Tombol Standar Agar Selalu Cantik dan Kontras */
+    .stButton > button {{
+        background-color: {btn_bg} !important;
+        color: {btn_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease;
+    }}
+    .stButton > button:hover {{
+        border-color: #3b82f6 !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }}
     
     .card {{
         background-color: {card_bg};
-        padding: 20px;
+        padding: 22px;
         border-radius: 16px;
         border: 1px solid {border_color};
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        margin-bottom: 16px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }}
+    .card:hover {{
+        border-color: #3b82f6;
+        box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.15);
     }}
     .price-tag {{
-        font-size: 19px; font-weight: 800; color: #3b82f6;
+        font-size: 19px; font-weight: 800; color: #2563eb;
         background: {price_bg}; padding: 8px 14px; border-radius: 10px; display: inline-block;
         border: 1px solid {border_color};
     }}
@@ -133,12 +157,13 @@ st.markdown(f"""
     .user-badge {{
         background-color: {card_bg};
         border: 1px solid {border_color};
-        padding: 14px 18px;
+        padding: 16px 20px;
         border-radius: 14px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -195,7 +220,7 @@ if st.session_state.flash_sale_active and current_time_epoch > st.session_state.
     msg = "Bulk Flash Sale ended. Prices restored to normal." if lang == "EN" else "Waktu Flash Sale Massal habis. Harga kembali normal."
     st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": msg})
 
-# Header & Kontrol Atas (Nama Toko Dinamis / Bisa Direname)
+# Header & Kontrol Atas
 col_head1, col_head2 = st.columns([3, 2])
 with col_head1:
     st.title(f"🏷️ {st.session_state.store_name}")
@@ -227,10 +252,10 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar Pengaturan & Hak Akses Berdasarkan Jabatan
+# Sidebar Pengaturan
 st.sidebar.header(t[lang]["sidebar_title"])
 
-# FITUR RENAME NAMA TOKO (STORIFY - NAMATOKO)
+# Rename Store
 with st.sidebar.expander("🏪 Ubah Nama Toko (Rename Store)", expanded=False):
     new_store_name = st.text_input("Nama Toko / Cabang", st.session_state.store_name)
     if st.button("Perbarui Nama Toko"):
@@ -254,10 +279,27 @@ with st.sidebar.expander("👤 Switch User Account", expanded=False):
 is_privileged = st.session_state.user["role"] in ["OWNER", "MANAGER"]
 
 if is_privileged:
-    with st.sidebar.expander("➕ Add New Product", expanded=False):
+    # FITUR TAMBAH PRODUK DENGAN UPLOAD FOTO SENDIRI
+    with st.sidebar.expander("➕ Add New Product & Upload Image", expanded=False):
         target_rak = st.text_input("Shelf Code (e.g., Shelf E5)", "Rak E5")
         item_name = st.text_input("Product Name", "Body Soap 100g")
-        img_url = st.text_input("Image URL", "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300")
+        
+        # Pilihan input foto: URL atau Upload File Lokal
+        img_source = st.radio("Sumber Foto", ["Upload File Gambar", "Gunakan Link URL"])
+        final_img = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300"
+        
+        if img_source == "Upload File Gambar":
+            uploaded_file = st.file_uploader("Pilih Foto Produk", type=["png", "jpg", "jpeg"])
+            if uploaded_file is not None:
+                # Simpan gambar sebagai data stream / temporary string
+                import base64
+                bytes_data = uploaded_file.getvalue()
+                base64_str = base64.b64encode(bytes_data).decode("utf-8")
+                final_img = f"data:image/jpeg;base64,{base64_str}"
+        else:
+            url_input = st.text_input("URL Foto", "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300")
+            if url_input:
+                final_img = url_input
         
         existing_categories = list(set(d.get("category", "General") for d in st.session_state.inventory.values()))
         cat_mode = st.radio("Category Type", ["Select Existing", "Create New"])
@@ -276,7 +318,7 @@ if is_privileged:
                     "category": category_name.strip() if category_name else "General", 
                     "qty": qty_val, 
                     "price": price_val,
-                    "image": img_url if img_url else "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300",
+                    "image": final_img,
                     "inflow": [5, 10],
                     "outflow": [2, 4]
                 }
