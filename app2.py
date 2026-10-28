@@ -13,10 +13,14 @@ if "theme" not in st.session_state:
     st.session_state.theme = "Light"
 
 if "page" not in st.session_state:
-    st.session_state.page = "home"  # Pilihan: 'home' atau 'detail'
+    st.session_state.page = "home"
 
 if "selected_rak" not in st.session_state:
     st.session_state.selected_rak = None
+
+# Simulasi Akun Login (Decoy Account)
+if "user" not in st.session_state:
+    st.session_state.user = {"name": "James Arthur", "role": "OWNER / STORE MANAGER", "email": "james.arthur@gmail.com"}
 
 if "logs" not in st.session_state:
     st.session_state.logs = [
@@ -37,9 +41,9 @@ t = {
     "ID": {
         "title": "🏷️ Smart Label & Dynamic Pricing",
         "caption": "Solusi Retail Phygital Modern: Manajemen Harga Otomatis & E-Paper IoT Dashboard",
-        "sidebar_title": "⚙️ Panel Kontrol & Pengaturan",
-        "lang_label": "Pilih Bahasa / Language",
-        "theme_label": "Mode Tampilan",
+        "sidebar_title": "⚙️ Panel Kontrol Toko",
+        "lang_label": "Bahasa / Language",
+        "theme_label": "Mode Tema",
         "section_shelf": "📦 Live Monitoring Rak & Smart Label",
         "section_log": "📜 Terminal Log Aktivitas Sistem (Audit Trail)",
         "weight_label": "Stok Aktual",
@@ -53,7 +57,7 @@ t = {
     "EN": {
         "title": "🏷️ Smart Label & Dynamic Pricing",
         "caption": "Modern Phygital Retail Solution: Automated Pricing & E-Paper IoT Dashboard",
-        "sidebar_title": "⚙️ Control Panel & Settings",
+        "sidebar_title": "⚙️ Store Control Panel",
         "lang_label": "Language",
         "theme_label": "Theme Mode",
         "section_shelf": "📦 Live Shelf Monitoring & Smart Labels",
@@ -71,44 +75,70 @@ t = {
 lang = st.session_state.lang
 theme = st.session_state.theme
 
-# Dynamic CSS Styling berdasarkan Theme (Light / Dark)
+# Dynamic CSS Styling Menyeluruh (Light / Dark Mode Fix)
 if theme == "Dark":
     bg_color = "#0f172a"
     card_bg = "#1e293b"
     text_color = "#f8f9fa"
+    subtext_color = "#94a3b8"
     border_color = "#334155"
     price_bg = "#090d16"
+    input_bg = "#1e293b"
 else:
     bg_color = "#f8f9fa"
     card_bg = "#ffffff"
     text_color = "#1e293b"
-    border_color = "#e3e6f0"
+    subtext_color = "#64748b"
+    border_color = "#e2e8f0"
     price_bg = "#f1f5f9"
+    input_bg = "#ffffff"
 
 st.markdown(f"""
 <style>
     .stApp {{ background-color: {bg_color}; color: {text_color}; }}
+    
+    /* Perbaikan global teks agar responsif terhadap tema */
+    h1, h2, h3, h4, h5, h6, p, span, label {{
+        color: {text_color} !important;
+    }}
+    
     .card {{
         background-color: {card_bg};
-        padding: 18px;
-        border-radius: 14px;
+        padding: 20px;
+        border-radius: 16px;
         border: 1px solid {border_color};
-        box-shadow: 0 4px 6px rgba(0,0,0,0.04);
-        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+    }}
+    .card:hover {{
+        border-color: #3b82f6;
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.15);
     }}
     .price-tag {{
-        font-size: 18px; font-weight: bold; color: #3b82f6;
-        background: {price_bg}; padding: 6px 12px; border-radius: 8px; display: inline-block;
+        font-size: 19px; font-weight: bold; color: #3b82f6;
+        background: {price_bg}; padding: 8px 14px; border-radius: 10px; display: inline-block;
+        border: 1px solid {border_color};
     }}
     .log-terminal {{
-        background-color: #090d16; color: #38bdf8; padding: 15px;
-        border-radius: 10px; font-family: monospace; font-size: 13px; max-height: 200px; overflow-y: auto;
+        background-color: #090d16; color: #38bdf8; padding: 18px;
+        border-radius: 12px; font-family: monospace; font-size: 13px; max-height: 220px; overflow-y: auto;
         border: 1px solid #1e293b;
+    }}
+    .user-badge {{
+        background-color: {card_bg};
+        border: 1px solid {border_color};
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }}
 </style>
 """, unsafe_allow_html=True)
 
-# State Management Default Inventory (Dilengkapi URL Gambar & Grafik Keluar Masuk)
+# State Management Default Inventory
 if "inventory" not in st.session_state:
     st.session_state.inventory = {
         "Rak A1": {
@@ -149,7 +179,7 @@ if "inventory" not in st.session_state:
         },
     }
 
-# Cek Timer Flash Sale otomatis habis
+# Cek Timer Flash Sale Massal otomatis habis
 current_time_epoch = time.time()
 if st.session_state.flash_sale_active and current_time_epoch > st.session_state.flash_sale_end:
     for rak, orig_p in st.session_state.original_prices.items():
@@ -157,9 +187,9 @@ if st.session_state.flash_sale_active and current_time_epoch > st.session_state.
             st.session_state.inventory[rak]["price"] = orig_p
     st.session_state.flash_sale_active = False
     st.session_state.original_prices = {}
-    st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "Waktu Flash Sale habis. Harga kembali normal."})
+    st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "Waktu Flash Sale Massal habis. Harga kembali normal."})
 
-# Header & Kontrol Bahasa / Tema di Pojok Kanan
+# Header & Kontrol Atas (Profil Akun, Bahasa, Tema)
 col_head1, col_head2 = st.columns([3, 2])
 with col_head1:
     st.title(t[lang]["title"])
@@ -167,20 +197,46 @@ with col_head1:
 with col_head2:
     sub_c1, sub_c2 = st.columns(2)
     with sub_c1:
-        sel_lang = st.selectbox(t[lang]["lang_label"], ["ID", "EN"], index=0 if lang=="ID" else 1, label_visibility="collapsed")
+        sel_lang = st.selectbox(t[lang]["lang_label"], ["ID", "EN"], index=0 if lang=="ID" else 1)
         if sel_lang != st.session_state.lang:
             st.session_state.lang = sel_lang
             st.rerun()
     with sub_c2:
-        sel_theme = st.selectbox(t[lang]["theme_label"], ["Light", "Dark"], index=0 if theme=="Light" else 1, label_visibility="collapsed")
+        sel_theme = st.selectbox(t[lang]["theme_label"], ["Light", "Dark"], index=0 if theme=="Light" else 1)
         if sel_theme != st.session_state.theme:
             st.session_state.theme = sel_theme
             st.rerun()
 
+# Widget Profil Akun (Decoy Login Info)
+st.markdown(f"""
+<div class="user-badge">
+    <div>
+        👤 <b>{st.session_state.user['name']}</b> <span style="color:#3b82f6; font-size:12px; font-weight:bold;">[{st.session_state.user['role']}]</span><br>
+        <span style="font-size:12px; color:{subtext_color};">{st.session_state.user['email']}</span>
+    </div>
+    <div style="font-size:12px; background:#10b981; color:white; padding:4px 10px; border-radius:20px; font-weight:bold;">
+        🟢 Active Session
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 # Sidebar Pengaturan
 st.sidebar.header(t[lang]["sidebar_title"])
 
-with st.sidebar.expander("➕ Tambah Produk dengan Foto", expanded=False):
+# Switch Akun (Decoy Login)
+with st.sidebar.expander("👤 Ganti Akun / Switch User", expanded=False):
+    selected_account = st.selectbox("Pilih Akun Login", ["James Arthur (Owner)", "William Alexander (Staff Gudang)", "Isabel Coney (Kasir)"])
+    if "James" in selected_account:
+        st.session_state.user = {"name": "James Arthur", "role": "OWNER / STORE MANAGER", "email": "james.arthur@gmail.com"}
+    elif "William" in selected_account:
+        st.session_state.user = {"name": "William Alexander", "role": "WAREHOUSE STAFF", "email": "williamalexander@gmail.com"}
+    else:
+        st.session_state.user = {"name": "Isabel Coney", "role": "CASHIER", "email": "isabel.coney13@gmail.com"}
+    if st.button("Terapkan Akun"):
+        st.sidebar.success(f"Berhasil masuk sebagai {st.session_state.user['name']}")
+        st.rerun()
+
+with st.sidebar.expander("➕ Tambah Produk Baru", expanded=False):
     target_rak = st.text_input("Kode Rak (Cth: Rak E5)", "Rak E5")
     item_name = st.text_input("Nama Produk", "Sabun Mandi 100g")
     img_url = st.text_input("URL Foto Produk", "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300")
@@ -206,23 +262,23 @@ with st.sidebar.expander("➕ Tambah Produk dengan Foto", expanded=False):
                 "inflow": [5, 10],
                 "outflow": [2, 4]
             }
-            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "SUCCESS", "action": f"Produk baru ditambahkan: {item_name} di {target_rak}"})
+            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "SUCCESS", "action": f"[{st.session_state.user['name']}] Menambah produk: {item_name} di {target_rak}"})
             st.sidebar.success("Berhasil disimpan!")
             time.sleep(0.4)
             st.rerun()
 
-with st.sidebar.expander("⚡ Timed Flash Sale (Diskon Massal)", expanded=False):
+with st.sidebar.expander("⚡ Flash Sale Massal (Semua Produk)", expanded=False):
     disc_percent = st.slider("Besaran Diskon (%)", min_value=5, max_value=50, value=15, step=5)
     duration_sec = st.selectbox("Durasi Waktu", [15, 30, 60], format_func=lambda x: f"{x} Detik")
     
     if not st.session_state.flash_sale_active:
-        if st.button("Jalankan Flash Sale"):
+        if st.button("Jalankan Flash Sale Massal"):
             st.session_state.original_prices = {r: d["price"] for r, d in st.session_state.inventory.items()}
             for r in st.session_state.inventory:
                 st.session_state.inventory[r]["price"] = int(st.session_state.inventory[r]["price"] * (1 - disc_percent / 100))
             st.session_state.flash_sale_active = True
             st.session_state.flash_sale_end = time.time() + duration_sec
-            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "WARNING", "action": f"Flash sale {disc_percent}% aktif selama {duration_sec} detik!"})
+            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "WARNING", "action": f"[{st.session_state.user['name']}] Flash sale massal {disc_percent}% aktif ({duration_sec}s)!"})
             st.rerun()
     else:
         rem = int(st.session_state.flash_sale_end - time.time())
@@ -233,7 +289,7 @@ with st.sidebar.expander("⚡ Timed Flash Sale (Diskon Massal)", expanded=False)
                     st.session_state.inventory[r]["price"] = op
             st.session_state.flash_sale_active = False
             st.session_state.original_prices = {}
-            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "Flash sale dibatalkan manual."})
+            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": f"[{st.session_state.user['name']}] Flash sale massal dibatalkan."})
             st.rerun()
 
 # =========================================================================
@@ -271,16 +327,16 @@ if st.session_state.page == "detail":
     }
     st.line_chart(chart_data)
     
-    st.stop()  # Hentikan eksekusi agar halaman utama tidak ikut tampil
+    st.stop()
 
 # =========================================================================
 # HALAMAN 2: BERANDA / DASHBOARD UTAMA
 # =========================================================================
 with st.expander(t[lang]["guide_title"], expanded=False):
     st.markdown("""
-    * **Klik Kartu/Tombol Detail:** Klik tombol `🔍 Lihat Detail & Grafik` pada produk untuk melihat grafik keluar-masuk barang secara mendetail.
-    * **Foto Produk:** Setiap produk dilengkapi foto ilustrasi nyata.
-    * **Tambah Produk & Foto:** Gunakan sidebar untuk mendaftarkan barang baru lengkap dengan URL gambarnya.
+    * **Diskon Satuan / Salah Satu Barang:** Klik tombol `✏️ Edit Cepat` pada kartu produk untuk memberikan diskon khusus atau mengubah harga barang tersebut saja secara mandiri.
+    * **Diskon Massal (Flash Sale):** Gunakan sidebar untuk memberikan diskon serentak ke semua produk dengan batas waktu otomatis.
+    * **Profil Pengguna:** Nama staff/owner yang sedang aktif tercatat di bagian atas dashboard untuk simulasi akuntabilitas sistem.
     """)
 
 # Filter Kategori & Search Bar
@@ -333,35 +389,59 @@ else:
                     st.markdown(f'<div class="price-tag">Rp {data["price"]:,}</div>', unsafe_allow_html=True)
                     
                 with col4:
-                    # Tombol Navigasi ke Halaman Detail (Klik Rak)
+                    # Tombol Navigasi ke Halaman Detail
                     if st.button("🔍 Lihat Detail & Grafik", key=f"det_{rak_id}"):
                         st.session_state.selected_rak = rak_id
                         st.session_state.page = "detail"
                         st.rerun()
                         
+                    # Fitur Edit Cepat (Diskon Satuan / Ubah Harga Salah Satu Barang)
+                    with st.popover("✏️ Edit Cepat & Diskon Satuan"):
+                        new_q = st.number_input(f"Stok ({rak_id})", min_value=0, value=data["qty"], key=f"q_{rak_id}")
+                        new_p = st.number_input(f"Harga E-Paper (Rp)", min_value=0, value=data["price"], step=500, key=f"p_{rak_id}")
+                        
+                        # Tombol Diskon Cepat khusus barang ini (misal diskon 10%, 20%, 50%)
+                        st.write("Diskon Spesial Satuan:")
+                        d_col1, d_col2, d_col3 = st.columns(3)
+                        current_base_price = new_p
+                        if d_col1.button("10%", key=f"d10_{rak_id}"):
+                            new_p = int(current_base_price * 0.9)
+                        if d_col2.button("20%", key=f"d20_{rak_id}"):
+                            new_p = int(current_base_price * 0.8)
+                        if d_col3.button("50%", key=f"d50_{rak_id}"):
+                            new_p = int(current_base_price * 0.5)
+
+                        if st.button("Simpan Perubahan", key=f"save_{rak_id}"):
+                            st.session_state.inventory[rak_id]["qty"] = new_q
+                            st.session_state.inventory[rak_id]["price"] = new_p
+                            st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": f"[{st.session_state.user['name']}] Update {rak_id}: Stok={new_q}, Harga=Rp {new_p:,}"})
+                            st.rerun()
+                    
                     restock_val = st.number_input(f"Restock", min_value=1, max_value=100, value=10, key=f"num_{rak_id}", label_visibility="collapsed")
                     if st.button("➕ Restock", key=f"rest_{rak_id}"):
                         st.session_state.inventory[rak_id]["qty"] += restock_val
                         st.session_state.inventory[rak_id]["outflow"].append(restock_val)
-                        st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "SUCCESS", "action": f"Restock +{restock_val} pcs untuk {data['item']} ({rak_id})"})
+                        st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "SUCCESS", "action": f"[{st.session_state.user['name']}] Restock +{restock_val} pcs untuk {data['item']} ({rak_id})"})
                         st.rerun()
 
                 with col5:
                     st.write("")
                     if st.button("🗑️ Hapus", key=f"del_{rak_id}", type="secondary"):
                         del st.session_state.inventory[rak_id]
-                        st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "ERROR", "action": f"Produk pada {rak_id} dihapus."})
+                        st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": "ERROR", "action": f"[{st.session_state.user['name']}] Produk pada {rak_id} dihapus."})
                         st.rerun()
                         
                 st.markdown('</div>', unsafe_allow_html=True)
 
 st.divider()
 
-# ----------------- TERMINAL AUDIT LOG -----------------
+# ----------------- TERMINAL AUDIT LOG (FIXED ERROR) -----------------
 st.subheader(t[lang]["section_log"])
 terminal_text = ""
 for log in st.session_state.logs[:12]:
-    badge = f"[{log['type']}]"
+    # Pengaman key type agar tidak error
+    log_type = log.get("type", "INFO")
+    badge = f"[{log_type}]"
     terminal_text += f"{log['time']} {badge:<9} >> {log['action']}\n"
 
 st.markdown(f'<div class="log-terminal">{terminal_text}</div>', unsafe_allow_html=True)
