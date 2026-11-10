@@ -76,6 +76,7 @@ lang = st.session_state.lang
 theme = st.session_state.theme
 
 # Dynamic CSS Styling Premium (Targeting Streamlit Baseweb Components Specifically)
+# Dynamic CSS Styling (FIX TOTAL NUMBER INPUT & POPOVER TEXT IN DARK MODE)
 if theme == "Dark":
     bg_color = "#090d16"
     card_bg = "#111827"
@@ -83,8 +84,8 @@ if theme == "Dark":
     subtext_color = "#9ca3af"
     border_color = "#374151"
     price_bg = "#1f2937"
-    input_bg = "#1f2937"
-    input_text = "#ffffff"
+    input_bg = "#1f2937"       # Background input dibuat gelap!
+    input_text = "#ffffff"     # Teks dibuat putih terang!
     btn_bg = "#1e3a8a"
     btn_text = "#ffffff"
     popover_bg = "#111827"
@@ -103,25 +104,50 @@ else:
 
 st.markdown(f"""
 <style>
-    /* Main App Background */
     .stApp {{ background-color: {bg_color}; }}
     
-    /* Global Typography */
+    /* Typography Global */
     h1, h2, h3, h4, h5, h6, p, label, .stMarkdown p {{
         color: {text_color} !important;
     }}
     
-    /* Streamlit Input Fields (Text Input, Number Input) Fix */
-    div[data-baseweb="input"] > div {{
+    /* Fix Input Box (Number Input, Text Input, etc.) */
+    div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
-        border-color: {border_color} !important;
-        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 8px !important;
     }}
     
-    input[type="text"], input[type="number"] {{
+    div[data-baseweb="input"] input {{
+        background-color: transparent !important;
         color: {input_text} !important;
         -webkit-text-fill-color: {input_text} !important;
+    }}
+
+    /* Fix Stepper Buttons (+ / -) pada Number Input */
+    div[data-baseweb="input"] button {{
         background-color: transparent !important;
+        color: {input_text} !important;
+        border: none !important;
+    }}
+    div[data-baseweb="input"] button svg {{
+        fill: {input_text} !important;
+    }}
+
+    /* Fix Streamlit Popover Button Text */
+    div[data-testid="stPopover"] > button {{
+        background-color: {input_bg} !important;
+        color: {input_text} !important;
+        border: 1px solid {border_color} !important;
+    }}
+    div[data-testid="stPopover"] > button p {{
+        color: {input_text} !important;
+    }}
+
+    /* Fix Popover Body */
+    div[data-testid="stPopoverBody"] {{
+        background-color: {popover_bg} !important;
+        border: 1px solid {border_color} !important;
     }}
 
     /* Streamlit Selectbox / Dropdown Fix */
@@ -130,46 +156,31 @@ st.markdown(f"""
         border-color: {border_color} !important;
         color: {input_text} !important;
     }}
-    
     div[data-baseweb="select"] span {{
         color: {input_text} !important;
     }}
 
-    /* Dropdown Options Popup Menu Fix */
+    /* Dropdown Options Popup Menu */
     ul[data-baseweb="menu"] {{
         background-color: {card_bg} !important;
     }}
-    
     ul[data-baseweb="menu"] li {{
         color: {text_color} !important;
         background-color: {card_bg} !important;
     }}
-
     ul[data-baseweb="menu"] li:hover {{
         background-color: {price_bg} !important;
     }}
 
-    /* Popover Container Fix */
-    div[data-testid="stPopoverBody"] {{
-        background-color: {popover_bg} !important;
-        border: 1px solid {border_color} !important;
-    }}
-    
-    /* Button Styling */
+    /* Styling Tombol Standar */
     .stButton > button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
         border: 1px solid {border_color} !important;
         border-radius: 8px !important;
         font-weight: 600 !important;
-        transition: all 0.2s ease;
-    }}
-    .stButton > button:hover {{
-        border-color: #3b82f6 !important;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }}
 
-    /* Custom Component Cards */
     .card {{
         background-color: {card_bg};
         padding: 22px;
@@ -177,11 +188,6 @@ st.markdown(f"""
         border: 1px solid {border_color};
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         margin-bottom: 20px;
-        transition: all 0.3s ease;
-    }}
-    .card:hover {{
-        border-color: #3b82f6;
-        box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.15);
     }}
     .price-tag {{
         font-size: 19px; font-weight: 800; color: #3b82f6;
@@ -202,10 +208,10 @@ st.markdown(f"""
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }}
 </style>
 """, unsafe_allow_html=True)
+
 
 # State Management Default Inventory
 if "inventory" not in st.session_state:
