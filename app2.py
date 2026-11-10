@@ -75,7 +75,7 @@ t = {
 lang = st.session_state.lang
 theme = st.session_state.theme
 
-# Dynamic CSS Styling Premium (Fix Total Tombol & Input di Dark Mode)
+# Dynamic CSS Styling Premium (Targeting Streamlit Baseweb Components Specifically)
 if theme == "Dark":
     bg_color = "#090d16"
     card_bg = "#111827"
@@ -85,8 +85,9 @@ if theme == "Dark":
     price_bg = "#1f2937"
     input_bg = "#1f2937"
     input_text = "#ffffff"
-    btn_bg = "#2563eb"
+    btn_bg = "#1e3a8a"
     btn_text = "#ffffff"
+    popover_bg = "#111827"
 else:
     bg_color = "#f8fafc"
     card_bg = "#ffffff"
@@ -98,26 +99,63 @@ else:
     input_text = "#0f172a"
     btn_bg = "#eff6ff"
     btn_text = "#1e3a8a"
+    popover_bg = "#ffffff"
 
 st.markdown(f"""
 <style>
+    /* Main App Background */
     .stApp {{ background-color: {bg_color}; }}
     
-    /* Paksa seluruh teks & label agar konsisten */
-    h1, h2, h3, h4, h5, h6, p, span, label, div, .stMarkdown {{
+    /* Global Typography */
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown p {{
         color: {text_color} !important;
     }}
     
-    /* Perbaikan total kontras input & selectbox Streamlit */
-    input, textarea, div[data-baseweb="select"] > div {{
+    /* Streamlit Input Fields (Text Input, Number Input) Fix */
+    div[data-baseweb="input"] > div {{
         background-color: {input_bg} !important;
-        color: {input_text} !important;
-        -webkit-text-fill-color: {input_text} !important;
         border-color: {border_color} !important;
-        border-radius: 8px !important;
+        color: {input_text} !important;
     }}
     
-    /* Styling Tombol Standar Agar Selalu Cantik dan Kontras */
+    input[type="text"], input[type="number"] {{
+        color: {input_text} !important;
+        -webkit-text-fill-color: {input_text} !important;
+        background-color: transparent !important;
+    }}
+
+    /* Streamlit Selectbox / Dropdown Fix */
+    div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        border-color: {border_color} !important;
+        color: {input_text} !important;
+    }}
+    
+    div[data-baseweb="select"] span {{
+        color: {input_text} !important;
+    }}
+
+    /* Dropdown Options Popup Menu Fix */
+    ul[data-baseweb="menu"] {{
+        background-color: {card_bg} !important;
+    }}
+    
+    ul[data-baseweb="menu"] li {{
+        color: {text_color} !important;
+        background-color: {card_bg} !important;
+    }}
+
+    ul[data-baseweb="menu"] li:hover {{
+        background-color: {price_bg} !important;
+    }}
+
+    /* Popover Container Fix */
+    div[data-testid="stPopoverBody"] {{
+        background-color: {popover_bg} !important;
+        border: 1px solid {border_color} !important;
+    }}
+    
+    /* Button Styling */
     .stButton > button {{
         background-color: {btn_bg} !important;
         color: {btn_text} !important;
@@ -130,7 +168,8 @@ st.markdown(f"""
         border-color: #3b82f6 !important;
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }}
-    
+
+    /* Custom Component Cards */
     .card {{
         background-color: {card_bg};
         padding: 22px;
@@ -145,7 +184,7 @@ st.markdown(f"""
         box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.15);
     }}
     .price-tag {{
-        font-size: 19px; font-weight: 800; color: #2563eb;
+        font-size: 19px; font-weight: 800; color: #3b82f6;
         background: {price_bg}; padding: 8px 14px; border-radius: 10px; display: inline-block;
         border: 1px solid {border_color};
     }}
@@ -291,7 +330,6 @@ if is_privileged:
         if img_source == "Upload File Gambar":
             uploaded_file = st.file_uploader("Pilih Foto Produk", type=["png", "jpg", "jpeg"])
             if uploaded_file is not None:
-                # Simpan gambar sebagai data stream / temporary string
                 import base64
                 bytes_data = uploaded_file.getvalue()
                 base64_str = base64.b64encode(bytes_data).decode("utf-8")
