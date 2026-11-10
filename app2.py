@@ -75,8 +75,7 @@ t = {
 lang = st.session_state.lang
 theme = st.session_state.theme
 
-# Dynamic CSS Styling Premium (Targeting Streamlit Baseweb Components Specifically)
-# Dynamic CSS Styling (FIX TOTAL NUMBER INPUT & POPOVER TEXT IN DARK MODE)
+# Dynamic CSS Styling (PERBAIKAN TOTAL POPOVER & INPUT)
 if theme == "Dark":
     bg_color = "#090d16"
     card_bg = "#111827"
@@ -84,8 +83,8 @@ if theme == "Dark":
     subtext_color = "#9ca3af"
     border_color = "#374151"
     price_bg = "#1f2937"
-    input_bg = "#1f2937"       # Background input dibuat gelap!
-    input_text = "#ffffff"     # Teks dibuat putih terang!
+    input_bg = "#1f2937"
+    input_text = "#ffffff"
     btn_bg = "#1e3a8a"
     btn_text = "#ffffff"
     popover_bg = "#111827"
@@ -111,7 +110,7 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
     
-    /* Fix Input Box (Number Input, Text Input, etc.) */
+    /* Fix Input Box (Number Input, Text Input) */
     div[data-baseweb="input"] {{
         background-color: {input_bg} !important;
         border: 1px solid {border_color} !important;
@@ -124,30 +123,33 @@ st.markdown(f"""
         -webkit-text-fill-color: {input_text} !important;
     }}
 
-    /* Fix Stepper Buttons (+ / -) pada Number Input */
+    /* Fix Stepper Buttons (+ / -) */
     div[data-baseweb="input"] button {{
         background-color: transparent !important;
         color: {input_text} !important;
-        border: none !important;
     }}
     div[data-baseweb="input"] button svg {{
         fill: {input_text} !important;
     }}
 
-    /* Fix Streamlit Popover Button Text */
-    div[data-testid="stPopover"] > button {{
+    /* FIX KHUSUS: Tombol Popover "Edit Cepat & Diskon" */
+    div[data-testid="stPopover"] > button,
+    button[aria-haspopup="dialog"] {{
         background-color: {input_bg} !important;
-        color: {input_text} !important;
         border: 1px solid {border_color} !important;
     }}
-    div[data-testid="stPopover"] > button p {{
+    
+    /* Paksa semua elemen teks/icon di dalam tombol popover jadi putih */
+    div[data-testid="stPopover"] > button *,
+    button[aria-haspopup="dialog"] * {{
         color: {input_text} !important;
+        -webkit-text-fill-color: {input_text} !important;
     }}
 
-    /* Fix Popover Body */
-    div[data-testid="stPopoverBody"] {{
-        background-color: {popover_bg} !important;
-        border: 1px solid {border_color} !important;
+    /* Fix Popover Body (Isi dalam Popover saat dibuka) */
+    div[data-testid="stPopoverBody"],
+    div[data-testid="stPopoverBody"] * {{
+        background-color: {popover_bg};
     }}
 
     /* Streamlit Selectbox / Dropdown Fix */
@@ -211,7 +213,6 @@ st.markdown(f"""
     }}
 </style>
 """, unsafe_allow_html=True)
-
 
 # State Management Default Inventory
 if "inventory" not in st.session_state:
