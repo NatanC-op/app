@@ -311,18 +311,31 @@ with st.sidebar.expander("🏪 Ubah Nama Toko (Rename Store)", expanded=False):
         st.rerun()
 
 with st.sidebar.expander("👤 Switch User Account", expanded=False):
-    selected_account = st.selectbox("Select Account", ["James Arthur (Owner)", "Sarah Connor (Manager)", "William Alexander (Staff Gudang)"])
-    if "James" in selected_account:
-        st.session_state.user = {"name": "James Arthur", "role": "OWNER", "email": "james.arthur@gmail.com"}
-    elif "Sarah" in selected_account:
-        st.session_state.user = {"name": "Sarah Connor", "role": "MANAGER", "email": "sarah.connor@gmail.com"}
+    selected_account = st.selectbox(
+        "Select Account", 
+        [
+            "Beatrix (Owner)", 
+            "Natannael (Developer)", 
+            "Walden (Developer)", 
+            "Nathalee (Staff Gudang)"
+        ]
+    )
+    
+    if "Beatrix" in selected_account:
+        st.session_state.user = {"name": "Beatrix", "role": "OWNER", "email": "beatrix@storify.id"}
+    elif "Natannael" in selected_account:
+        st.session_state.user = {"name": "Natannael", "role": "DEVELOPER", "email": "natannael@storify.id"}
+    elif "Walden" in selected_account:
+        st.session_state.user = {"name": "Walden", "role": "DEVELOPER", "email": "walden@storify.id"}
     else:
-        st.session_state.user = {"name": "William Alexander", "role": "STAFF", "email": "williamalexander@gmail.com"}
+        st.session_state.user = {"name": "Nathalee", "role": "STAFF", "email": "nathalee@storify.id"}
+        
     if st.button("Apply Account"):
         st.sidebar.success(f"Logged in as {st.session_state.user['name']}")
         st.rerun()
 
-is_privileged = st.session_state.user["role"] in ["OWNER", "MANAGER"]
+# Memastikan Owner dan Developer punya akses penuh (Privileged Access)
+is_privileged = st.session_state.user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
 
 if is_privileged:
     # FITUR TAMBAH PRODUK DENGAN UPLOAD FOTO SENDIRI
