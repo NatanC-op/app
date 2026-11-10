@@ -20,10 +20,12 @@ if "page" not in st.session_state:
 
 if "selected_rak" not in st.session_state:
     st.session_state.selected_rak = None
-
-if "user" not in st.session_state:
-    st.session_state.user = {"name": "James Arthur", "role": "OWNER", "email": "james.arthur@gmail.com"}
-
+ if "user" not in st.session_state:
+    st.session_state.user = {
+        "name": "Beatrix", 
+        "role": "OWNER", 
+        "email": "beatrix@storify.id"
+    }
 if "logs" not in st.session_state:
     st.session_state.logs = [
         {"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "Storify IoT & E-Paper Cloud system successfully initialized."}
