@@ -1,0 +1,28 @@
+using System;
+
+namespace HelloWorld
+{
+  class Program
+  {
+    static void Main(string[] args)
+    {
+      Random nilai = new Random();
+      int[] hari = new int[7]{1,2,3,4,5,6,7};
+      int totalTabungan = 0;
+      int tabunganDasar = 10000;
+      
+      for(int Hari=1;Hari<=30;Hari++){
+      int setiapTabungan = 0;
+      int indeksAwal = nilai.Next(0,7);
+      int hariyangdipilih = hari[indeksAwal];
+      if( Hari%7 == hariyangdipilih%7 || Hari%7 == 0 ) {
+      setiapTabungan = tabunganDasar + 5000;
+      Console.WriteLine("Hari ke-" + Hari + ", Menabung:" + setiapTabungan); }
+      else {
+      setiapTabungan = tabunganDasar;
+      Console.WriteLine("Hari ke-" + Hari + " Menabung:" + setiapTabungan); }
+      totalTabungan = totalTabungan + setiapTabungan; };
+      Console.WriteLine(totalTabungan);
+    }
+  }
+}
