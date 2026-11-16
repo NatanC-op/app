@@ -10,8 +10,11 @@ st.set_page_config(page_title="Storify - Smart Label & Dynamic Pricing", layout=
 # ==========================================
 # 2. INISIALISASI STATE (DATABASE SEMENTARA)
 # ==========================================
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
 if "app_tier" not in st.session_state:
-    st.session_state.app_tier = None  # None = Halaman Landing Pemilihan Paket
+    st.session_state.app_tier = None  # None = Belum masukkan kode lisensi paket
 
 if "store_name" not in st.session_state:
     st.session_state.store_name = "Storify - Cabang Utama"
@@ -46,7 +49,7 @@ if "inventory" not in st.session_state:
     }
 
 # ==========================================
-# 3. CSS KUSTOM RINGAN (Hanya untuk Badge, Tidak merusak Dark Mode)
+# 3. CSS KUSTOM RINGAN
 # ==========================================
 st.markdown("""
 <style>
@@ -58,87 +61,85 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. HALAMAN LANDING: PEMILIHAN PAKET SAAS
+# 4. HALAMAN 1: LOGIN DEMO
+# ==========================================
+if not st.session_state.logged_in:
+    col_l1, col_l2, col_l3 = st.columns([1, 1.5, 1])
+    with col_l2:
+        st.markdown("<h1 style='text-align: center; margin-top: 40px;'>🔐 Login Storify Cloud</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align: center; color: gray; margin-bottom: 30px;'>Silakan masuk menggunakan akun demo Anda.</p>", unsafe_allow_html=True)
+        
+        with st.container(border=True):
+            email_input = st.text_input("Email Perusahaan", "beatrix@storify.id")
+            pass_input = st.text_input("Password", type="password", value="demopassword123")
+            st.write("")
+            if st.button("Masuk (Login)", type="primary", use_container_width=True):
+                if email_input and pass_input:
+                    st.session_state.logged_in = True
+                    st.session_state.user["email"] = email_input
+                    st.success("Login berhasil! Mengalihkan...")
+                    time.sleep(0.5)
+                    st.rerun()
+                else:
+                    st.error("Mohon isi email dan password terlebih dahulu.")
+    st.stop()
+
+# ==========================================
+# 5. HALAMAN 2: PILIH PAKET & MASUKKAN KODE LISENSI
 # ==========================================
 if st.session_state.app_tier is None:
-    st.markdown("<h1 style='text-align: center; margin-bottom: 5px;'>Pilih Paket Berlangganan Storify 🚀</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 1.1rem; opacity: 0.7; margin-bottom: 40px;'>Solusi manajemen harga dinamis dan stok retail untuk segala skala bisnis.</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; margin-top: 10px;'>Aktivasi Lisensi & Paket Storify 🎟️</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 1.1rem; opacity: 0.7; margin-bottom: 30px;'>Pilih tier paket Anda dan masukkan kode lisensi (bebas, kode demo apa saja valid).</p>", unsafe_allow_html=True)
     
-    # Toggle Siklus Tagihan
-    col_t1, col_t2, col_t3 = st.columns([1, 2, 1])
-    with col_t2:
-        billing_cycle = st.radio("Pilih Siklus Tagihan:", ["Mingguan", "Bulanan", "Tahunan"], horizontal=True, label_visibility="collapsed")
-    st.write("") # Spacer
-
-    # Database Harga Sesuai Permintaan
-    pricing = {
-        "Standard": {"Mingguan": "35.000", "Bulanan": "125.000", "Tahunan": "1.400.000"},
-        "Premium": {"Mingguan": "50.000", "Bulanan": "230.000", "Tahunan": "2.500.000"},
-        "Pro": {"Mingguan": "100.000", "Bulanan": "350.000", "Tahunan": "4.000.000"}
-    }
-    sfx = {"Mingguan": "/ minggu", "Bulanan": "/ bulan", "Tahunan": "/ tahun"}[billing_cycle]
-
-    # Kartu Paket Menggunakan Native Container (Anti Bug UI)
-    c1, c2, c3 = st.columns(3)
+    col_p1, col_p2, col_p3 = st.columns(3)
     
-    with c1:
+    with col_p1:
         with st.container(border=True):
             st.subheader("Standard")
-            st.caption("Cocok untuk toko kecil & UMKM")
-            st.markdown(f"<h1 style='color:#3b82f6;'>Rp {pricing['Standard'][billing_cycle]}<span style='font-size:16px; color:gray;'> {sfx}</span></h1>", unsafe_allow_html=True)
+            st.caption("Rp 125.000 / bulan")
             st.divider()
-            st.markdown("""
-            - ✔️ Manajemen Stok & Rak Dasar
-            - ✔️ Ubah Harga Manual E-Paper
-            - ✔️ Manajemen Multi-User
-            - ❌ *Flash Sale Massal Otomatis*
-            - ❌ *Terminal Log Keamanan*
-            - ❌ *AI Smart Advisor*
-            """)
+            st.markdown("- ✔️ Manajemen Stok Dasar\n- ✔️ Ubah Harga E-Paper\n- ❌ Tanpa AI & Audit Log")
             st.write("")
-            if st.button("Pilih Standard", use_container_width=True, key="p_std"):
-                st.session_state.app_tier = "Standard"; st.rerun()
+            code_std = st.text_input("Kode Lisensi Standard", placeholder="Ketik kode...", key="c_std")
+            if st.button("Aktivasi Standard", use_container_width=True, key="btn_act_std"):
+                st.session_state.app_tier = "Standard"
+                st.success("Lisensi Standard Berhasil Diaktifkan!")
+                time.sleep(0.5)
+                st.rerun()
 
-    with c2:
+    with col_p2:
         with st.container(border=True):
             st.subheader("Premium")
-            st.caption("Untuk minimarket berkembang")
-            st.markdown(f"<h1 style='color:#3b82f6;'>Rp {pricing['Premium'][billing_cycle]}<span style='font-size:16px; color:gray;'> {sfx}</span></h1>", unsafe_allow_html=True)
+            st.caption("Rp 230.000 / bulan")
             st.divider()
-            st.markdown("""
-            - ✔️ **Semua fitur Standard**
-            - ✔️ **Flash Sale Massal Otomatis**
-            - ✔️ **Terminal Audit Log Sistem**
-            - ✔️ Laporan Grafik Interaktif
-            - ❌ *AI Smart Advisor*
-            - ❌ *Prediksi Restock AI*
-            """)
+            st.markdown("- ✔️ Semua fitur Standard\n- ✔️ Flash Sale Massal\n- ✔️ Terminal Audit Log")
             st.write("")
-            if st.button("Pilih Premium", use_container_width=True, key="p_prm"):
-                st.session_state.app_tier = "Premium"; st.rerun()
+            code_prm = st.text_input("Kode Lisensi Premium", placeholder="Ketik kode...", key="c_prm")
+            if st.button("Aktivasi Premium", use_container_width=True, key="btn_act_prm"):
+                st.session_state.app_tier = "Premium"
+                st.success("Lisensi Premium Berhasil Diaktifkan!")
+                time.sleep(0.5)
+                st.rerun()
 
-    with c3:
+    with col_p3:
         with st.container(border=True):
-            st.markdown("<span class='badge-pro'>🌟 PALING POPULER & CANGGIH</span>", unsafe_allow_html=True)
-            st.subheader("Pro (Enterprise)")
-            st.caption("Manajemen skala besar bertenaga AI")
-            st.markdown(f"<h1 style='color:#8b5cf6;'>Rp {pricing['Pro'][billing_cycle]}<span style='font-size:16px; color:gray;'> {sfx}</span></h1>", unsafe_allow_html=True)
+            st.markdown("<span class='badge-pro'>🌟 ENTERPRISE</span>", unsafe_allow_html=True)
+            st.subheader("Pro (AI)")
+            st.caption("Rp 350.000 / bulan")
             st.divider()
-            st.markdown("""
-            - ✔️ **Semua fitur Premium**
-            - ✔️ **AI Smart Advisor (Asisten AI)**
-            - ✔️ **Prediksi Restock Otomatis**
-            - ✔️ Prioritas Sinkronisasi E-Paper
-            - ✔️ Kustomisasi Akses Penuh
-            """)
+            st.markdown("- ✔️ Semua fitur Premium\n- ✔️ AI Smart Advisor\n- ✔️ Prediksi Restock Otomatis")
             st.write("")
-            if st.button("Pilih Pro", type="primary", use_container_width=True, key="p_pro"):
-                st.session_state.app_tier = "Pro"; st.rerun()
+            code_pro = st.text_input("Kode Lisensi Pro", placeholder="Ketik kode...", key="c_pro")
+            if st.button("Aktivasi Pro", type="primary", use_container_width=True, key="btn_act_pro"):
+                st.session_state.app_tier = "Pro"
+                st.success("Lisensi Pro Berhasil Diaktifkan!")
+                time.sleep(0.5)
+                st.rerun()
                 
-    st.stop() # Hentikan rendering aplikasi utama sebelum paket dipilih
+    st.stop() # Hentikan rendering dashboard utama sebelum lisensi diaktifkan
 
 # ==========================================
-# 5. APLIKASI UTAMA STORIFY (DASHBOARD)
+# 6. APLIKASI UTAMA STORIFY (DASHBOARD)
 # ==========================================
 
 # Sistem Auto-Restore Harga Flash Sale
@@ -156,11 +157,10 @@ with col_title:
     st.title(f"🏷️ {st.session_state.store_name}")
     st.caption("Solusi Retail Phygital Modern & Dynamic Pricing Terintegrasi")
 with col_info:
-    tier_color = "normal" if st.session_state.app_tier == "Standard" else ("primary" if st.session_state.app_tier == "Premium" else "error")
-    st.info(f"**Paket Aktif:** STORIFY {st.session_state.app_tier.upper()}")
+    st.info(f"**Lisensi Aktif:** STORIFY {st.session_state.app_tier.upper()}")
 
 # ==========================================
-# 6. SIDEBAR - PANEL KONTROL
+# 7. SIDEBAR - PANEL KONTROL
 # ==========================================
 with st.sidebar:
     st.header("⚙️ Control Panel")
@@ -175,15 +175,19 @@ with st.sidebar:
         elif "Natannael" in acc: st.session_state.user = {"name": "Natannael", "role": "DEVELOPER", "email": "natannael@storify.id"}
         elif "Walden" in acc: st.session_state.user = {"name": "Walden", "role": "DEVELOPER", "email": "walden@storify.id"}
         else: st.session_state.user = {"name": "Nathalee", "role": "STAFF", "email": "nathalee@storify.id"}
-        if st.button("Masuk (Login)", use_container_width=True): st.rerun()
+        if st.button("Terapkan Akun", use_container_width=True): st.rerun()
 
-    with st.expander("🏪 Pengaturan Toko"):
+    with st.expander("🏪 Pengaturan Toko & Lisensi"):
         new_store_name = st.text_input("Nama Toko/Cabang", st.session_state.store_name)
-        if st.button("Ubah Nama", use_container_width=True):
+        if st.button("Ubah Nama Toko", use_container_width=True):
             st.session_state.store_name = new_store_name; st.rerun()
         st.divider()
-        if st.button("🔄 Ganti Paket Fitur", use_container_width=True):
+        if st.button("🔄 Ganti Kode Lisensi / Paket", use_container_width=True):
             st.session_state.app_tier = None; st.rerun()
+        if st.button("🚪 Keluar (Logout)", type="primary", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.app_tier = None
+            st.rerun()
 
     # HAK AKSES SISTEM
     is_privileged = st.session_state.user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
@@ -242,7 +246,7 @@ with st.sidebar:
         st.info("ℹ️ Anda login sebagai Staff. Hak akses dibatasi hanya untuk Restock barang.")
 
 # ==========================================
-# 7. ROUTING HALAMAN DETAIL PRODUK
+# 8. ROUTING HALAMAN DETAIL PRODUK
 # ==========================================
 if st.session_state.page == "detail":
     rak_key = st.session_state.selected_rak
@@ -272,7 +276,7 @@ if st.session_state.page == "detail":
     st.stop()
 
 # ==========================================
-# 8. HALAMAN UTAMA (MONITORING RAK)
+# 9. HALAMAN UTAMA (MONITORING RAK)
 # ==========================================
 
 # Fitur Eksklusif PRO: AI Smart Advisor
@@ -300,7 +304,7 @@ else:
         if sel_cat != "Tampilkan Semua Kategori" and data.get("category", "General") != sel_cat: continue
         if search_q.lower() not in data["item"].lower() and search_q.lower() not in rak_id.lower(): continue
         
-        # Native Container Design (Responsif dan 100% Bebas Bug Warna)
+        # Native Container Design
         with st.container(border=True):
             col_img, col_info, col_stock, col_price, col_action = st.columns([1, 2, 2, 2, 2], vertical_alignment="center")
             
@@ -350,7 +354,7 @@ else:
                             st.rerun()
 
 # ==========================================
-# 9. TERMINAL AUDIT LOG KEAMANAN
+# 10. TERMINAL AUDIT LOG KEAMANAN
 # ==========================================
 if st.session_state.app_tier in ["Premium", "Pro"]:
     st.divider()
