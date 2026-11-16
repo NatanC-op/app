@@ -1,1 +1,440 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Storify — Pembelian Lisensi SaaS & Smart Label E-Paper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
 
+  <!-- Navbar -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">🏷️</div>
+        <span class="font-extrabold text-xl tracking-tight text-slate-900">Storify<span class="text-blue-600">.id</span></span>
+      </div>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#paket" class="hover:text-blue-600 transition">Paket Lisensi</a>
+        <a href="#hardware" class="hover:text-blue-600 transition">Smart Label BLE</a>
+        <a href="#cara-aktivasi" class="hover:text-blue-600 transition">Cara Aktivasi</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleCart()" class="relative inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold transition">
+          🛒 Keranjang
+          <span id="cart-badge" class="px-2 py-0.5 text-xs rounded-full bg-blue-600 text-white">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-b from-blue-50/80 via-white to-slate-50 pt-14 pb-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4">
+        🎟️ Portal Resmi Pembelian Lisensi Storify
+      </span>
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+        Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify SaaS</span>
+      </h1>
+      <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-7">
+        Pilih paket berlangganan <b>Standard</b>, <b>Premium</b>, atau <b>Pro</b>. Setelah pembayaran selesai, Anda akan langsung memperoleh <b>Kode Lisensi</b> untuk dimasukkan ke aplikasi Storify.
+      </p>
+    </div>
+  </section>
+
+  <!-- Paket Lisensi -->
+  <section id="paket" class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-10">
+      <div class="inline-flex p-1.5 rounded-2xl bg-slate-200/80 border border-slate-300/60">
+        <button onclick="setCycle('Mingguan')" id="btn-Mingguan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition bg-white text-blue-600 shadow-sm">
+          Mingguan
+        </button>
+        <button onclick="setCycle('Bulanan')" id="btn-Bulanan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
+          Bulanan
+        </button>
+        <button onclick="setCycle('Tahunan')" id="btn-Tahunan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
+          Tahunan <span class="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Hemat</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="plans-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch"></div>
+  </section>
+
+  <!-- Hardware Add-on -->
+  <section id="hardware" class="py-14 mt-10 bg-white border-y border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="mb-8">
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Hardware Opsional</span>
+        <h2 class="text-2xl font-extrabold text-slate-900 mt-1">Tambahan Perangkat Smart Label E-Ink (BLE)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+          <div>
+            <span class="px-3 py-1 rounded-lg bg-blue-100 text-blue-700 text-xs font-bold">Starter Kit (10 Unit)</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-3">Paket 10x Smart Label 2.13"</h3>
+            <p class="text-sm text-slate-600 mt-2">Layar E-Ink hemat daya + chip Bluetooth Low Energy (BLE) + jepit rak universal.</p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
+            <span class="text-lg font-extrabold text-slate-900">Rp 850.000</span>
+            <button onclick="addToCart('hw-10', 'Paket 10x Smart Label 2.13&quot;', 850000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+          <div>
+            <span class="px-3 py-1 rounded-lg bg-violet-100 text-violet-700 text-xs font-bold">Minimarket Pack (25 Unit)</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-3">Paket 25x Smart Label 2.9"</h3>
+            <p class="text-sm text-slate-600 mt-2">Layar lebih besar untuk promo dinamis & QR Code produk. Termasuk rel rak.</p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
+            <span class="text-lg font-extrabold text-slate-900">Rp 1.950.000</span>
+            <button onclick="addToCart('hw-25', 'Paket 25x Smart Label 2.9&quot;', 1950000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
+          <div>
+            <span class="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold">Satuan (1 Unit)</span>
+            <h3 class="text-lg font-extrabold text-slate-900 mt-3">Add-on Smart Label BLE 2.13"</h3>
+            <p class="text-sm text-slate-600 mt-2">Unit label elektronik tambahan dengan baterai tahan hingga 2 tahun.</p>
+          </div>
+          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
+            <span class="text-lg font-extrabold text-slate-900">Rp 90.000</span>
+            <button onclick="addToCart('hw-1', 'Add-on Smart Label BLE 2.13&quot;', 90000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Panduan Singkat -->
+  <section id="cara-aktivasi" class="py-14 max-w-5xl mx-auto px-4 sm:px-6 text-center">
+    <h2 class="text-2xl font-extrabold text-slate-900 mb-8">3 Langkah Aktivasi Aplikasi Storify</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+      <div class="p-5 rounded-2xl bg-white border border-slate-200">
+        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">1</span>
+        <h3 class="font-bold text-slate-900">Beli Paket di Website</h3>
+        <p class="text-sm text-slate-600 mt-1">Pilih paket Standard, Premium, atau Pro lalu selesaikan checkout.</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-white border border-slate-200">
+        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">2</span>
+        <h3 class="font-bold text-slate-900">Salin Kode Lisensi</h3>
+        <p class="text-sm text-slate-600 mt-1">Salin kode unik (contoh: <code class="text-blue-600 font-bold">STR-PRO-8492</code>) yang muncul di Invoice.</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-white border border-slate-200">
+        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">3</span>
+        <h3 class="font-bold text-slate-900">Input di Aplikasi</h3>
+        <p class="text-sm text-slate-600 mt-1">Login ke aplikasi Storify dan tempelkan kode tersebut untuk membuka fitur.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart Drawer -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
+    <div onclick="toggleCart()" class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col justify-between p-6 overflow-y-auto">
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+          <h3 class="text-lg font-extrabold text-slate-900">🛒 Keranjang Pesanan</h3>
+          <button onclick="toggleCart()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 font-bold">✕</button>
+        </div>
+        <div id="cart-items" class="py-4 space-y-3"></div>
+      </div>
+
+      <div id="checkout-section" class="pt-4 border-t border-slate-200 hidden">
+        <div class="space-y-1.5 text-sm mb-4">
+          <div class="flex justify-between text-slate-600">
+            <span>Subtotal</span>
+            <span id="cart-subtotal" class="font-semibold">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-slate-600">
+            <span>PPN (11%)</span>
+            <span id="cart-tax" class="font-semibold">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+            <span>Total Pembayaran</span>
+            <span id="cart-total" class="text-blue-600">Rp 0</span>
+          </div>
+        </div>
+
+        <form onsubmit="processCheckout(event)" class="space-y-3">
+          <input type="text" id="cust-store" required placeholder="Nama Toko / Usaha UMKM" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
+          <input type="text" id="cust-owner" required placeholder="Nama Pemilik (Contoh: Beatrix)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
+          <input type="email" id="cust-email" required placeholder="Email Aktivasi" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
+          <select id="cust-payment" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+            <option value="QRIS Instan">QRIS Instan (Otomatis Terbit Kode)</option>
+            <option value="Virtual Account BCA / Mandiri">Transfer Virtual Account (BCA / Mandiri)</option>
+          </select>
+          <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/20 transition">
+            Bayar & Terbitkan Kode Lisensi
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Invoice & Kode Lisensi -->
+  <div id="invoice-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      <div class="text-center mb-4">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto mb-2">✅</div>
+        <h3 class="text-xl font-extrabold text-slate-900">Pembayaran Berhasil!</h3>
+        <p class="text-sm text-slate-600 mt-1">Gunakan kode di bawah ini untuk mengaktifkan aplikasi Storify Anda.</p>
+      </div>
+
+      <!-- Kotak Kode Lisensi -->
+      <div class="bg-blue-50 border-2 border-dashed border-blue-400 rounded-2xl p-4 text-center mb-4">
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-700 block mb-1">Kode Lisensi Aplikasi Anda</span>
+        <div id="generated-license-code" class="text-2xl sm:text-3xl font-mono font-extrabold text-slate-900 tracking-wider select-all">
+          STR-PRO-0000
+        </div>
+        <button onclick="copyLicenseCode()" id="copy-btn" class="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition">
+          📋 Salin Kode Lisensi
+        </button>
+      </div>
+
+      <div id="invoice-details" class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm space-y-1.5 mb-5"></div>
+
+      <button onclick="closeInvoice()" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition">
+        Selesai & Tutup
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentCycle = 'Bulanan';
+    let cart = [];
+    let currentLicenseKey = '';
+
+    const plansData = [
+      {
+        id: 'Standard',
+        codePrefix: 'STD',
+        name: 'Standard',
+        desc: 'Cocok untuk toko kecil & UMKM pemula',
+        popular: false,
+        prices: { Mingguan: 35000, Bulanan: 125000, Tahunan: 1400000 },
+        features: [
+          { text: 'Manajemen Stok & Rak Dasar', ok: true },
+          { text: 'Ubah Harga Manual E-Paper', ok: true },
+          { text: 'Manajemen Multi-User', ok: true },
+          { text: 'Flash Sale Massal Otomatis', ok: false },
+          { text: 'Terminal Audit Log Keamanan', ok: false },
+          { text: 'AI Smart Advisor', ok: false },
+        ]
+      },
+      {
+        id: 'Premium',
+        codePrefix: 'PRM',
+        name: 'Premium',
+        desc: 'Untuk minimarket & toko berkembang',
+        popular: false,
+        prices: { Mingguan: 50000, Bulanan: 230000, Tahunan: 2500000 },
+        features: [
+          { text: 'Semua fitur Standard', ok: true, bold: true },
+          { text: 'Flash Sale Massal Otomatis', ok: true, bold: true },
+          { text: 'Terminal Audit Log Sistem', ok: true, bold: true },
+          { text: 'Laporan Grafik Interaktif', ok: true },
+          { text: 'AI Smart Advisor', ok: false },
+          { text: 'Prediksi Restock AI', ok: false },
+        ]
+      },
+      {
+        id: 'Pro',
+        codePrefix: 'PRO',
+        name: 'Pro (Enterprise)',
+        desc: 'Manajemen skala besar bertenaga AI',
+        popular: true,
+        prices: { Mingguan: 100000, Bulanan: 350000, Tahunan: 4000000 },
+        features: [
+          { text: 'Semua fitur Premium', ok: true, bold: true },
+          { text: 'AI Smart Advisor (Asisten AI)', ok: true, bold: true },
+          { text: 'Prediksi Restock Otomatis', ok: true, bold: true },
+          { text: 'Prioritas Sinkronisasi E-Paper', ok: true },
+          { text: 'Kustomisasi Akses Penuh', ok: true },
+        ]
+      }
+    ];
+
+    const suffixMap = { Mingguan: '/ minggu', Bulanan: '/ bulan', Tahunan: '/ tahun' };
+
+    function formatRp(num) {
+      return 'Rp ' + num.toLocaleString('id-ID');
+    }
+
+    function setCycle(cycle) {
+      currentCycle = cycle;
+      document.querySelectorAll('.cycle-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+        btn.classList.add('text-slate-600');
+      });
+      const activeBtn = document.getElementById('btn-' + cycle);
+      activeBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+      activeBtn.classList.remove('text-slate-600');
+      renderPlans();
+    }
+
+    function renderPlans() {
+      const grid = document.getElementById('plans-grid');
+      grid.innerHTML = plansData.map(plan => {
+        const price = plan.prices[currentCycle];
+        const borderClass = plan.popular
+          ? 'border-2 border-violet-600 shadow-xl shadow-violet-600/10 relative'
+          : 'border border-slate-200 shadow-sm';
+        const btnClass = plan.popular
+          ? 'bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-95 text-white shadow-md'
+          : 'bg-slate-900 hover:bg-blue-600 text-white';
+
+        return `
+          <div class="bg-white rounded-3xl p-7 flex flex-col justify-between ${borderClass}">
+            ${plan.popular ? `<span class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-blue-600 to-violet-600 text-white text-xs font-extrabold tracking-wide shadow">🌟 PALING POPULER & CANGGIH</span>` : ''}
+            <div>
+              <h3 class="text-xl font-extrabold text-slate-900">${plan.name}</h3>
+              <p class="text-sm text-slate-500 mt-1">${plan.desc}</p>
+              <div class="mt-5 mb-6">
+                <span class="text-3xl font-extrabold ${plan.popular ? 'text-violet-600' : 'text-blue-600'}">${formatRp(price)}</span>
+                <span class="text-sm text-slate-500 font-medium">${suffixMap[currentCycle]}</span>
+              </div>
+              <hr class="border-slate-200 mb-5" />
+              <ul class="space-y-3 text-sm">
+                ${plan.features.map(f => `
+                  <li class="flex items-start gap-2.5 ${f.ok ? 'text-slate-700' : 'text-slate-400 italic'}">
+                    <span>${f.ok ? '✔️' : '❌'}</span>
+                    <span class="${f.bold ? 'font-bold text-slate-900' : ''}">${f.text}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+            <button onclick="selectPlan('${plan.id}', '${plan.codePrefix}', '${plan.name} (${currentCycle})', ${price})" class="mt-8 w-full py-3.5 rounded-xl font-bold text-sm transition ${btnClass}">
+              Beli Paket ${plan.id}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectPlan(tierId, codePrefix, label, price) {
+      cart = cart.filter(item => item.type !== 'SaaS');
+      cart.unshift({
+        id: 'saas-' + tierId,
+        tierId: tierId,
+        codePrefix: codePrefix,
+        name: 'Lisensi Storify ' + label,
+        price: price,
+        qty: 1,
+        type: 'SaaS'
+      });
+      updateCartUI();
+      toggleCart(true);
+    }
+
+    function addToCart(id, name, price, type) {
+      const existing = cart.find(i => i.id === id);
+      if (existing) existing.qty += 1;
+      else cart.push({ id, name, price, qty: 1, type });
+      updateCartUI();
+      toggleCart(true);
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const badge = document.getElementById('cart-badge');
+      const itemsContainer = document.getElementById('cart-items');
+      const checkoutSec = document.getElementById('checkout-section');
+
+      const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+      badge.textContent = totalQty;
+
+      if (cart.length === 0) {
+        itemsContainer.innerHTML = `<p class="text-sm text-slate-500 text-center py-10">Keranjang kosong. Silakan pilih paket Standard, Premium, atau Pro.</p>`;
+        checkoutSec.classList.add('hidden');
+        return;
+      }
+
+      checkoutSec.classList.remove('hidden');
+      itemsContainer.innerHTML = cart.map((item, idx) => `
+        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+          <div>
+            <span class="text-[11px] font-bold uppercase text-blue-600">${item.type}</span>
+            <h4 class="text-sm font-bold text-slate-900">${item.name}</h4>
+            <p class="text-xs text-slate-600">${formatRp(item.price)} x ${item.qty}</p>
+          </div>
+          <button onclick="removeFromCart(${idx})" class="text-xs font-bold text-red-500 hover:underline">Hapus</button>
+        </div>
+      `).join('');
+
+      const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const tax = Math.round(subtotal * 0.11);
+      const total = subtotal + tax;
+
+      document.getElementById('cart-subtotal').textContent = formatRp(subtotal);
+      document.getElementById('cart-tax').textContent = formatRp(tax);
+      document.getElementById('cart-total').textContent = formatRp(total);
+    }
+
+    function toggleCart(forceOpen = null) {
+      const drawer = document.getElementById('cart-drawer');
+      if (forceOpen === true) drawer.classList.remove('hidden');
+      else if (forceOpen === false) drawer.classList.add('hidden');
+      else drawer.classList.toggle('hidden');
+    }
+
+    function processCheckout(e) {
+      e.preventDefault();
+      const store = document.getElementById('cust-store').value;
+      const owner = document.getElementById('cust-owner').value;
+      const email = document.getElementById('cust-email').value;
+      const payment = document.getElementById('cust-payment').value;
+      const totalText = document.getElementById('cart-total').textContent;
+
+      const saasItem = cart.find(i => i.type === 'SaaS');
+      const prefix = saasItem ? saasItem.codePrefix : 'STD';
+      const tierName = saasItem ? saasItem.tierId : 'Standard';
+      const randomDigits = Math.floor(1000 + Math.random() * 9000);
+      
+      currentLicenseKey = `STR-${prefix}-${randomDigits}`;
+      document.getElementById('generated-license-code').textContent = currentLicenseKey;
+      document.getElementById('copy-btn').textContent = '📋 Salin Kode Lisensi';
+
+      document.getElementById('invoice-details').innerHTML = `
+        <div class="flex justify-between"><span class="text-slate-500">No. Invoice:</span><span class="font-bold">INV-${Math.floor(100000 + Math.random() * 900000)}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Nama Toko:</span><span class="font-bold">${store}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Pemilik:</span><span class="font-bold">${owner} (${email})</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Paket Lisensi:</span><span class="font-bold text-blue-600">STORIFY ${tierName.toUpperCase()}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Metode Bayar:</span><span class="font-bold">${payment}</span></div>
+        <div class="flex justify-between pt-2 border-t border-slate-200"><span class="text-slate-700 font-bold">Total Lunas:</span><span class="font-extrabold text-emerald-600">${totalText}</span></div>
+      `;
+
+      cart = [];
+      updateCartUI();
+      toggleCart(false);
+      document.getElementById('invoice-modal').classList.remove('hidden');
+    }
+
+    function copyLicenseCode() {
+      navigator.clipboard.writeText(currentLicenseKey);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✅ Tersalin ke Clipboard!';
+    }
+
+    function closeInvoice() {
+      document.getElementById('invoice-modal').classList.add('hidden');
+    }
+
+    renderPlans();
+    updateCartUI();
+  </script>
+</body>
+</html>
