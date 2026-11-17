@@ -19,6 +19,7 @@ soon_exp = (date.today() + timedelta(days=5)).strftime("%Y-%m-%d")
 safe_exp = (date.today() + timedelta(days=90)).strftime("%Y-%m-%d")
 
 defaults = {
+    "dark_mode": True,
     "logged_in": False,
     "app_tier": None,
     "active_branch": "Cabang Utama",
@@ -78,141 +79,216 @@ def add_log(log_type, msg):
 current_user = st.session_state.accounts[st.session_state.current_user_idx]
 is_privileged = current_user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
 tier = st.session_state.app_tier
+is_dark = st.session_state.dark_mode
 
 # ==========================================
-# GLOBAL THEME & FONT (PLUS JAKARTA SANS + WEBSITE STYLE)
+# GLOBAL THEME & FONT (LIGHT + DARK MODE)
 # ==========================================
-st.markdown("""
+if is_dark:
+    t = {
+        "bg": "#090d16",
+        "sidebar_bg": "#0f172a",
+        "card_bg": "#111827",
+        "card_border": "#1e293b",
+        "card_shadow": "0 4px 20px rgba(0, 0, 0, 0.45)",
+        "text_main": "#f8fafc",
+        "text_muted": "#94a3b8",
+        "input_bg": "#1e293b",
+        "input_border": "#334155",
+        "tab_bg": "#1e293b",
+        "tab_text": "#94a3b8",
+        "tab_active_bg": "#0f172a",
+        "tab_active_text": "#60a5fa",
+        "sec_btn_bg": "#1e293b",
+        "sec_btn_border": "#334155",
+        "pill_bg": "rgba(37, 99, 235, 0.22)",
+        "pill_text": "#93c5fd",
+        "price_color": "#60a5fa",
+        "pro_price_color": "#a78bfa",
+        "badge_ok_bg": "rgba(16, 185, 129, 0.18)",
+        "badge_ok_txt": "#34d399",
+        "badge_low_bg": "rgba(239, 68, 68, 0.18)",
+        "badge_low_txt": "#f87171",
+        "badge_exp_bg": "rgba(245, 158, 11, 0.20)",
+        "badge_exp_txt": "#fbbf24",
+    }
+else:
+    t = {
+        "bg": "#f8fafc",
+        "sidebar_bg": "#ffffff",
+        "card_bg": "#ffffff",
+        "card_border": "#e2e8f0",
+        "card_shadow": "0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02)",
+        "text_main": "#0f172a",
+        "text_muted": "#64748b",
+        "input_bg": "#ffffff",
+        "input_border": "#cbd5e1",
+        "tab_bg": "#e2e8f0",
+        "tab_text": "#475569",
+        "tab_active_bg": "#ffffff",
+        "tab_active_text": "#2563eb",
+        "sec_btn_bg": "#0f172a",
+        "sec_btn_border": "#0f172a",
+        "pill_bg": "#dbeafe",
+        "pill_text": "#1d4ed8",
+        "price_color": "#2563eb",
+        "pro_price_color": "#7c3aed",
+        "badge_ok_bg": "#dcfce7",
+        "badge_ok_txt": "#15803d",
+        "badge_low_bg": "#fee2e2",
+        "badge_low_txt": "#b91c1c",
+        "badge_exp_bg": "#fef3c7",
+        "badge_exp_txt": "#b45309",
+    }
+
+st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
     /* Global Font & Typography */
-    html, body, [class*="css"], .stApp, button, input, select, textarea, .stMarkdown, .stText {
+    html, body, [class*="css"], .stApp, button, input, select, textarea, .stMarkdown, .stText, label, p, span, div {{
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    }
+    }}
 
-    h1, h2, h3, h4 {
+    h1, h2, h3, h4 {{
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-weight: 800 !important;
         letter-spacing: -0.025em !important;
-    }
+        color: {t['text_main']} !important;
+    }}
 
-    /* Latar Belakang & Sidebar Nuansa Slate Website */
-    .stApp {
-        background-color: #f8fafc;
-        color: #0f172a;
-    }
+    /* Latar Belakang & Header */
+    .stApp {{
+        background-color: {t['bg']} !important;
+        color: {t['text_main']} !important;
+    }}
+    header[data-testid="stHeader"] {{
+        background-color: transparent !important;
+    }}
 
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-        border-right: 1px solid #e2e8f0;
-    }
+    [data-testid="stSidebar"] {{
+        background-color: {t['sidebar_bg']} !important;
+        border-right: 1px solid {t['card_border']} !important;
+    }}
+    [data-testid="stSidebar"] * {{
+        color: {t['text_main']};
+    }}
 
-    /* Card Containers (border=True) ala Website */
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+    /* Card Containers (border=True) */
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: {t['card_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
         border-radius: 18px !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+        box-shadow: {t['card_shadow']} !important;
         transition: all 0.2s ease;
-    }
+    }}
 
     /* Metric Cards */
-    [data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 16px 20px;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-    }
-    [data-testid="stMetricLabel"] {
+    [data-testid="stMetric"] {{
+        background-color: {t['card_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 16px !important;
+        padding: 16px 20px !important;
+        box-shadow: {t['card_shadow']} !important;
+    }}
+    [data-testid="stMetricLabel"] {{
         font-weight: 600 !important;
-        color: #64748b !important;
+        color: {t['text_muted']} !important;
         font-size: 13px !important;
-    }
-    [data-testid="stMetricValue"] {
+    }}
+    [data-testid="stMetricValue"] {{
         font-weight: 800 !important;
-        color: #0f172a !important;
+        color: {t['text_main']} !important;
         letter-spacing: -0.02em !important;
-    }
+    }}
 
-    /* Tombol Primary (Blue-600) & Secondary (Slate-900 / Outline) */
-    .stButton > button[kind="primary"] {
+    /* Tombol Primary & Secondary */
+    .stButton > button[kind="primary"] {{
         background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
         padding: 0.55rem 1.1rem !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22) !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.30) !important;
         transition: all 0.18s ease !important;
-    }
-    .stButton > button[kind="primary"]:hover {
+    }}
+    .stButton > button[kind="primary"]:hover {{
         background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
         transform: translateY(-1px);
-    }
+    }}
 
-    .stButton > button[kind="secondary"], .stDownloadButton > button {
-        background-color: #0f172a !important;
+    .stButton > button[kind="secondary"], .stDownloadButton > button {{
+        background-color: {t['sec_btn_bg']} !important;
         color: #ffffff !important;
-        border: none !important;
+        border: 1px solid {t['sec_btn_border']} !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
         transition: all 0.18s ease !important;
-    }
-    .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {
+    }}
+    .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {{
         background-color: #2563eb !important;
-        color: #ffffff !important;
-    }
-
-    /* Input Fields & Selectbox */
-    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div, .stDateInput input {
-        border-radius: 12px !important;
-        border-color: #cbd5e1 !important;
-        background-color: #ffffff !important;
-        font-weight: 500 !important;
-    }
-    .stTextInput input:focus, .stNumberInput input:focus {
         border-color: #2563eb !important;
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
-    }
+        color: #ffffff !important;
+    }}
+
+    /* Input Fields, Selectbox & Popover */
+    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div, .stDateInput input {{
+        border-radius: 12px !important;
+        border-color: {t['input_border']} !important;
+        background-color: {t['input_bg']} !important;
+        color: {t['text_main']} !important;
+        font-weight: 500 !important;
+    }}
+    .stTextInput label, .stNumberInput label, .stSelectbox label, .stDateInput label, .stRadio label, .stCheckbox label {{
+        color: {t['text_main']} !important;
+    }}
+    .stTextInput input:focus, .stNumberInput input:focus {{
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+    }}
 
     /* Tabs Modern ala Pill Switcher */
-    .stTabs [data-baseweb="tab-list"] {
-        background-color: #e2e8f0;
-        padding: 5px;
-        border-radius: 14px;
-        gap: 6px;
-    }
-    .stTabs [data-baseweb="tab"] {
+    .stTabs [data-baseweb="tab-list"] {{
+        background-color: {t['tab_bg']} !important;
+        padding: 5px !important;
+        border-radius: 14px !important;
+        gap: 6px !important;
+    }}
+    .stTabs [data-baseweb="tab"] {{
         border-radius: 10px !important;
         font-weight: 700 !important;
         font-size: 14px !important;
-        color: #475569 !important;
+        color: {t['tab_text']} !important;
         padding: 8px 16px !important;
         border: none !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #ffffff !important;
-        color: #2563eb !important;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
-    }
-    .stTabs [data-baseweb="tab-highlight"] {
+    }}
+    .stTabs [aria-selected="true"] {{
+        background-color: {t['tab_active_bg']} !important;
+        color: {t['tab_active_text']} !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+    }}
+    .stTabs [data-baseweb="tab-highlight"] {{
         display: none !important;
-    }
+    }}
 
-    /* Expanders */
-    [data-testid="stExpander"] {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+    /* Expanders & Chat */
+    [data-testid="stExpander"] {{
+        background-color: {t['card_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
         border-radius: 14px !important;
-    }
+    }}
+    [data-testid="stChatMessage"] {{
+        background-color: {t['input_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 14px !important;
+    }}
 
-    /* Badges & Harga (Identik dengan Website) */
-    .hero-pill {
+    /* Badges & Harga */
+    .hero-pill {{
         display: inline-block;
-        background-color: #dbeafe;
-        color: #1d4ed8;
+        background-color: {t['pill_bg']};
+        color: {t['pill_text']};
         padding: 6px 14px;
         border-radius: 9999px;
         font-size: 12px;
@@ -220,57 +296,67 @@ st.markdown("""
         letter-spacing: 0.05em;
         text-transform: uppercase;
         margin-bottom: 10px;
-    }
-    .gradient-title {
-        background: linear-gradient(90deg, #2563eb, #7c3aed);
+    }}
+    .gradient-title {{
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
-    }
-    .badge-pro {
+    }}
+    .badge-pro {{
         background: linear-gradient(90deg, #2563eb, #7c3aed);
-        color: white; padding: 4px 12px; border-radius: 9999px;
+        color: white !important; padding: 4px 12px; border-radius: 9999px;
         font-size: 11px; font-weight: 800; letter-spacing: 0.03em; display: inline-block;
-    }
-    .badge-prm {
-        background: #2563eb; color: white; padding: 4px 12px;
+    }}
+    .badge-prm {{
+        background: #2563eb; color: white !important; padding: 4px 12px;
         border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
-    }
-    .badge-std {
-        background: #475569; color: white; padding: 4px 12px;
+    }}
+    .badge-std {{
+        background: #475569; color: white !important; padding: 4px 12px;
         border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
-    }
-    .badge-ok { background: #dcfce7; color: #15803d; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
-    .badge-low { background: #fee2e2; color: #b91c1c; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
-    .badge-exp { background: #fef3c7; color: #b45309; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
-    .price-text { color: #2563eb; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
-    .old-price { text-decoration: line-through; color: #94a3b8; font-size: 13px; font-weight: 600; margin-right: 6px; }
+    }}
+    .badge-ok {{ background: {t['badge_ok_bg']}; color: {t['badge_ok_txt']} !important; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }}
+    .badge-low {{ background: {t['badge_low_bg']}; color: {t['badge_low_txt']} !important; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }}
+    .badge-exp {{ background: {t['badge_exp_bg']}; color: {t['badge_exp_txt']} !important; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }}
+    .price-text {{ color: {t['price_color']} !important; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }}
+    .old-price {{ text-decoration: line-through; color: {t['text_muted']} !important; font-size: 13px; font-weight: 600; margin-right: 6px; }}
 
     /* Simulasi Layar E-Paper Fisik */
-    .epaper-light {
-        background-color: #f4f4f0; color: #111111; border: 6px solid #1e293b;
+    .epaper-light {{
+        background-color: #f4f4f0; color: #111111 !important; border: 6px solid #334155;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
-    }
-    .epaper-light * { font-family: 'Courier New', monospace !important; }
-    .epaper-dark {
-        background-color: #18181b; color: #f4f4f5; border: 6px solid #ef4444;
+    }}
+    .epaper-light * {{ font-family: 'Courier New', monospace !important; color: #111111 !important; }}
+    .epaper-dark {{
+        background-color: #18181b; color: #f4f4f5 !important; border: 6px solid #ef4444;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
-    }
-    .epaper-dark * { font-family: 'Courier New', monospace !important; }
+    }}
+    .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
 </style>
 """, unsafe_allow_html=True)
+
+def render_theme_toggle(key_suffix="top"):
+    label = "☀️ Light Mode" if st.session_state.dark_mode else "🌙 Dark Mode"
+    if st.button(label, key=f"theme_btn_{key_suffix}", use_container_width=True):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
 
 # ==========================================
 # 2. HALAMAN LOGIN DEMO
 # ==========================================
 if not st.session_state.logged_in:
+    _, _, col_t = st.columns([5, 1, 1.1])
+    with col_t:
+        render_theme_toggle("login")
+
     _, col_l, _ = st.columns([1, 1.25, 1])
     with col_l:
-        st.markdown("""
-        <div style='text-align: center; margin-top: 32px; margin-bottom: 18px;'>
+        st.markdown(f"""
+        <div style='text-align: center; margin-top: 16px; margin-bottom: 18px;'>
             <span class='hero-pill'>🏷️ Smart Label & Retail OS</span>
             <h1 style='font-size: 38px; margin: 4px 0;'>Masuk ke <span class='gradient-title'>Storify</span></h1>
-            <p style='color: #475569; font-size: 15px;'>Sistem Manajemen Smart Label E-Paper & Operasional Toko</p>
+            <p style='color: {t['text_muted']}; font-size: 15px;'>Sistem Manajemen Smart Label E-Paper & Operasional Toko</p>
         </div>
         """, unsafe_allow_html=True)
         with st.container(border=True):
@@ -290,11 +376,15 @@ if not st.session_state.logged_in:
 # 3. HALAMAN AKTIVASI LISENSI PAKET
 # ==========================================
 if st.session_state.app_tier is None:
-    st.markdown("""
-    <div style='text-align: center; padding-top: 10px; margin-bottom: 24px;'>
+    _, _, col_t2 = st.columns([5, 1, 1.1])
+    with col_t2:
+        render_theme_toggle("license")
+
+    st.markdown(f"""
+    <div style='text-align: center; padding-top: 4px; margin-bottom: 24px;'>
         <span class='hero-pill'>🎟️ Portal Aktivasi Lisensi</span>
         <h1 style='font-size: 36px; margin: 4px 0;'>Aktivasi Paket <span class='gradient-title'>Storify</span></h1>
-        <p style='color: #475569; font-size: 15px; max-width: 650px; margin: 0 auto;'>
+        <p style='color: {t['text_muted']}; font-size: 15px; max-width: 650px; margin: 0 auto;'>
             Semua paket bebas batasan jumlah rak & akun tim. Masukkan kode lisensi dari invoice pembelian Anda (Demo: ketik kode bebas).
         </p>
     </div>
@@ -344,13 +434,13 @@ if st.session_state.app_tier is None:
                 else:
                     st.markdown("<span class='badge-std'>DASAR</span>", unsafe_allow_html=True)
 
-                price_color = "#7c3aed" if name == "Pro" else "#2563eb"
+                price_color = t["pro_price_color"] if name == "Pro" else t["price_color"]
                 st.markdown(f"""
-                <h3 style='margin: 12px 0 2px 0; font-size: 22px; color: #0f172a;'>{name}</h3>
-                <p style='color: #64748b; font-size: 13px; margin-bottom: 14px;'>{sub}</p>
+                <h3 style='margin: 12px 0 2px 0; font-size: 22px; color: {t['text_main']};'>{name}</h3>
+                <p style='color: {t['text_muted']}; font-size: 13px; margin-bottom: 14px;'>{sub}</p>
                 <div style='margin-bottom: 8px;'>
                     <span style='font-size: 28px; font-weight: 800; color: {price_color};'>{price_lbl}</span>
-                    <span style='font-size: 13px; color: #64748b; font-weight: 600;'> {cycle_lbl}</span>
+                    <span style='font-size: 13px; color: {t['text_muted']}; font-weight: 600;'> {cycle_lbl}</span>
                 </div>
                 """, unsafe_allow_html=True)
                 st.divider()
@@ -412,6 +502,7 @@ with st.sidebar:
     with st.container(border=True):
         st.markdown(f"**👤 {current_user['name']}** (`{current_user['role']}`)")
         st.caption(f"📍 Lokasi: **{branch}**")
+        render_theme_toggle("sidebar")
 
     # Fitur Khusus PRO: Multi-Cabang & Transfer Stok
     if tier == "Pro":
