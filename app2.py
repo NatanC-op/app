@@ -526,6 +526,12 @@ st.markdown(f"""
     .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
 </style>
 """, unsafe_allow_html=True)
+def render_theme_toggle(key_suffix="top"):
+    label = "☀️ Light Mode" if st.session_state.dark_mode else "🌙 Dark Mode"
+    if st.button(label, key=f"theme_btn_{key_suffix}", use_container_width=True):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+
 # ==========================================
 # 2. HALAMAN LOGIN DEMO
 # ==========================================
