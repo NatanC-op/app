@@ -560,19 +560,20 @@ active_notifs = [req for req in st.session_state.restock_requests if req["status
 history_reqs = [req for req in st.session_state.restock_requests if req["status"] == "Sudah" and req.get("branch", "Cabang Utama") == branch]
 
 # HEADER UTAMA
-c_head1, c_head2 = st.columns([3, 1.3], vertical_alignment="center")
+c_head1, c_head_theme, c_head_sync = st.columns([2.6, 0.85, 1.25], vertical_alignment="center")
 with c_head1:
     st.markdown(f"<h1 style='margin-bottom: 2px;'>🏷️ <span class='gradient-title'>Storify</span> — {branch}</h1>", unsafe_allow_html=True)
     tier_tag = "⭐ PRIORITAS PRO" if tier == "Pro" else f"PAKET {tier.upper()}"
     st.caption(f"Lisensi: **{tier_tag}** (Unlimited Rak & Akun) | Login: **{current_user['name']}** (`{current_user['role']}`) | 📅 {datetime.now().strftime('%d %b %Y')}")
-with c_head2:
+with c_head_theme:
+    render_theme_toggle("main_header")
+with c_head_sync:
     sync_label = "⚡ Priority Sync E-Paper" if tier == "Pro" else "📡 Sync Semua E-Paper"
     if st.button(sync_label, type="primary", use_container_width=True):
         with st.spinner("Mengirim pembaruan ke Smart Label..."):
             time.sleep(0.15 if tier == "Pro" else 0.5)
         add_log("SUCCESS", f"[{current_user['name']}] Sinkronisasi {len(current_inv)} Smart Label di {branch} selesai.")
         st.toast(f"Semua label di {branch} berhasil diperbarui!", icon="✅")
-
 if is_privileged and active_notifs:
     st.warning(f"🔔 **Notifikasi Masuk ({branch}):** Ada **{len(active_notifs)} permintaan restock** berstatus **Belum**. Buka tab **📩 Notifikasi & Chat** untuk menandai **Sudah**.", icon="📢")
 
