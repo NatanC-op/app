@@ -40,7 +40,7 @@
         🎟️ Portal Resmi Pembelian Lisensi Storify
       </span>
       <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-        Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify SaaS</span>
+        Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify Storify</span>
       </h1>
       <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-7">
         Pilih paket berlangganan <b>Standard</b>, <b>Premium</b>, atau <b>Pro</b>. Setelah pembayaran selesai, Anda akan langsung memperoleh <b>Kode Lisensi</b> untuk dimasukkan ke aplikasi Storify.
@@ -322,15 +322,15 @@
     }
 
     function selectPlan(tierId, codePrefix, label, price) {
-      cart = cart.filter(item => item.type !== 'SaaS');
+      cart = cart.filter(item => item.type !== 'Storify');
       cart.unshift({
-        id: 'saas-' + tierId,
+        id: 'Storify-' + tierId,
         tierId: tierId,
         codePrefix: codePrefix,
         name: 'Lisensi Storify ' + label,
         price: price,
         qty: 1,
-        type: 'SaaS'
+        type: 'Storify'
       });
       updateCartUI();
       toggleCart(true);
@@ -399,9 +399,9 @@
       const payment = document.getElementById('cust-payment').value;
       const totalText = document.getElementById('cart-total').textContent;
 
-      const saasItem = cart.find(i => i.type === 'SaaS');
-      const prefix = saasItem ? saasItem.codePrefix : 'STD';
-      const tierName = saasItem ? saasItem.tierId : 'Standard';
+      const storifyItem = cart.find(i => i.type === 'Storify');
+      const prefix = storifyItem ? storifyItem.codePrefix : 'STD';
+      const tierName = storifyItem ? storifyItem.tierId : 'Standard';
       const randomDigits = Math.floor(1000 + Math.random() * 9000);
       
       currentLicenseKey = `STR-${prefix}-${randomDigits}`;
