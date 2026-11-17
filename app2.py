@@ -9,6 +9,8 @@ from datetime import datetime
 # ==========================================
 st.set_page_config(page_title="Storify - Smart Label & Retail OS", layout="wide", page_icon="🏷️")
 
+now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+
 defaults = {
     "logged_in": False,
     "app_tier": None,
@@ -22,41 +24,52 @@ defaults = {
         {"name": "Nathalee", "role": "STAFF", "email": "nathalee@storify.id"},
     ],
     "current_user_idx": 0,
-    "logs": [{"time": datetime.now().strftime("%H:%M:%S"), "type": "INFO", "action": "Sistem Storify & E-Paper Gateway aktif."}],
+    "logs": [{"time": now_str, "type": "INFO", "action": "Sistem Storify & E-Paper Gateway aktif."}],
     "restock_requests": [
-        {"id": 1, "rak": "Rak B2", "item": "Keripik Singkong 100g", "qty": 20, "by": "Nathalee", "note": "Stok sisa 4 pcs, ramai pembeli.", "status": "Belum", "time": "09:15"}
+        {
+            "id": 1, "rak": "Rak B2", "item": "Keripik Singkong 100g", "qty": 20,
+            "by": "Nathalee", "note": "Stok sisa 4 pcs, ramai pembeli.",
+            "status": "Belum", "created_at": now_str, "resolved_at": "-", "resolved_by": "-"
+        }
+    ],
+    "sales_history": [
+        {"time": now_str, "rak": "Rak A1", "item": "Kopi Sachet 25g", "qty": 2, "total": 30000, "cashier": "Nathalee"}
     ],
     "team_chat": [
-        {"sender": "Nathalee", "role": "STAFF", "msg": "Halo kak, Rak B2 keripik singkong sudah hampir habis ya.", "time": "09:16"},
-        {"sender": "Beatrix", "role": "OWNER", "msg": "Oke siap, sudah saya catat untuk order ke supplier.", "time": "09:18"}
+        {"sender": "Nathalee", "role": "STAFF", "msg": "Halo kak, Rak B2 keripik singkong sudah hampir habis ya.", "time": now_str},
+        {"sender": "Beatrix", "role": "OWNER", "msg": "Oke siap, sudah saya catat untuk order ke supplier.", "time": now_str}
     ],
     "original_prices": {},
     "flash_sale_active": False,
     "flash_sale_end": 0.0,
     "inventory": {
-        "Rak A1": {"item": "Kopi Sachet 25g", "category": "Minuman", "qty": 20, "price": 15000, "battery": 98, "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300", "inflow": [10, 15, 20], "outflow": [5, 12, 18]},
-        "Rak B2": {"item": "Keripik Singkong 100g", "category": "Makanan", "qty": 4, "price": 12000, "battery": 85, "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300", "inflow": [5, 8, 10], "outflow": [4, 7, 14]},
-        "Rak C3": {"item": "Air Mineral 600ml", "category": "Minuman", "qty": 15, "price": 5000, "battery": 92, "image": "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300", "inflow": [15, 25, 30], "outflow": [10, 20, 25]},
-        "Rak D4": {"item": "Deterjen Bubuk 800g", "category": "Rumah Tangga", "qty": 8, "price": 25000, "battery": 74, "image": "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=300", "inflow": [6, 9, 12], "outflow": [3, 7, 10]},
+        "Rak A1": {"item": "Kopi Sachet 25g", "category": "Minuman", "qty": 20, "price": 15000, "old_price": None, "battery": 98, "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300", "inflow": [10, 15, 20], "outflow": [5, 12, 18]},
+        "Rak B2": {"item": "Keripik Singkong 100g", "category": "Makanan", "qty": 4, "price": 12000, "old_price": None, "battery": 85, "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300", "inflow": [5, 8, 10], "outflow": [4, 7, 14]},
+        "Rak C3": {"item": "Air Mineral 600ml", "category": "Minuman", "qty": 15, "price": 5000, "old_price": None, "battery": 92, "image": "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300", "inflow": [15, 25, 30], "outflow": [10, 20, 25]},
+        "Rak D4": {"item": "Deterjen Bubuk 800g", "category": "Rumah Tangga", "qty": 8, "price": 25000, "old_price": None, "battery": 74, "image": "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=300", "inflow": [6, 9, 12], "outflow": [3, 7, 10]},
     }
 }
 for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
+def get_timestamp():
+    return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
 def add_log(log_type, msg):
-    st.session_state.logs.insert(0, {"time": datetime.now().strftime("%H:%M:%S"), "type": log_type, "action": msg})
+    st.session_state.logs.insert(0, {"time": get_timestamp(), "type": log_type, "action": msg})
 
 current_user = st.session_state.accounts[st.session_state.current_user_idx]
 is_privileged = current_user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
 
-# CSS Ringan (100% Kompatibel Light & Dark Mode)
+# CSS Ringan & Modern (Kompatibel Light & Dark Mode)
 st.markdown("""
 <style>
     .badge-pro { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
     .badge-ok { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
     .badge-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
     .price-text { color: #3b82f6; font-size: 20px; font-weight: 800; }
+    .old-price { text-decoration: line-through; opacity: 0.6; font-size: 13px; margin-right: 6px; }
     .epaper-box {
         background-color: #f4f4f0; color: #111111; border: 6px solid #222222;
         border-radius: 12px; padding: 18px; font-family: 'Courier New', monospace;
@@ -94,7 +107,7 @@ if st.session_state.app_tier is None:
     
     tiers = [
         ("Standard", "Dasar Operasional", "✔️ Manajemen Stok & Rak\n✔️ Update Harga E-Paper\n✔️ Notifikasi Restock & Chat Tim\n❌ Flash Sale & AI Advisor", "secondary"),
-        ("Premium", "Minimarket & Ritel", "✔️ Semua Fitur Standard\n✔️ Flash Sale Massal Otomatis\n✔️ Diskon Cepat & Audit Log\n❌ AI Smart Advisor", "secondary"),
+        ("Premium", "Minimarket & Ritel", "✔️ Semua Fitur Standard\n✔️ Flash Sale Massal Otomatis\n✔️ Diskon Cepat & Pencatatan Lengkap\n❌ AI Smart Advisor", "secondary"),
         ("Pro", "Enterprise + AI", "✔️ Semua Fitur Premium\n✔️ AI Smart Advisor\n✔️ Prediksi Restock Otomatis\n✔️ Prioritas Sync E-Paper", "primary")
     ]
     
@@ -126,16 +139,18 @@ if st.session_state.flash_sale_active and time.time() > st.session_state.flash_s
     for r, orig_p in st.session_state.original_prices.items():
         if r in st.session_state.inventory:
             st.session_state.inventory[r]["price"] = orig_p
+            st.session_state.inventory[r]["old_price"] = None
     st.session_state.flash_sale_active = False
     st.session_state.original_prices = {}
     add_log("INFO", "Flash Sale selesai. Harga E-Paper kembali normal.")
 
-unhandled_reqs = [req for req in st.session_state.restock_requests if req["status"] == "Belum"]
+active_notifs = [req for req in st.session_state.restock_requests if req["status"] == "Belum"]
+history_reqs = [req for req in st.session_state.restock_requests if req["status"] == "Sudah"]
 
 c_head1, c_head2 = st.columns([3, 1.2], vertical_alignment="center")
 with c_head1:
     st.title(f"🏷️ {st.session_state.store_name}")
-    st.caption(f"Paket: **STORIFY {st.session_state.app_tier.upper()}** | Login: **{current_user['name']}** (`{current_user['role']}`)")
+    st.caption(f"Paket: **STORIFY {st.session_state.app_tier.upper()}** | Login: **{current_user['name']}** (`{current_user['role']}`) | 📅 {datetime.now().strftime('%d %b %Y')}")
 with c_head2:
     if st.button("📡 Sync Semua E-Paper", type="primary", use_container_width=True):
         with st.spinner("Mengirim sinyal ke Smart Label..."):
@@ -143,9 +158,9 @@ with c_head2:
         add_log("SUCCESS", f"[{current_user['name']}] Sinkronisasi massal ke {len(st.session_state.inventory)} label selesai.")
         st.toast("Semua harga E-Paper berhasil diperbarui!", icon="✅")
 
-# Notifikasi Global untuk Atasan jika ada permintaan restock yang "Belum" ditangani
-if is_privileged and unhandled_reqs:
-    st.info(f"🔔 **Notifikasi Gudang:** Terdapat **{len(unhandled_reqs)} permintaan restock** berstatus **Belum** ditindaklanjuti. Cek tab **📩 Notifikasi Restock & Chat**.", icon="📢")
+# Notifikasi Global hanya muncul jika ada permintaan berstatus "Belum"
+if is_privileged and active_notifs:
+    st.warning(f"🔔 **Notifikasi Masuk:** Terdapat **{len(active_notifs)} permintaan restock** dari gudang yang menunggu tindakan. Buka tab **📩 Notifikasi & Chat** untuk melihat detail dan menandai **Sudah**.", icon="📢")
 
 # ==========================================
 # 5. SIDEBAR KONTROL RINGKAS
@@ -189,7 +204,7 @@ with st.sidebar:
                 if new_rak.strip() and new_item.strip():
                     st.session_state.inventory[new_rak.strip()] = {
                         "item": new_item.strip(), "category": new_cat.strip(), "qty": new_qty,
-                        "price": new_price, "battery": 100, "image": final_img,
+                        "price": new_price, "old_price": None, "battery": 100, "image": final_img,
                         "inflow": [new_qty, new_qty], "outflow": [0, 0]
                     }
                     add_log("SUCCESS", f"[{current_user['name']}] Menambah {new_item} di {new_rak}")
@@ -203,6 +218,7 @@ with st.sidebar:
                     if st.button("Mulai Flash Sale", type="primary", use_container_width=True):
                         st.session_state.original_prices = {r: d["price"] for r, d in st.session_state.inventory.items()}
                         for r in st.session_state.inventory:
+                            st.session_state.inventory[r]["old_price"] = st.session_state.inventory[r]["price"]
                             st.session_state.inventory[r]["price"] = int(st.session_state.inventory[r]["price"] * (1 - disc / 100))
                         st.session_state.flash_sale_active = True
                         st.session_state.flash_sale_end = time.time() + dur
@@ -212,7 +228,9 @@ with st.sidebar:
                     st.warning(f"Sisa Waktu: {max(0, int(st.session_state.flash_sale_end - time.time()))} detik")
                     if st.button("Hentikan Flash Sale", use_container_width=True):
                         for r, op in st.session_state.original_prices.items():
-                            if r in st.session_state.inventory: st.session_state.inventory[r]["price"] = op
+                            if r in st.session_state.inventory:
+                                st.session_state.inventory[r]["price"] = op
+                                st.session_state.inventory[r]["old_price"] = None
                         st.session_state.flash_sale_active = False
                         st.rerun()
 
@@ -251,7 +269,8 @@ if st.session_state.page == "detail":
 
     with c_det2:
         st.caption("📟 **Simulasi Layar Fisik Smart Label (E-Ink):**")
-        promo_tag = "🔥 PROMO FLASH SALE" if st.session_state.flash_sale_active else "HARGA NORMAL"
+        promo_tag = "🔥 PROMO" if prod.get("old_price") else "HARGA NORMAL"
+        old_p_html = f"<div style='font-size:14px; text-decoration:line-through;'>Rp {prod['old_price']:,}</div>" if prod.get("old_price") else ""
         st.markdown(f"""
         <div class="epaper-box">
             <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; border-bottom:2px solid #222; padding-bottom:4px;">
@@ -259,7 +278,8 @@ if st.session_state.page == "detail":
                 <span>{promo_tag}</span>
             </div>
             <div style="font-size:16px; font-weight:bold; margin-top:8px;">{prod['item']}</div>
-            <div style="font-size:30px; font-weight:900; margin:6px 0;">Rp {prod['price']:,}</div>
+            {old_p_html}
+            <div style="font-size:30px; font-weight:900; margin:4px 0;">Rp {prod['price']:,}</div>
             <div style="font-size:11px; border-top:1px dashed #222; padding-top:4px;">
                 |||| || ||| |||| ||| &nbsp; ID-{rak_key.replace(' ', '')}-2026
             </div>
@@ -277,10 +297,11 @@ if st.session_state.page == "detail":
 # ==========================================
 # 7. SISTEM TAB UTAMA DASHBOARD
 # ==========================================
-notif_badge = f" ({len(unhandled_reqs)})" if unhandled_reqs else ""
-tab1, tab2, tab3 = st.tabs([
+notif_badge = f" ({len(active_notifs)})" if active_notifs else ""
+tab1, tab2, tab3, tab4 = st.tabs([
     "📦 Monitoring Rak & Label",
-    f"📩 Notifikasi Restock & Chat{notif_badge}",
+    f"📩 Notifikasi & Chat{notif_badge}",
+    "📊 History & Pencatatan",
     "👥 Manajemen Akun Tim"
 ])
 
@@ -315,7 +336,7 @@ with tab1:
             {"Kode Rak": k, "Produk": v["item"], "Kategori": v["category"], "Stok": v["qty"], "Harga E-Paper": v["price"], "Baterai Label (%)": v.get("battery", 95)}
             for k, v in st.session_state.inventory.items()
         ])
-        st.download_button("📥 Export CSV", df_export.to_csv(index=False).encode("utf-8"), "laporan_storify.csv", "text/csv", use_container_width=True)
+        st.download_button("📥 Export Stok CSV", df_export.to_csv(index=False).encode("utf-8"), "stok_storify.csv", "text/csv", use_container_width=True)
 
     st.write("")
 
@@ -324,7 +345,7 @@ with tab1:
         if search_q.lower() not in data["item"].lower() and search_q.lower() not in rak_id.lower(): continue
 
         with st.container(border=True):
-            c_img, c_inf, c_stk, c_prc, c_act = st.columns([0.8, 2, 1.4, 1.7, 2], vertical_alignment="center")
+            c_img, c_inf, c_stk, c_prc, c_act = st.columns([0.8, 2, 1.4, 1.8, 2], vertical_alignment="center")
             with c_img: st.image(data["image"], use_container_width=True)
             with c_inf:
                 st.markdown(f"**📍 {rak_id} — {data['item']}**")
@@ -335,7 +356,8 @@ with tab1:
                 st.write(f"📦 **{data['qty']} Pcs**")
                 st.markdown("<span class='badge-low'>⚠️ Menipis</span>" if data["qty"] <= 5 else "<span class='badge-ok'>✔ Aman</span>", unsafe_allow_html=True)
             with c_prc:
-                st.markdown(f"<span class='price-text'>Rp {data['price']:,}</span>", unsafe_allow_html=True)
+                old_html = f"<span class='old-price'>Rp {data['old_price']:,}</span><br>" if data.get("old_price") else ""
+                st.markdown(f"{old_html}<span class='price-text'>Rp {data['price']:,}</span>", unsafe_allow_html=True)
             with c_act:
                 b_c1, b_c2 = st.columns(2)
                 with b_c1:
@@ -347,7 +369,11 @@ with tab1:
                     if st.button("🛒 -1 Terjual", key=f"sell_{rak_id}", use_container_width=True, disabled=(data["qty"] == 0)):
                         st.session_state.inventory[rak_id]["qty"] -= 1
                         st.session_state.inventory[rak_id]["outflow"].append(1)
-                        add_log("INFO", f"[{current_user['name']}] Penjualan 1 pcs {data['item']} ({rak_id})")
+                        st.session_state.sales_history.insert(0, {
+                            "time": get_timestamp(), "rak": rak_id, "item": data["item"],
+                            "qty": 1, "total": data["price"], "cashier": current_user["name"]
+                        })
+                        add_log("INFO", f"[{current_user['name']}] Terjual 1 pcs {data['item']} ({rak_id})")
                         st.rerun()
 
                 with st.popover("⚙️ Kelola Barang & Harga", use_container_width=True):
@@ -355,12 +381,18 @@ with tab1:
                     if is_privileged:
                         new_p = st.number_input("Harga E-Paper (Rp)", min_value=0, value=int(data["price"]), step=500, key=f"p_{rak_id}")
                         if st.session_state.app_tier in ["Premium", "Pro"]:
-                            st.caption("Diskon Cepat:")
-                            d1, d2, d3 = st.columns(3)
+                            st.caption("Diskon Cepat (Tampil Coret Harga):")
+                            d1, d2, d3, d4 = st.columns(4)
                             for col_d, pct in zip([d1, d2, d3], [10, 20, 50]):
                                 if col_d.button(f"-{pct}%", key=f"d{pct}_{rak_id}", use_container_width=True):
+                                    st.session_state.inventory[rak_id]["old_price"] = data["price"]
                                     st.session_state.inventory[rak_id]["price"] = int(data["price"] * (1 - pct/100))
                                     add_log("INFO", f"[{current_user['name']}] Diskon {pct}% pada {rak_id}")
+                                    st.rerun()
+                            if d4.button("Reset", key=f"rst_{rak_id}", use_container_width=True):
+                                if data.get("old_price"):
+                                    st.session_state.inventory[rak_id]["price"] = data["old_price"]
+                                    st.session_state.inventory[rak_id]["old_price"] = None
                                     st.rerun()
 
                         if st.button("💾 Simpan", type="primary", key=f"sv_{rak_id}", use_container_width=True):
@@ -381,86 +413,70 @@ with tab1:
                             add_log("INFO", f"[{current_user['name']}] Update stok {rak_id} -> {new_q} pcs")
                             st.rerun()
 
-    # Info Kesehatan Hardware Smart Label & Log
     st.divider()
-    col_hw, col_lg = st.columns([1, 1.5])
-    with col_hw:
-        with st.container(border=True):
-            st.markdown("**🔋 Status Baterai Smart Label**")
-            if low_bat_raks:
-                st.warning(f"Perlu ganti baterai (<80%): **{', '.join(low_bat_raks)}**")
-            else:
-                st.success("Semua perangkat E-Paper memiliki daya baterai optimal (≥80%).")
-    with col_lg:
-        if st.session_state.app_tier in ["Premium", "Pro"] and is_privileged:
-            with st.expander("📜 Log Aktivitas & Sinkronisasi Sistem", expanded=True):
-                for l in st.session_state.logs[:6]:
-                    st.text(f"{l['time']} [{l['type']}] >> {l['action']}")
+    with st.container(border=True):
+        st.markdown("**🔋 Status Kesehatan Perangkat Smart Label**")
+        if low_bat_raks:
+            st.warning(f"Perlu ganti baterai (<80%): **{', '.join(low_bat_raks)}**")
         else:
-            with st.container(border=True):
-                st.caption("📜 Audit Log Sistem tersedia di paket Premium & Pro untuk Owner/Manager.")
+            st.success("Semua perangkat E-Paper memiliki daya baterai optimal (≥80%).")
 
 # ------------------------------------------
 # TAB 2: NOTIFIKASI RESTOCK & CHAT TIM
 # ------------------------------------------
 with tab2:
-    col_req, col_chat = st.columns([1.15, 1])
+    col_req, col_chat = st.columns([1.2, 1])
 
     with col_req:
-        st.subheader("📦 Permintaan Restock (Notifikasi Gudang)")
+        st.subheader("🔔 Notifikasi Permintaan Restock (Aktif)")
         
         with st.container(border=True):
-            st.markdown("**Buat Notifikasi Permintaan Barang**")
+            st.markdown("**Kirim Notifikasi Permintaan Barang**")
             rak_options = list(st.session_state.inventory.keys())
             if rak_options:
                 sel_rak_req = st.selectbox("Pilih Rak / Produk:", rak_options, format_func=lambda r: f"{r} - {st.session_state.inventory[r]['item']} (Sisa: {st.session_state.inventory[r]['qty']})")
-                req_qty = st.number_input("Estimasi Jumlah Dibutuhkan (Pcs)", min_value=1, value=20, step=5)
-                req_note = st.text_input("Catatan", placeholder="Contoh: Stok hampir habis, mohon dipesan ke supplier")
-                if st.button("🔔 Kirim Notifikasi Restock", type="primary", use_container_width=True):
+                req_qty = st.number_input("Jumlah Dibutuhkan (Pcs)", min_value=1, value=20, step=5)
+                req_note = st.text_input("Catatan", placeholder="Contoh: Stok menipis, mohon dipesan ke supplier")
+                if st.button("📨 Kirim Notifikasi", type="primary", use_container_width=True):
                     new_id = len(st.session_state.restock_requests) + 1
+                    ts = get_timestamp()
                     st.session_state.restock_requests.insert(0, {
                         "id": new_id, "rak": sel_rak_req, "item": st.session_state.inventory[sel_rak_req]["item"],
                         "qty": req_qty, "by": current_user["name"], "note": req_note or "-",
-                        "status": "Belum", "time": datetime.now().strftime("%H:%M")
+                        "status": "Belum", "created_at": ts, "resolved_at": "-", "resolved_by": "-"
                     })
                     add_log("WARNING", f"[{current_user['name']}] Mengirim notifikasi restock {sel_rak_req} ({req_qty} pcs)")
-                    st.toast("Notifikasi permintaan restock terkirim!", icon="🔔")
+                    st.toast("Notifikasi restock terkirim!", icon="🔔")
                     time.sleep(0.3)
                     st.rerun()
 
-        st.write("**Daftar Notifikasi Permintaan:**")
-        if not st.session_state.restock_requests:
-            st.info("Belum ada catatan permintaan restock.")
+        st.write(f"**Antrean Notifikasi Masuk ({len(active_notifs)}):**")
+        if not active_notifs:
+            st.success("✨ Tidak ada notifikasi tertunda. Semua permintaan sudah ditindaklanjuti dan masuk ke tab **History & Pencatatan**.")
         else:
-            for req in st.session_state.restock_requests:
+            for req in active_notifs:
                 with st.container(border=True):
-                    r_c1, r_c2 = st.columns([2.2, 1.3], vertical_alignment="center")
+                    r_c1, r_c2 = st.columns([2.2, 1.2], vertical_alignment="center")
                     with r_c1:
-                        st.markdown(f"**{req['rak']} — {req['item']}** (`{req['qty']} Pcs`)")
-                        st.caption(f"Dari: {req['by']} ({req['time']}) | Catatan: {req['note']}")
+                        st.markdown(f"**📦 {req['rak']} — {req['item']}** (`{req['qty']} Pcs`)")
+                        st.caption(f"🕒 **Waktu Kirim:** {req['created_at']} | 👤 **Oleh:** {req['by']}")
+                        st.caption(f"📝 **Catatan:** {req['note']}")
                     with r_c2:
                         if is_privileged:
-                            # Atasan hanya memilih status Sudah / Belum
-                            status_choice = st.selectbox(
-                                "Status",
-                                ["Belum", "Sudah"],
-                                index=0 if req["status"] == "Belum" else 1,
-                                key=f"st_req_{req['id']}",
-                                label_visibility="collapsed"
-                            )
-                            if status_choice != req["status"]:
-                                req["status"] = status_choice
-                                add_log("INFO", f"[{current_user['name']}] Status restock {req['rak']} diubah menjadi: {status_choice}")
+                            if st.button("✅ Sudah", key=f"done_{req['id']}", type="primary", use_container_width=True):
+                                req["status"] = "Sudah"
+                                req["resolved_at"] = get_timestamp()
+                                req["resolved_by"] = current_user["name"]
+                                add_log("SUCCESS", f"[{current_user['name']}] Menyelesaikan notifikasi restock {req['rak']} (Masuk ke History)")
+                                st.toast("Dipindahkan ke History & Pencatatan!", icon="✅")
+                                time.sleep(0.3)
                                 st.rerun()
                         else:
-                            if req["status"] == "Sudah":
-                                st.success("✅ Sudah")
-                            else:
-                                st.warning("⏳ Belum")
+                            st.warning("⏳ Belum")
 
     with col_chat:
         st.subheader("💬 Kontak Chat Tim (Gudang ↔ Manager)")
-        with st.container(border=True, height=380):
+        with st.container(border=True, height=390):
             for chat in st.session_state.team_chat:
                 is_me = chat["sender"] == current_user["name"]
                 align_icon = "🧑‍💼" if chat["role"] != "STAFF" else "👷"
@@ -477,14 +493,68 @@ with tab2:
             if sent and chat_msg.strip():
                 st.session_state.team_chat.append({
                     "sender": current_user["name"], "role": current_user["role"],
-                    "msg": chat_msg.strip(), "time": datetime.now().strftime("%H:%M")
+                    "msg": chat_msg.strip(), "time": datetime.now().strftime("%d/%m/%Y %H:%M")
                 })
                 st.rerun()
 
 # ------------------------------------------
-# TAB 3: MANAJEMEN AKUN TIM
+# TAB 3: HISTORY & PENCATATAN OPERASIONAL
 # ------------------------------------------
 with tab3:
+    st.subheader("📊 Riwayat & Pencatatan Operasional")
+    
+    # 1. History Permintaan Restock yang Sudah Selesai
+    st.markdown("### ✅ Pencatatan Permintaan Restock (Sudah Diproses)")
+    if not history_reqs:
+        st.info("Belum ada riwayat permintaan restock yang ditandai 'Sudah'.")
+    else:
+        df_hist_req = pd.DataFrame([
+            {
+                "Waktu Permintaan": r["created_at"],
+                "Waktu Selesai (ACC)": r["resolved_at"],
+                "Kode Rak": r["rak"],
+                "Produk": r["item"],
+                "Jumlah (Pcs)": r["qty"],
+                "Diminta Oleh": r["by"],
+                "Diproses Oleh": r["resolved_by"],
+                "Catatan": r["note"]
+            }
+            for r in history_reqs
+        ])
+        st.dataframe(df_hist_req, use_container_width=True, hide_index=True)
+        st.download_button(
+            "📥 Download Pencatatan Restock (CSV)",
+            df_hist_req.to_csv(index=False).encode("utf-8"),
+            "pencatatan_restock_storify.csv",
+            "text/csv"
+        )
+
+    st.divider()
+
+    # 2. Pencatatan Transaksi Terjual & Log Sistem
+    col_h_sales, col_h_logs = st.columns(2)
+    with col_h_sales:
+        st.markdown("### 🛒 Pencatatan Barang Terjual")
+        if st.session_state.sales_history:
+            df_sales = pd.DataFrame(st.session_state.sales_history)
+            df_sales.columns = ["Waktu", "Rak", "Produk", "Qty", "Total (Rp)", "Petugas"]
+            st.dataframe(df_sales, use_container_width=True, hide_index=True)
+        else:
+            st.info("Belum ada pencatatan penjualan.")
+
+    with col_h_logs:
+        st.markdown("### 📜 Log Aktivitas & Sinkronisasi Sistem")
+        if st.session_state.app_tier in ["Premium", "Pro"] and is_privileged:
+            with st.container(border=True, height=280):
+                for l in st.session_state.logs[:20]:
+                    st.text(f"{l['time']} [{l['type']}] >> {l['action']}")
+        else:
+            st.info("🔒 Log aktivitas lengkap tersedia pada paket Premium & Pro untuk Owner/Manager.")
+
+# ------------------------------------------
+# TAB 4: MANAJEMEN AKUN TIM
+# ------------------------------------------
+with tab4:
     st.subheader("👥 Daftar & Pendaftaran Akun Karyawan")
     col_acc_list, col_acc_add = st.columns([1.5, 1])
 
