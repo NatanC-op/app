@@ -163,9 +163,23 @@ st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Global Font & Typography */
-    html, body, [class*="css"], .stApp, button, input, select, textarea, .stMarkdown, .stText, label, p, span, div {{
+    /* Global Font tanpa menimpa Material Icons bawaan Streamlit */
+    html, body, .stApp, button, input, select, textarea, .stMarkdown, .stText, label, p,
+    span:not([data-testid="stIconMaterial"]):not(.material-symbols-rounded),
+    div:not([data-testid="stIconMaterial"]):not(.material-symbols-rounded) {{
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }}
+
+    /* Pastikan Ikon Material Streamlit tetap utuh */
+    [data-testid="stIconMaterial"], .material-symbols-rounded {{
+        font-family: 'Material Symbols Rounded' !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        word-wrap: normal !important;
     }}
 
     h1, h2, h3, h4 {{
@@ -263,7 +277,7 @@ st.markdown(f"""
         cursor: not-allowed !important;
     }}
 
-    /* Fix Popover & Dropdown Menu (Dark & Light Mode) */
+    /* Fix Popover & Dropdown Menu */
     [data-testid="stPopoverBody"], div[data-baseweb="popover"] > div, ul[role="listbox"] {{
         background-color: {t['popover_bg']} !important;
         border: 1px solid {t['card_border']} !important;
@@ -293,7 +307,7 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
     }}
 
-    /* Alert Boxes (st.info, st.warning, st.success, st.error) */
+    /* Alert Boxes */
     [data-testid="stAlert"] {{
         background-color: {t['alert_bg']} !important;
         border: 1px solid {t['card_border']} !important;
@@ -329,15 +343,18 @@ st.markdown(f"""
         display: none !important;
     }}
 
-    /* Expanders & Chat */
+    /* Expanders & Header Expander agar selaras tema */
     [data-testid="stExpander"] {{
         background-color: {t['card_bg']} !important;
         border: 1px solid {t['card_border']} !important;
         border-radius: 14px !important;
+        overflow: hidden !important;
     }}
-    [data-testid="stExpander"] summary {{
+    [data-testid="stExpander"] details summary {{
+        background-color: {t['input_bg']} !important;
         color: {t['text_main']} !important;
         font-weight: 700 !important;
+        padding: 10px 14px !important;
     }}
     [data-testid="stChatMessage"] {{
         background-color: {t['input_bg']} !important;
