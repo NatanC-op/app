@@ -86,7 +86,7 @@ tier = st.session_state.app_tier
 is_dark = st.session_state.dark_mode
 
 # ==========================================
-# GLOBAL THEME & FONT (CLEAN LIGHT & DARK MODE)
+# GLOBAL THEME & FONT (CLEAN WHITE LIGHT & DEEP DARK MODE)
 # ==========================================
 if is_dark:
     t = {
@@ -123,12 +123,9 @@ if is_dark:
         "badge_low_txt": "#f87171",
         "badge_exp_bg": "rgba(245, 158, 11, 0.18)",
         "badge_exp_txt": "#fbbf24",
-        "warn_bg": "rgba(245, 158, 11, 0.12)",
-        "warn_border": "rgba(245, 158, 11, 0.35)",
+        "warn_bg": "#1e1b18",
+        "warn_border": "#78350f",
         "warn_txt": "#fde68a",
-        "info_bg": "rgba(59, 130, 246, 0.12)",
-        "info_border": "rgba(59, 130, 246, 0.35)",
-        "info_txt": "#bfdbfe",
         "code_bg": "#1e293b",
         "code_txt": "#93c5fd",
         "divider": "#1e293b",
@@ -137,10 +134,10 @@ else:
     t = {
         "scheme": "light",
         "bg": "#f8fafc",
-        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.06) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.05) 0%, transparent 45%)",
+        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.04) 0%, transparent 45%)",
         "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
-        "card_hover": "#2563eb",
+        "card_hover": "#3b82f6",
         "card_border": "#e2e8f0",
         "card_shadow": "0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.03)",
         "text_main": "#0f172a",
@@ -169,11 +166,8 @@ else:
         "badge_exp_bg": "#fef3c7",
         "badge_exp_txt": "#b45309",
         "warn_bg": "#fffbeb",
-        "warn_border": "#fde68a",
+        "warn_border": "#fcd34d",
         "warn_txt": "#92400e",
-        "info_bg": "#eff6ff",
-        "info_border": "#bfdbfe",
-        "info_txt": "#1e40af",
         "code_bg": "#f1f5f9",
         "code_txt": "#2563eb",
         "divider": "#e2e8f0",
@@ -261,7 +255,7 @@ st.markdown(f"""
         border-color: {t['card_hover']} !important;
     }}
 
-    /* Metric Cards */
+    /* Metric Cards & Delta Badge */
     [data-testid="stMetric"] {{
         background-color: {t['card_bg']} !important;
         border: 1px solid {t['card_border']} !important;
@@ -278,6 +272,17 @@ st.markdown(f"""
         font-weight: 800 !important;
         color: {t['text_main']} !important;
         letter-spacing: -0.02em !important;
+    }}
+    [data-testid="stMetricDelta"] {{
+        background-color: {t['badge_low_bg']} !important;
+        padding: 2px 8px !important;
+        border-radius: 8px !important;
+        width: fit-content !important;
+    }}
+    [data-testid="stMetricDelta"] div, [data-testid="stMetricDelta"] svg {{
+        color: {t['badge_low_txt']} !important;
+        fill: {t['badge_low_txt']} !important;
+        font-weight: 700 !important;
     }}
 
     /* Tombol Primary */
@@ -299,11 +304,12 @@ st.markdown(f"""
         transform: translateY(-1px);
     }}
 
-    /* Tombol Secondary, Download & Popover Trigger (Bersih di Light & Dark) */
+    /* Tombol Secondary, Download & Popover Trigger (Termasuk tombol Kelola Barang & Harga) */
     .stButton > button[kind="secondary"],
     button[kind="secondaryFormSubmit"],
     .stDownloadButton > button,
-    [data-testid="stPopover"] > button {{
+    [data-testid="stPopover"] button,
+    button[data-testid="baseButton-secondary"] {{
         background-color: {t['sec_btn_bg']} !important;
         color: {t['sec_btn_text']} !important;
         border: 1px solid {t['sec_btn_border']} !important;
@@ -314,20 +320,21 @@ st.markdown(f"""
     .stButton > button[kind="secondary"] *,
     button[kind="secondaryFormSubmit"] *,
     .stDownloadButton > button *,
-    [data-testid="stPopover"] > button * {{
+    [data-testid="stPopover"] button *,
+    button[data-testid="baseButton-secondary"] * {{
         color: {t['sec_btn_text']} !important;
     }}
     .stButton > button[kind="secondary"]:hover,
     button[kind="secondaryFormSubmit"]:hover,
     .stDownloadButton > button:hover,
-    [data-testid="stPopover"] > button:hover {{
+    [data-testid="stPopover"] button:hover {{
         background-color: {t['sec_btn_hover_bg']} !important;
         border-color: #2563eb !important;
         color: {t['sec_btn_hover_txt']} !important;
     }}
     .stButton > button[kind="secondary"]:hover *,
     .stDownloadButton > button:hover *,
-    [data-testid="stPopover"] > button:hover * {{
+    [data-testid="stPopover"] button:hover * {{
         color: {t['sec_btn_hover_txt']} !important;
     }}
     .stButton > button:disabled {{
@@ -335,15 +342,24 @@ st.markdown(f"""
         cursor: not-allowed !important;
     }}
 
-    /* Input Fields, Number Input & Selectbox (Paksa latar & teks sesuai tema) */
+    /* Input Fields, Number Input & Selectbox (Semua lapisan BaseWeb dipaksa putih di Light Mode) */
     .stTextInput > div > div,
     .stNumberInput > div > div,
-    .stSelectbox div[data-baseweb="select"] > div,
-    .stDateInput > div > div {{
+    .stDateInput > div > div,
+    .stSelectbox [data-baseweb="select"],
+    .stSelectbox [data-baseweb="select"] > div,
+    .stSelectbox [data-baseweb="select"] > div > div {{
         background-color: {t['input_bg']} !important;
-        border: 1px solid {t['input_border']} !important;
+        border-color: {t['input_border']} !important;
         border-radius: 12px !important;
         color: {t['text_main']} !important;
+    }}
+    .stSelectbox [data-baseweb="select"] > div {{
+        border: 1px solid {t['input_border']} !important;
+    }}
+    .stSelectbox [data-baseweb="select"] * {{
+        color: {t['text_main']} !important;
+        fill: {t['text_main']} !important;
     }}
     .stTextInput input, .stNumberInput input, .stDateInput input {{
         background-color: transparent !important;
@@ -354,41 +370,53 @@ st.markdown(f"""
     .stTextInput input::placeholder {{
         color: {t['text_muted']} !important;
         -webkit-text-fill-color: {t['text_muted']} !important;
-        opacity: 0.8 !important;
-    }}
-    .stSelectbox div[data-baseweb="select"] span,
-    .stSelectbox div[data-baseweb="select"] div {{
-        color: {t['text_main']} !important;
+        opacity: 0.85 !important;
     }}
     .stNumberInput button {{
-        background-color: transparent !important;
+        background-color: {t['input_bg']} !important;
         color: {t['text_main']} !important;
         border-color: {t['input_border']} !important;
     }}
 
-    /* Popover & Dropdown Listbox */
-    [data-testid="stPopoverBody"], div[data-baseweb="popover"] > div, ul[role="listbox"] {{
+    /* Popover & Dropdown Listbox (Saat selectbox/popover dibuka) */
+    [data-testid="stPopoverBody"],
+    [data-testid="stPopoverBody"] > div,
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    div[data-baseweb="menu"],
+    ul[role="listbox"] {{
         background-color: {t['popover_bg']} !important;
         border: 1px solid {t['card_border']} !important;
         border-radius: 14px !important;
         color: {t['text_main']} !important;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
     }}
-    ul[role="listbox"] li, ul[role="listbox"] li span {{
+    ul[role="listbox"] li,
+    ul[role="listbox"] li span,
+    ul[role="listbox"] li div {{
+        background-color: transparent !important;
         color: {t['text_main']} !important;
     }}
-    ul[role="listbox"] li:hover, ul[role="listbox"] li[aria-selected="true"] {{
+    ul[role="listbox"] li:hover,
+    ul[role="listbox"] li[aria-selected="true"] {{
         background-color: {t['pill_bg']} !important;
         color: {t['pill_text']} !important;
     }}
 
-    /* Alert Boxes (st.warning, st.info, st.success) agar cerah & terbaca di Light Mode */
-    [data-testid="stAlert"] {{
+    /* Alert Boxes (st.warning, st.info, st.success) hingga div bagian dalam */
+    [data-testid="stAlert"],
+    [data-testid="stAlert"] > div {{
         background-color: {t['warn_bg']} !important;
-        border: 1px solid {t['warn_border']} !important;
+        border-color: {t['warn_border']} !important;
         border-radius: 14px !important;
     }}
-    [data-testid="stAlert"] p, [data-testid="stAlert"] span, [data-testid="stAlert"] strong {{
+    [data-testid="stAlert"] {{
+        border: 1px solid {t['warn_border']} !important;
+    }}
+    [data-testid="stAlert"] p,
+    [data-testid="stAlert"] span,
+    [data-testid="stAlert"] strong,
+    [data-testid="stAlert"] div {{
         color: {t['warn_txt']} !important;
     }}
 
@@ -498,13 +526,6 @@ st.markdown(f"""
     .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
 </style>
 """, unsafe_allow_html=True)
-
-def render_theme_toggle(key_suffix="top"):
-    label = "☀️ Light Mode" if st.session_state.dark_mode else "🌙 Dark Mode"
-    if st.button(label, key=f"theme_btn_{key_suffix}", use_container_width=True):
-        st.session_state.dark_mode = not st.session_state.dark_mode
-        st.rerun()
-
 # ==========================================
 # 2. HALAMAN LOGIN DEMO
 # ==========================================
