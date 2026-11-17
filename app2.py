@@ -86,10 +86,11 @@ tier = st.session_state.app_tier
 is_dark = st.session_state.dark_mode
 
 # ==========================================
-# GLOBAL THEME & FONT (REFINED DARK & LIGHT MODE)
+# GLOBAL THEME & FONT (CLEAN LIGHT & DARK MODE)
 # ==========================================
 if is_dark:
     t = {
+        "scheme": "dark",
         "bg": "#060913",
         "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.14) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 45%)",
         "sidebar_bg": "#0b1120",
@@ -107,7 +108,9 @@ if is_dark:
         "tab_active_bg": "#1e293b",
         "tab_active_text": "#60a5fa",
         "sec_btn_bg": "#1e293b",
-        "sec_btn_hover": "#2563eb",
+        "sec_btn_text": "#f8fafc",
+        "sec_btn_hover_bg": "#2563eb",
+        "sec_btn_hover_txt": "#ffffff",
         "sec_btn_border": "#334155",
         "pill_bg": "rgba(59, 130, 246, 0.18)",
         "pill_border": "rgba(96, 165, 250, 0.3)",
@@ -120,30 +123,40 @@ if is_dark:
         "badge_low_txt": "#f87171",
         "badge_exp_bg": "rgba(245, 158, 11, 0.18)",
         "badge_exp_txt": "#fbbf24",
-        "alert_bg": "#131c31",
+        "warn_bg": "rgba(245, 158, 11, 0.12)",
+        "warn_border": "rgba(245, 158, 11, 0.35)",
+        "warn_txt": "#fde68a",
+        "info_bg": "rgba(59, 130, 246, 0.12)",
+        "info_border": "rgba(59, 130, 246, 0.35)",
+        "info_txt": "#bfdbfe",
+        "code_bg": "#1e293b",
+        "code_txt": "#93c5fd",
         "divider": "#1e293b",
     }
 else:
     t = {
-        "bg": "#f1f5f9",
-        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.06) 0%, transparent 45%)",
+        "scheme": "light",
+        "bg": "#f8fafc",
+        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.06) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.05) 0%, transparent 45%)",
         "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
         "card_hover": "#2563eb",
         "card_border": "#e2e8f0",
-        "card_shadow": "0 2px 6px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.03)",
+        "card_shadow": "0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.03)",
         "text_main": "#0f172a",
-        "text_muted": "#475569",
-        "input_bg": "#f8fafc",
+        "text_muted": "#64748b",
+        "input_bg": "#ffffff",
         "input_border": "#cbd5e1",
         "popover_bg": "#ffffff",
         "tab_bg": "#e2e8f0",
         "tab_text": "#475569",
         "tab_active_bg": "#ffffff",
         "tab_active_text": "#2563eb",
-        "sec_btn_bg": "#0f172a",
-        "sec_btn_hover": "#2563eb",
-        "sec_btn_border": "#0f172a",
+        "sec_btn_bg": "#ffffff",
+        "sec_btn_text": "#0f172a",
+        "sec_btn_hover_bg": "#eff6ff",
+        "sec_btn_hover_txt": "#1d4ed8",
+        "sec_btn_border": "#cbd5e1",
         "pill_bg": "#dbeafe",
         "pill_border": "#bfdbfe",
         "pill_text": "#1d4ed8",
@@ -155,13 +168,24 @@ else:
         "badge_low_txt": "#b91c1c",
         "badge_exp_bg": "#fef3c7",
         "badge_exp_txt": "#b45309",
-        "alert_bg": "#ffffff",
+        "warn_bg": "#fffbeb",
+        "warn_border": "#fde68a",
+        "warn_txt": "#92400e",
+        "info_bg": "#eff6ff",
+        "info_border": "#bfdbfe",
+        "info_txt": "#1e40af",
+        "code_bg": "#f1f5f9",
+        "code_txt": "#2563eb",
         "divider": "#e2e8f0",
     }
 
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    :root {{
+        color-scheme: {t['scheme']} !important;
+    }}
 
     /* Global Font tanpa menimpa Material Icons bawaan Streamlit */
     html, body, .stApp, button, input, select, textarea, .stMarkdown, .stText, label, p,
@@ -189,16 +213,29 @@ st.markdown(f"""
         color: {t['text_main']} !important;
     }}
 
-    /* Latar Belakang Utama dengan Ambient Gradient */
+    /* Latar Belakang Utama & Teks Global */
     .stApp {{
         background-color: {t['bg']} !important;
         background-image: {t['bg_grad']} !important;
         color: {t['text_main']} !important;
     }}
+    .stApp p, .stApp span, .stApp label, .stApp li {{
+        color: {t['text_main']};
+    }}
+    .stCaption, [data-testid="stCaptionContainer"] p {{
+        color: {t['text_muted']} !important;
+    }}
+    code {{
+        background-color: {t['code_bg']} !important;
+        color: {t['code_txt']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 6px !important;
+        padding: 2px 6px !important;
+        font-weight: 700 !important;
+    }}
     header[data-testid="stHeader"] {{
         background-color: transparent !important;
     }}
-
     hr {{
         border-color: {t['divider']} !important;
     }}
@@ -208,11 +245,11 @@ st.markdown(f"""
         background-color: {t['sidebar_bg']} !important;
         border-right: 1px solid {t['card_border']} !important;
     }}
-    [data-testid="stSidebar"] * {{
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
         color: {t['text_main']};
     }}
 
-    /* Card Containers (border=True) dengan Hover Accent */
+    /* Card Containers (border=True) */
     [data-testid="stVerticalBlockBorderWrapper"] {{
         background-color: {t['card_bg']} !important;
         border: 1px solid {t['card_border']} !important;
@@ -243,7 +280,7 @@ st.markdown(f"""
         letter-spacing: -0.02em !important;
     }}
 
-    /* Tombol Primary & Secondary */
+    /* Tombol Primary */
     .stButton > button[kind="primary"], button[kind="primaryFormSubmit"] {{
         background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
@@ -251,71 +288,108 @@ st.markdown(f"""
         border-radius: 12px !important;
         font-weight: 700 !important;
         padding: 0.55rem 1.1rem !important;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32) !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28) !important;
         transition: all 0.18s ease !important;
+    }}
+    .stButton > button[kind="primary"] *, button[kind="primaryFormSubmit"] * {{
+        color: #ffffff !important;
     }}
     .stButton > button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
         background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%) !important;
         transform: translateY(-1px);
     }}
 
-    .stButton > button[kind="secondary"], button[kind="secondaryFormSubmit"], .stDownloadButton > button, [data-testid="stPopover"] > button {{
+    /* Tombol Secondary, Download & Popover Trigger (Bersih di Light & Dark) */
+    .stButton > button[kind="secondary"],
+    button[kind="secondaryFormSubmit"],
+    .stDownloadButton > button,
+    [data-testid="stPopover"] > button {{
         background-color: {t['sec_btn_bg']} !important;
-        color: #ffffff !important;
+        color: {t['sec_btn_text']} !important;
         border: 1px solid {t['sec_btn_border']} !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
         transition: all 0.18s ease !important;
     }}
-    .stButton > button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover, .stDownloadButton > button:hover, [data-testid="stPopover"] > button:hover {{
-        background-color: {t['sec_btn_hover']} !important;
-        border-color: {t['sec_btn_hover']} !important;
-        color: #ffffff !important;
+    .stButton > button[kind="secondary"] *,
+    button[kind="secondaryFormSubmit"] *,
+    .stDownloadButton > button *,
+    [data-testid="stPopover"] > button * {{
+        color: {t['sec_btn_text']} !important;
+    }}
+    .stButton > button[kind="secondary"]:hover,
+    button[kind="secondaryFormSubmit"]:hover,
+    .stDownloadButton > button:hover,
+    [data-testid="stPopover"] > button:hover {{
+        background-color: {t['sec_btn_hover_bg']} !important;
+        border-color: #2563eb !important;
+        color: {t['sec_btn_hover_txt']} !important;
+    }}
+    .stButton > button[kind="secondary"]:hover *,
+    .stDownloadButton > button:hover *,
+    [data-testid="stPopover"] > button:hover * {{
+        color: {t['sec_btn_hover_txt']} !important;
     }}
     .stButton > button:disabled {{
         opacity: 0.45 !important;
         cursor: not-allowed !important;
     }}
 
-    /* Fix Popover & Dropdown Menu */
+    /* Input Fields, Number Input & Selectbox (Paksa latar & teks sesuai tema) */
+    .stTextInput > div > div,
+    .stNumberInput > div > div,
+    .stSelectbox div[data-baseweb="select"] > div,
+    .stDateInput > div > div {{
+        background-color: {t['input_bg']} !important;
+        border: 1px solid {t['input_border']} !important;
+        border-radius: 12px !important;
+        color: {t['text_main']} !important;
+    }}
+    .stTextInput input, .stNumberInput input, .stDateInput input {{
+        background-color: transparent !important;
+        color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
+        font-weight: 500 !important;
+    }}
+    .stTextInput input::placeholder {{
+        color: {t['text_muted']} !important;
+        -webkit-text-fill-color: {t['text_muted']} !important;
+        opacity: 0.8 !important;
+    }}
+    .stSelectbox div[data-baseweb="select"] span,
+    .stSelectbox div[data-baseweb="select"] div {{
+        color: {t['text_main']} !important;
+    }}
+    .stNumberInput button {{
+        background-color: transparent !important;
+        color: {t['text_main']} !important;
+        border-color: {t['input_border']} !important;
+    }}
+
+    /* Popover & Dropdown Listbox */
     [data-testid="stPopoverBody"], div[data-baseweb="popover"] > div, ul[role="listbox"] {{
         background-color: {t['popover_bg']} !important;
         border: 1px solid {t['card_border']} !important;
         border-radius: 14px !important;
         color: {t['text_main']} !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
     }}
-    ul[role="listbox"] li {{
+    ul[role="listbox"] li, ul[role="listbox"] li span {{
         color: {t['text_main']} !important;
     }}
-    ul[role="listbox"] li:hover {{
-        background-color: {t['input_bg']} !important;
+    ul[role="listbox"] li:hover, ul[role="listbox"] li[aria-selected="true"] {{
+        background-color: {t['pill_bg']} !important;
+        color: {t['pill_text']} !important;
     }}
 
-    /* Input Fields, Number Input & Selectbox */
-    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div, .stDateInput input {{
-        border-radius: 12px !important;
-        border-color: {t['input_border']} !important;
-        background-color: {t['input_bg']} !important;
-        color: {t['text_main']} !important;
-        font-weight: 500 !important;
-    }}
-    .stTextInput label, .stNumberInput label, .stSelectbox label, .stDateInput label, .stRadio label, .stCheckbox label, .stSlider label {{
-        color: {t['text_main']} !important;
-    }}
-    .stTextInput input:focus, .stNumberInput input:focus {{
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
-    }}
-
-    /* Alert Boxes */
+    /* Alert Boxes (st.warning, st.info, st.success) agar cerah & terbaca di Light Mode */
     [data-testid="stAlert"] {{
-        background-color: {t['alert_bg']} !important;
-        border: 1px solid {t['card_border']} !important;
+        background-color: {t['warn_bg']} !important;
+        border: 1px solid {t['warn_border']} !important;
         border-radius: 14px !important;
-        color: {t['text_main']} !important;
     }}
-    [data-testid="stAlert"] p {{
-        color: {t['text_main']} !important;
+    [data-testid="stAlert"] p, [data-testid="stAlert"] span, [data-testid="stAlert"] strong {{
+        color: {t['warn_txt']} !important;
     }}
 
     /* Tabs Modern ala Pill Switcher */
@@ -330,20 +404,25 @@ st.markdown(f"""
         border-radius: 10px !important;
         font-weight: 700 !important;
         font-size: 14px !important;
-        color: {t['tab_text']} !important;
         padding: 8px 16px !important;
         border: none !important;
+        background-color: transparent !important;
+    }}
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{
+        color: {t['tab_text']} !important;
     }}
     .stTabs [aria-selected="true"] {{
         background-color: {t['tab_active_bg']} !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+    }}
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{
         color: {t['tab_active_text']} !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
     }}
     .stTabs [data-baseweb="tab-highlight"] {{
         display: none !important;
     }}
 
-    /* Expanders & Header Expander agar selaras tema */
+    /* Expanders & Chat */
     [data-testid="stExpander"] {{
         background-color: {t['card_bg']} !important;
         border: 1px solid {t['card_border']} !important;
@@ -351,10 +430,13 @@ st.markdown(f"""
         overflow: hidden !important;
     }}
     [data-testid="stExpander"] details summary {{
-        background-color: {t['input_bg']} !important;
+        background-color: {t['card_bg']} !important;
         color: {t['text_main']} !important;
         font-weight: 700 !important;
         padding: 10px 14px !important;
+    }}
+    [data-testid="stExpander"] details summary:hover {{
+        background-color: {t['pill_bg']} !important;
     }}
     [data-testid="stChatMessage"] {{
         background-color: {t['input_bg']} !important;
@@ -367,7 +449,7 @@ st.markdown(f"""
         display: inline-block;
         background-color: {t['pill_bg']};
         border: 1px solid {t['pill_border']};
-        color: {t['pill_text']};
+        color: {t['pill_text']} !important;
         padding: 6px 14px;
         border-radius: 9999px;
         font-size: 12px;
@@ -377,7 +459,7 @@ st.markdown(f"""
         margin-bottom: 10px;
     }}
     .gradient-title {{
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
@@ -405,7 +487,7 @@ st.markdown(f"""
     .epaper-light {{
         background-color: #f4f4f0; color: #111111 !important; border: 6px solid #334155;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     }}
     .epaper-light * {{ font-family: 'Courier New', monospace !important; color: #111111 !important; }}
     .epaper-dark {{
