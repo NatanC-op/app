@@ -76,60 +76,76 @@ for k, v in defaults.items():
 def add_log(log_type, msg):
     st.session_state.logs.insert(0, {"time": get_ts_sec(), "type": log_type, "action": msg})
 
+# Pastikan indeks akun selalu valid
+if st.session_state.current_user_idx >= len(st.session_state.accounts):
+    st.session_state.current_user_idx = 0
+
 current_user = st.session_state.accounts[st.session_state.current_user_idx]
 is_privileged = current_user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
 tier = st.session_state.app_tier
 is_dark = st.session_state.dark_mode
 
 # ==========================================
-# GLOBAL THEME & FONT (LIGHT + DARK MODE)
+# GLOBAL THEME & FONT (REFINED DARK & LIGHT MODE)
 # ==========================================
 if is_dark:
     t = {
-        "bg": "#090d16",
-        "sidebar_bg": "#0f172a",
-        "card_bg": "#111827",
+        "bg": "#060913",
+        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.14) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 45%)",
+        "sidebar_bg": "#0b1120",
+        "card_bg": "#0f172a",
+        "card_hover": "#3b82f6",
         "card_border": "#1e293b",
-        "card_shadow": "0 4px 20px rgba(0, 0, 0, 0.45)",
+        "card_shadow": "0 8px 24px rgba(0, 0, 0, 0.45)",
         "text_main": "#f8fafc",
         "text_muted": "#94a3b8",
-        "input_bg": "#1e293b",
-        "input_border": "#334155",
-        "tab_bg": "#1e293b",
+        "input_bg": "#162033",
+        "input_border": "#2d3b52",
+        "popover_bg": "#0f172a",
+        "tab_bg": "#131c31",
         "tab_text": "#94a3b8",
-        "tab_active_bg": "#0f172a",
+        "tab_active_bg": "#1e293b",
         "tab_active_text": "#60a5fa",
         "sec_btn_bg": "#1e293b",
+        "sec_btn_hover": "#2563eb",
         "sec_btn_border": "#334155",
-        "pill_bg": "rgba(37, 99, 235, 0.22)",
+        "pill_bg": "rgba(59, 130, 246, 0.18)",
+        "pill_border": "rgba(96, 165, 250, 0.3)",
         "pill_text": "#93c5fd",
         "price_color": "#60a5fa",
         "pro_price_color": "#a78bfa",
-        "badge_ok_bg": "rgba(16, 185, 129, 0.18)",
+        "badge_ok_bg": "rgba(16, 185, 129, 0.16)",
         "badge_ok_txt": "#34d399",
         "badge_low_bg": "rgba(239, 68, 68, 0.18)",
         "badge_low_txt": "#f87171",
-        "badge_exp_bg": "rgba(245, 158, 11, 0.20)",
+        "badge_exp_bg": "rgba(245, 158, 11, 0.18)",
         "badge_exp_txt": "#fbbf24",
+        "alert_bg": "#131c31",
+        "divider": "#1e293b",
     }
 else:
     t = {
-        "bg": "#f8fafc",
+        "bg": "#f1f5f9",
+        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.08) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.06) 0%, transparent 45%)",
         "sidebar_bg": "#ffffff",
         "card_bg": "#ffffff",
+        "card_hover": "#2563eb",
         "card_border": "#e2e8f0",
-        "card_shadow": "0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02)",
+        "card_shadow": "0 2px 6px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.03)",
         "text_main": "#0f172a",
-        "text_muted": "#64748b",
-        "input_bg": "#ffffff",
+        "text_muted": "#475569",
+        "input_bg": "#f8fafc",
         "input_border": "#cbd5e1",
+        "popover_bg": "#ffffff",
         "tab_bg": "#e2e8f0",
         "tab_text": "#475569",
         "tab_active_bg": "#ffffff",
         "tab_active_text": "#2563eb",
         "sec_btn_bg": "#0f172a",
+        "sec_btn_hover": "#2563eb",
         "sec_btn_border": "#0f172a",
         "pill_bg": "#dbeafe",
+        "pill_border": "#bfdbfe",
         "pill_text": "#1d4ed8",
         "price_color": "#2563eb",
         "pro_price_color": "#7c3aed",
@@ -139,6 +155,8 @@ else:
         "badge_low_txt": "#b91c1c",
         "badge_exp_bg": "#fef3c7",
         "badge_exp_txt": "#b45309",
+        "alert_bg": "#ffffff",
+        "divider": "#e2e8f0",
     }
 
 st.markdown(f"""
@@ -157,15 +175,21 @@ st.markdown(f"""
         color: {t['text_main']} !important;
     }}
 
-    /* Latar Belakang & Header */
+    /* Latar Belakang Utama dengan Ambient Gradient */
     .stApp {{
         background-color: {t['bg']} !important;
+        background-image: {t['bg_grad']} !important;
         color: {t['text_main']} !important;
     }}
     header[data-testid="stHeader"] {{
         background-color: transparent !important;
     }}
 
+    hr {{
+        border-color: {t['divider']} !important;
+    }}
+
+    /* Sidebar */
     [data-testid="stSidebar"] {{
         background-color: {t['sidebar_bg']} !important;
         border-right: 1px solid {t['card_border']} !important;
@@ -174,13 +198,16 @@ st.markdown(f"""
         color: {t['text_main']};
     }}
 
-    /* Card Containers (border=True) */
+    /* Card Containers (border=True) dengan Hover Accent */
     [data-testid="stVerticalBlockBorderWrapper"] {{
         background-color: {t['card_bg']} !important;
         border: 1px solid {t['card_border']} !important;
         border-radius: 18px !important;
         box-shadow: {t['card_shadow']} !important;
-        transition: all 0.2s ease;
+        transition: border-color 0.2s ease, transform 0.2s ease !important;
+    }}
+    [data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        border-color: {t['card_hover']} !important;
     }}
 
     /* Metric Cards */
@@ -191,34 +218,34 @@ st.markdown(f"""
         padding: 16px 20px !important;
         box-shadow: {t['card_shadow']} !important;
     }}
-    [data-testid="stMetricLabel"] {{
+    [data-testid="stMetricLabel"] p {{
         font-weight: 600 !important;
         color: {t['text_muted']} !important;
         font-size: 13px !important;
     }}
-    [data-testid="stMetricValue"] {{
+    [data-testid="stMetricValue"] div {{
         font-weight: 800 !important;
         color: {t['text_main']} !important;
         letter-spacing: -0.02em !important;
     }}
 
     /* Tombol Primary & Secondary */
-    .stButton > button[kind="primary"] {{
-        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+    .stButton > button[kind="primary"], button[kind="primaryFormSubmit"] {{
+        background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
         padding: 0.55rem 1.1rem !important;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.30) !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32) !important;
         transition: all 0.18s ease !important;
     }}
-    .stButton > button[kind="primary"]:hover {{
-        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+    .stButton > button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
+        background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%) !important;
         transform: translateY(-1px);
     }}
 
-    .stButton > button[kind="secondary"], .stDownloadButton > button {{
+    .stButton > button[kind="secondary"], button[kind="secondaryFormSubmit"], .stDownloadButton > button, [data-testid="stPopover"] > button {{
         background-color: {t['sec_btn_bg']} !important;
         color: #ffffff !important;
         border: 1px solid {t['sec_btn_border']} !important;
@@ -226,13 +253,31 @@ st.markdown(f"""
         font-weight: 700 !important;
         transition: all 0.18s ease !important;
     }}
-    .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {{
-        background-color: #2563eb !important;
-        border-color: #2563eb !important;
+    .stButton > button[kind="secondary"]:hover, button[kind="secondaryFormSubmit"]:hover, .stDownloadButton > button:hover, [data-testid="stPopover"] > button:hover {{
+        background-color: {t['sec_btn_hover']} !important;
+        border-color: {t['sec_btn_hover']} !important;
         color: #ffffff !important;
     }}
+    .stButton > button:disabled {{
+        opacity: 0.45 !important;
+        cursor: not-allowed !important;
+    }}
 
-    /* Input Fields, Selectbox & Popover */
+    /* Fix Popover & Dropdown Menu (Dark & Light Mode) */
+    [data-testid="stPopoverBody"], div[data-baseweb="popover"] > div, ul[role="listbox"] {{
+        background-color: {t['popover_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 14px !important;
+        color: {t['text_main']} !important;
+    }}
+    ul[role="listbox"] li {{
+        color: {t['text_main']} !important;
+    }}
+    ul[role="listbox"] li:hover {{
+        background-color: {t['input_bg']} !important;
+    }}
+
+    /* Input Fields, Number Input & Selectbox */
     .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div, .stDateInput input {{
         border-radius: 12px !important;
         border-color: {t['input_border']} !important;
@@ -240,12 +285,23 @@ st.markdown(f"""
         color: {t['text_main']} !important;
         font-weight: 500 !important;
     }}
-    .stTextInput label, .stNumberInput label, .stSelectbox label, .stDateInput label, .stRadio label, .stCheckbox label {{
+    .stTextInput label, .stNumberInput label, .stSelectbox label, .stDateInput label, .stRadio label, .stCheckbox label, .stSlider label {{
         color: {t['text_main']} !important;
     }}
     .stTextInput input:focus, .stNumberInput input:focus {{
         border-color: #3b82f6 !important;
         box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+    }}
+
+    /* Alert Boxes (st.info, st.warning, st.success, st.error) */
+    [data-testid="stAlert"] {{
+        background-color: {t['alert_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 14px !important;
+        color: {t['text_main']} !important;
+    }}
+    [data-testid="stAlert"] p {{
+        color: {t['text_main']} !important;
     }}
 
     /* Tabs Modern ala Pill Switcher */
@@ -254,6 +310,7 @@ st.markdown(f"""
         padding: 5px !important;
         border-radius: 14px !important;
         gap: 6px !important;
+        border: 1px solid {t['card_border']} !important;
     }}
     .stTabs [data-baseweb="tab"] {{
         border-radius: 10px !important;
@@ -266,7 +323,7 @@ st.markdown(f"""
     .stTabs [aria-selected="true"] {{
         background-color: {t['tab_active_bg']} !important;
         color: {t['tab_active_text']} !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
     }}
     .stTabs [data-baseweb="tab-highlight"] {{
         display: none !important;
@@ -278,6 +335,10 @@ st.markdown(f"""
         border: 1px solid {t['card_border']} !important;
         border-radius: 14px !important;
     }}
+    [data-testid="stExpander"] summary {{
+        color: {t['text_main']} !important;
+        font-weight: 700 !important;
+    }}
     [data-testid="stChatMessage"] {{
         background-color: {t['input_bg']} !important;
         border: 1px solid {t['card_border']} !important;
@@ -288,6 +349,7 @@ st.markdown(f"""
     .hero-pill {{
         display: inline-block;
         background-color: {t['pill_bg']};
+        border: 1px solid {t['pill_border']};
         color: {t['pill_text']};
         padding: 6px 14px;
         border-radius: 9999px;
@@ -326,11 +388,13 @@ st.markdown(f"""
     .epaper-light {{
         background-color: #f4f4f0; color: #111111 !important; border: 6px solid #334155;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.18);
     }}
     .epaper-light * {{ font-family: 'Courier New', monospace !important; color: #111111 !important; }}
     .epaper-dark {{
         background-color: #18181b; color: #f4f4f5 !important; border: 6px solid #ef4444;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
+        box-shadow: 0 8px 20px rgba(239,68,68,0.22);
     }}
     .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
 </style>
@@ -353,7 +417,7 @@ if not st.session_state.logged_in:
     _, col_l, _ = st.columns([1, 1.25, 1])
     with col_l:
         st.markdown(f"""
-        <div style='text-align: center; margin-top: 16px; margin-bottom: 18px;'>
+        <div style='text-align: center; margin-top: 12px; margin-bottom: 18px;'>
             <span class='hero-pill'>🏷️ Smart Label & Retail OS</span>
             <h1 style='font-size: 38px; margin: 4px 0;'>Masuk ke <span class='gradient-title'>Storify</span></h1>
             <p style='color: {t['text_muted']}; font-size: 15px;'>Sistem Manajemen Smart Label E-Paper & Operasional Toko</p>
@@ -385,7 +449,7 @@ if st.session_state.app_tier is None:
         <span class='hero-pill'>🎟️ Portal Aktivasi Lisensi</span>
         <h1 style='font-size: 36px; margin: 4px 0;'>Aktivasi Paket <span class='gradient-title'>Storify</span></h1>
         <p style='color: {t['text_muted']}; font-size: 15px; max-width: 650px; margin: 0 auto;'>
-            Semua paket bebas batasan jumlah rak & akun tim. Masukkan kode lisensi dari invoice pembelian Anda (Demo: ketik kode bebas).
+            Semua paket bebas batasan jumlah rak & akun tim. Masukkan kode lisensi dari invoice pembelian Anda (min. 4 karakter).
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -448,12 +512,13 @@ if st.session_state.app_tier is None:
                 st.write("")
                 code_in = st.text_input(f"Kode Lisensi {name}", placeholder=f"Contoh: STR-{name[:3].upper()}-8492", key=f"code_{name}")
                 if st.button(f"Aktifkan {name}", type=btn_type, use_container_width=True, key=f"act_{name}"):
-                    if code_in.strip():
+                    clean_code = code_in.strip()
+                    if len(clean_code) >= 4:
                         st.session_state.app_tier = name
-                        add_log("SUCCESS", f"Lisensi {name} diaktifkan (Kode: {code_in.strip()})")
+                        add_log("SUCCESS", f"Lisensi {name} diaktifkan (Kode: {clean_code})")
                         st.rerun()
                     else:
-                        st.warning("Masukkan kode lisensi terlebih dahulu.")
+                        st.warning("Masukkan kode lisensi yang valid (minimal 4 karakter).")
     st.stop()
 
 # ==========================================
@@ -528,19 +593,26 @@ with st.sidebar:
                     tr_rak = st.selectbox("Produk Asal:", list(current_inv.keys()), format_func=lambda r: f"{r} - {current_inv[r]['item']} ({current_inv[r]['qty']})")
                     other_branches = [b for b in st.session_state.branches if b != branch]
                     tr_dest = st.selectbox("Cabang Tujuan:", other_branches)
-                    tr_qty = st.number_input("Jumlah Transfer", min_value=1, max_value=max(1, current_inv[tr_rak]["qty"]), value=1)
-                    if st.button("Kirim Stok Antar Cabang", use_container_width=True):
-                        if current_inv[tr_rak]["qty"] >= tr_qty:
+                    avail_qty = current_inv[tr_rak]["qty"]
+                    if avail_qty > 0:
+                        tr_qty = st.number_input("Jumlah Transfer", min_value=1, max_value=avail_qty, value=1)
+                        if st.button("Kirim Stok Antar Cabang", use_container_width=True):
                             current_inv[tr_rak]["qty"] -= tr_qty
+                            current_inv[tr_rak]["outflow"].append(tr_qty)
                             dest_inv = st.session_state.inventory.setdefault(tr_dest, {})
                             if tr_rak in dest_inv:
                                 dest_inv[tr_rak]["qty"] += tr_qty
+                                dest_inv[tr_rak]["inflow"].append(tr_qty)
                             else:
                                 dest_inv[tr_rak] = current_inv[tr_rak].copy()
                                 dest_inv[tr_rak]["qty"] = tr_qty
+                                dest_inv[tr_rak]["inflow"] = [tr_qty]
+                                dest_inv[tr_rak]["outflow"] = [0]
                             add_log("INFO", f"[{current_user['name']}] Transfer {tr_qty} pcs {current_inv[tr_rak]['item']} ({branch} -> {tr_dest})")
                             st.toast("Transfer stok berhasil!", icon="🚚")
                             st.rerun()
+                    else:
+                        st.caption("⚠️ Stok produk asal kosong (0 pcs).")
 
     with st.expander("🔄 Ganti Akun Login"):
         acc_labels = [f"{a['name']} ({a['role']})" for a in st.session_state.accounts]
@@ -584,7 +656,7 @@ with st.sidebar:
                         "item": new_item.strip(), "category": new_cat.strip(), "qty": new_qty,
                         "cost": new_cost, "price": new_price, "old_price": None,
                         "exp_date": new_exp.strftime("%Y-%m-%d"), "battery": 100, "checked_today": True,
-                        "image": final_img, "inflow": [new_qty, new_qty], "outflow": [0, 0]
+                        "image": final_img, "inflow": [new_qty], "outflow": [0]
                     }
                     add_log("SUCCESS", f"[{current_user['name']}] Menambah {new_item} di {new_rak} ({branch})")
                     st.rerun()
@@ -611,6 +683,7 @@ with st.sidebar:
                                 current_inv[r]["price"] = op
                                 current_inv[r]["old_price"] = None
                         st.session_state.flash_sale_active = False
+                        st.session_state.original_prices = {}
                         st.rerun()
 
         if tier == "Pro":
@@ -684,7 +757,10 @@ if st.session_state.page == "detail":
     st.write("")
     if tier in ["Premium", "Pro"]:
         st.subheader("📈 Pergerakan Stok (Masuk vs Terjual)")
-        st.line_chart({"Masuk": prod["inflow"], "Terjual": prod["outflow"]})
+        max_len = max(len(prod["inflow"]), len(prod["outflow"]))
+        in_padded = prod["inflow"] + [0] * (max_len - len(prod["inflow"]))
+        out_padded = prod["outflow"] + [0] * (max_len - len(prod["outflow"]))
+        st.line_chart({"Masuk": in_padded, "Terjual": out_padded})
     else:
         st.info("🔒 Upgrade ke paket Premium/Pro untuk melihat grafik riwayat stok.")
     st.stop()
@@ -761,7 +837,13 @@ with tab1:
                         for _, row in edited_df.iterrows():
                             rk = row["Kode Rak"]
                             if rk in current_inv:
-                                current_inv[rk]["qty"] = int(row["Stok"])
+                                old_q = current_inv[rk]["qty"]
+                                new_q_bulk = int(row["Stok"])
+                                if new_q_bulk > old_q:
+                                    current_inv[rk]["inflow"].append(new_q_bulk - old_q)
+                                elif new_q_bulk < old_q:
+                                    current_inv[rk]["outflow"].append(old_q - new_q_bulk)
+                                current_inv[rk]["qty"] = new_q_bulk
                                 current_inv[rk]["cost"] = int(row["Harga Modal"])
                                 current_inv[rk]["price"] = int(row["Harga Jual (Rp)"])
                         add_log("SUCCESS", f"[{current_user['name']}] Melakukan Bulk Edit massal di {branch}")
@@ -856,14 +938,16 @@ with tab1:
                                 d1, d2, d3, d4 = st.columns(4)
                                 for col_d, pct in zip([d1, d2, d3], [10, 20, 50]):
                                     if col_d.button(f"-{pct}%", key=f"d{pct}_{branch}_{rak_id}", use_container_width=True):
-                                        current_inv[rak_id]["old_price"] = data["price"]
-                                        current_inv[rak_id]["price"] = int(data["price"] * (1 - pct/100))
+                                        base_p = data["old_price"] if data.get("old_price") else data["price"]
+                                        current_inv[rak_id]["old_price"] = base_p
+                                        current_inv[rak_id]["price"] = int(base_p * (1 - pct/100))
                                         add_log("INFO", f"[{current_user['name']}] Diskon {pct}% pada {rak_id}")
                                         st.rerun()
                                 if d4.button("Reset", key=f"rst_{branch}_{rak_id}", use_container_width=True):
                                     if data.get("old_price"):
                                         current_inv[rak_id]["price"] = data["old_price"]
                                         current_inv[rak_id]["old_price"] = None
+                                        st.session_state.original_prices.pop(rak_id, None)
                                         st.rerun()
                             else:
                                 new_c = data.get("cost", 0)
@@ -881,10 +965,15 @@ with tab1:
 
                             if st.button("🗑️ Hapus Rak", key=f"del_{branch}_{rak_id}", use_container_width=True):
                                 del current_inv[rak_id]
+                                st.session_state.original_prices.pop(rak_id, None)
                                 add_log("ERROR", f"[{current_user['name']}] Menghapus {rak_id} ({branch})")
                                 st.rerun()
                         else:
                             if st.button("💾 Update Stok", type="primary", key=f"sv_{branch}_{rak_id}", use_container_width=True):
+                                if new_q > data["qty"]:
+                                    current_inv[rak_id]["inflow"].append(new_q - data["qty"])
+                                elif new_q < data["qty"]:
+                                    current_inv[rak_id]["outflow"].append(data["qty"] - new_q)
                                 current_inv[rak_id]["qty"] = new_q
                                 add_log("INFO", f"[{current_user['name']}] Update stok {rak_id} -> {new_q} pcs")
                                 st.rerun()
@@ -906,7 +995,7 @@ with tab2:
                 req_qty = st.number_input("Jumlah Dibutuhkan (Pcs)", min_value=1, value=20, step=5)
                 req_note = st.text_input("Catatan", placeholder="Contoh: Stok menipis, mohon dipesan ke supplier")
                 if st.button("📨 Kirim Notifikasi", type="primary", use_container_width=True):
-                    new_id = len(st.session_state.restock_requests) + 1
+                    new_id = max([r["id"] for r in st.session_state.restock_requests], default=0) + 1
                     st.session_state.restock_requests.insert(0, {
                         "id": new_id, "branch": branch, "rak": sel_rak_req, "item": current_inv[sel_rak_req]["item"],
                         "qty": req_qty, "by": current_user["name"], "note": req_note or "-",
@@ -1093,9 +1182,9 @@ with tab4:
                 with ac3:
                     if is_privileged and idx != st.session_state.current_user_idx and len(st.session_state.accounts) > 1:
                         if st.button("🗑️ Hapus", key=f"del_acc_{idx}", use_container_width=True):
+                            active_acc = st.session_state.accounts[st.session_state.current_user_idx]
                             st.session_state.accounts.pop(idx)
-                            if st.session_state.current_user_idx >= len(st.session_state.accounts):
-                                st.session_state.current_user_idx = 0
+                            st.session_state.current_user_idx = st.session_state.accounts.index(active_acc)
                             st.rerun()
 
     with col_acc_add:
@@ -1107,15 +1196,18 @@ with tab4:
                 new_acc_role = st.selectbox("Jabatan (Role)", ["STAFF", "MANAGER", "DEVELOPER", "OWNER"])
                 if st.button("Daftarkan Akun", type="primary", use_container_width=True):
                     if new_acc_name.strip() and new_acc_email.strip():
-                        st.session_state.accounts.append({
-                            "name": new_acc_name.strip(),
-                            "role": new_acc_role,
-                            "email": new_acc_email.strip()
-                        })
-                        add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name} ({new_acc_role})")
-                        st.success(f"Akun {new_acc_name} berhasil dibuat!")
-                        time.sleep(0.4)
-                        st.rerun()
+                        if any(a["email"].lower() == new_acc_email.strip().lower() for a in st.session_state.accounts):
+                            st.warning("Email tersebut sudah terdaftar.")
+                        else:
+                            st.session_state.accounts.append({
+                                "name": new_acc_name.strip(),
+                                "role": new_acc_role,
+                                "email": new_acc_email.strip()
+                            })
+                            add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name} ({new_acc_role})")
+                            st.success(f"Akun {new_acc_name} berhasil dibuat!")
+                            time.sleep(0.4)
+                            st.rerun()
                     else:
                         st.warning("Nama dan email wajib diisi.")
             else:
