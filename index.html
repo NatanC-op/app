@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Storify — Pembelian Lisensi Storify & Smart Label E-Paper</title>
+  <title>Storify — Pembelian Lisensi & Smart Label E-Paper</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -17,7 +17,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">🏷️</div>
-        <span class="font-extrabold text-xl tracking-tight text-slate-900">Storify<span class="text-blue-600">.id</span></span>
+        <span class="font-extrabold text-xl tracking-tight text-slate-900">Storify</span>
       </div>
       <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
         <a href="#paket" class="hover:text-blue-600 transition">Paket Lisensi</a>
@@ -40,7 +40,7 @@
         🎟️ Portal Resmi Pembelian Lisensi Storify
       </span>
       <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-        Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify Storify</span>
+        Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify</span>
       </h1>
       <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-7">
         Pilih paket berlangganan <b>Standard</b>, <b>Premium</b>, atau <b>Pro</b>. Setelah pembayaran selesai, Anda akan langsung memperoleh <b>Kode Lisensi</b> untuk dimasukkan ke aplikasi Storify.
@@ -52,10 +52,10 @@
   <section id="paket" class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-10">
       <div class="inline-flex p-1.5 rounded-2xl bg-slate-200/80 border border-slate-300/60">
-        <button onclick="setCycle('Mingguan')" id="btn-Mingguan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition bg-white text-blue-600 shadow-sm">
+        <button onclick="setCycle('Mingguan')" id="btn-Mingguan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
           Mingguan
         </button>
-        <button onclick="setCycle('Bulanan')" id="btn-Bulanan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
+        <button onclick="setCycle('Bulanan')" id="btn-Bulanan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition bg-white text-blue-600 shadow-sm">
           Bulanan
         </button>
         <button onclick="setCycle('Tahunan')" id="btn-Tahunan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
@@ -121,7 +121,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
       <div class="p-5 rounded-2xl bg-white border border-slate-200">
         <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">1</span>
-        <h3 class="font-bold text-slate-900">Beli Paket di Website</h3>
+        <h3 class="font-bold text-slate-900">Beli Paket di Website Storify</h3>
         <p class="text-sm text-slate-600 mt-1">Pilih paket Standard, Premium, atau Pro lalu selesaikan checkout.</p>
       </div>
       <div class="p-5 rounded-2xl bg-white border border-slate-200">
@@ -192,7 +192,7 @@
 
       <!-- Kotak Kode Lisensi -->
       <div class="bg-blue-50 border-2 border-dashed border-blue-400 rounded-2xl p-4 text-center mb-4">
-        <span class="text-xs font-bold uppercase tracking-wider text-blue-700 block mb-1">Kode Lisensi Aplikasi Anda</span>
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-700 block mb-1">Kode Lisensi Storify Anda</span>
         <div id="generated-license-code" class="text-2xl sm:text-3xl font-mono font-extrabold text-slate-900 tracking-wider select-all">
           STR-PRO-0000
         </div>
@@ -322,15 +322,15 @@
     }
 
     function selectPlan(tierId, codePrefix, label, price) {
-      cart = cart.filter(item => item.type !== 'Storify');
+      cart = cart.filter(item => item.type !== 'Lisensi');
       cart.unshift({
-        id: 'Storify-' + tierId,
+        id: 'lic-' + tierId,
         tierId: tierId,
         codePrefix: codePrefix,
         name: 'Lisensi Storify ' + label,
         price: price,
         qty: 1,
-        type: 'Storify'
+        type: 'Lisensi'
       });
       updateCartUI();
       toggleCart(true);
@@ -399,9 +399,9 @@
       const payment = document.getElementById('cust-payment').value;
       const totalText = document.getElementById('cart-total').textContent;
 
-      const storifyItem = cart.find(i => i.type === 'Storify');
-      const prefix = storifyItem ? storifyItem.codePrefix : 'STD';
-      const tierName = storifyItem ? storifyItem.tierId : 'Standard';
+      const licItem = cart.find(i => i.type === 'Lisensi');
+      const prefix = licItem ? licItem.codePrefix : 'STD';
+      const tierName = licItem ? licItem.tierId : 'Standard';
       const randomDigits = Math.floor(1000 + Math.random() * 9000);
       
       currentLicenseKey = `STR-${prefix}-${randomDigits}`;
