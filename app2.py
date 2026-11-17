@@ -79,25 +79,184 @@ current_user = st.session_state.accounts[st.session_state.current_user_idx]
 is_privileged = current_user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
 tier = st.session_state.app_tier
 
-# CSS Modern & Bersih (Kompatibel Light & Dark Mode)
+# ==========================================
+# GLOBAL THEME & FONT (PLUS JAKARTA SANS + WEBSITE STYLE)
+# ==========================================
 st.markdown("""
 <style>
-    .badge-pro { background: linear-gradient(90deg, #2563eb, #7c3aed); color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-    .badge-prm { background: #2563eb; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-    .badge-std { background: #475569; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-    .badge-ok { background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
-    .badge-low { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
-    .badge-exp { background: rgba(245, 158, 11, 0.18); color: #f59e0b; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
-    .price-text { color: #3b82f6; font-size: 21px; font-weight: 800; }
-    .old-price { text-decoration: line-through; opacity: 0.6; font-size: 13px; margin-right: 6px; }
-    .epaper-light {
-        background-color: #f4f4f0; color: #111111; border: 6px solid #222222;
-        border-radius: 12px; padding: 18px; font-family: 'Courier New', monospace;
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+    /* Global Font & Typography */
+    html, body, [class*="css"], .stApp, button, input, select, textarea, .stMarkdown, .stText {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
+
+    h1, h2, h3, h4 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em !important;
+    }
+
+    /* Latar Belakang & Sidebar Nuansa Slate Website */
+    .stApp {
+        background-color: #f8fafc;
+        color: #0f172a;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #ffffff;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    /* Card Containers (border=True) ala Website */
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 18px !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+        transition: all 0.2s ease;
+    }
+
+    /* Metric Cards */
+    [data-testid="stMetric"] {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 16px 20px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+    [data-testid="stMetricLabel"] {
+        font-weight: 600 !important;
+        color: #64748b !important;
+        font-size: 13px !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-weight: 800 !important;
+        color: #0f172a !important;
+        letter-spacing: -0.02em !important;
+    }
+
+    /* Tombol Primary (Blue-600) & Secondary (Slate-900 / Outline) */
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        padding: 0.55rem 1.1rem !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22) !important;
+        transition: all 0.18s ease !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%) !important;
+        transform: translateY(-1px);
+    }
+
+    .stButton > button[kind="secondary"], .stDownloadButton > button {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        transition: all 0.18s ease !important;
+    }
+    .stButton > button[kind="secondary"]:hover, .stDownloadButton > button:hover {
+        background-color: #2563eb !important;
+        color: #ffffff !important;
+    }
+
+    /* Input Fields & Selectbox */
+    .stTextInput input, .stNumberInput input, .stSelectbox div[data-baseweb="select"] > div, .stDateInput input {
+        border-radius: 12px !important;
+        border-color: #cbd5e1 !important;
+        background-color: #ffffff !important;
+        font-weight: 500 !important;
+    }
+    .stTextInput input:focus, .stNumberInput input:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
+    }
+
+    /* Tabs Modern ala Pill Switcher */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #e2e8f0;
+        padding: 5px;
+        border-radius: 14px;
+        gap: 6px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        color: #475569 !important;
+        padding: 8px 16px !important;
+        border: none !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #ffffff !important;
+        color: #2563eb !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+    }
+    .stTabs [data-baseweb="tab-highlight"] {
+        display: none !important;
+    }
+
+    /* Expanders */
+    [data-testid="stExpander"] {
+        background-color: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 14px !important;
+    }
+
+    /* Badges & Harga (Identik dengan Website) */
+    .hero-pill {
+        display: inline-block;
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    .gradient-title {
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+    .badge-pro {
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        color: white; padding: 4px 12px; border-radius: 9999px;
+        font-size: 11px; font-weight: 800; letter-spacing: 0.03em; display: inline-block;
+    }
+    .badge-prm {
+        background: #2563eb; color: white; padding: 4px 12px;
+        border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
+    }
+    .badge-std {
+        background: #475569; color: white; padding: 4px 12px;
+        border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
+    }
+    .badge-ok { background: #dcfce7; color: #15803d; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+    .badge-low { background: #fee2e2; color: #b91c1c; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+    .badge-exp { background: #fef3c7; color: #b45309; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }
+    .price-text { color: #2563eb; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .old-price { text-decoration: line-through; color: #94a3b8; font-size: 13px; font-weight: 600; margin-right: 6px; }
+
+    /* Simulasi Layar E-Paper Fisik */
+    .epaper-light {
+        background-color: #f4f4f0; color: #111111; border: 6px solid #1e293b;
+        border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
+    }
+    .epaper-light * { font-family: 'Courier New', monospace !important; }
     .epaper-dark {
         background-color: #18181b; color: #f4f4f5; border: 6px solid #ef4444;
-        border-radius: 12px; padding: 18px; font-family: 'Courier New', monospace;
+        border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
     }
+    .epaper-dark * { font-family: 'Courier New', monospace !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -105,13 +264,19 @@ st.markdown("""
 # 2. HALAMAN LOGIN DEMO
 # ==========================================
 if not st.session_state.logged_in:
-    _, col_l, _ = st.columns([1, 1.3, 1])
+    _, col_l, _ = st.columns([1, 1.25, 1])
     with col_l:
-        st.markdown("<h1 style='text-align: center; margin-top: 30px;'>🏷️ Storify Cloud</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align: center; opacity: 0.7;'>Sistem Manajemen Smart Label E-Paper & Operasional Toko</p>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='text-align: center; margin-top: 32px; margin-bottom: 18px;'>
+            <span class='hero-pill'>🏷️ Smart Label & Retail OS</span>
+            <h1 style='font-size: 38px; margin: 4px 0;'>Masuk ke <span class='gradient-title'>Storify</span></h1>
+            <p style='color: #475569; font-size: 15px;'>Sistem Manajemen Smart Label E-Paper & Operasional Toko</p>
+        </div>
+        """, unsafe_allow_html=True)
         with st.container(border=True):
             email_in = st.text_input("Email Perusahaan", "beatrix@storify.id")
             pass_in = st.text_input("Password", type="password", value="demo123")
+            st.write("")
             if st.button("Masuk ke Dashboard", type="primary", use_container_width=True):
                 if email_in.strip() and pass_in.strip():
                     st.session_state.logged_in = True
@@ -125,12 +290,19 @@ if not st.session_state.logged_in:
 # 3. HALAMAN AKTIVASI LISENSI PAKET
 # ==========================================
 if st.session_state.app_tier is None:
-    st.markdown("<h2 style='text-align: center;'>Aktivasi Lisensi Paket Storify 🎟️</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; opacity: 0.7; margin-bottom: 25px;'>Semua paket bebas batasan jumlah rak & akun. Pilih paket sesuai kebutuhan fitur operasional toko Anda (Demo: ketik kode bebas).</p>", unsafe_allow_html=True)
-    
+    st.markdown("""
+    <div style='text-align: center; padding-top: 10px; margin-bottom: 24px;'>
+        <span class='hero-pill'>🎟️ Portal Aktivasi Lisensi</span>
+        <h1 style='font-size: 36px; margin: 4px 0;'>Aktivasi Paket <span class='gradient-title'>Storify</span></h1>
+        <p style='color: #475569; font-size: 15px; max-width: 650px; margin: 0 auto;'>
+            Semua paket bebas batasan jumlah rak & akun tim. Masukkan kode lisensi dari invoice pembelian Anda (Demo: ketik kode bebas).
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
     tiers_info = [
         (
-            "Standard", "Operasional Toko Lengkap",
+            "Standard", "Operasional Toko Lengkap", "Rp 156.250", "/ bulan",
             "✔️ **Unlimited Rak & Unlimited Akun Tim**\n"
             "✔️ Update Harga & Stok Smart Label\n"
             "✔️ Kasir Cepat (-1 Terjual) & Export CSV\n"
@@ -140,7 +312,7 @@ if st.session_state.app_tier is None:
             "secondary"
         ),
         (
-            "Premium", "Otomasi Promo & Profit",
+            "Premium", "Otomasi Promo & Profit", "Rp 287.500", "/ bulan",
             "✔️ **Semua Fitur Standard**\n"
             "✔️ **Kalkulator Harga & Margin Profit**\n"
             "✔️ **Bulk Edit Harga & Stok Massal**\n"
@@ -150,7 +322,7 @@ if st.session_state.app_tier is None:
             "secondary"
         ),
         (
-            "Pro", "Prioritas & Multi-Cabang",
+            "Pro", "Prioritas & Multi-Cabang", "Rp 437.500", "/ bulan",
             "✔️ **Semua Fitur Premium**\n"
             "✔️ **Manajemen Multi-Cabang & Transfer Stok**\n"
             "✔️ **Ringkasan Perbandingan Semua Cabang**\n"
@@ -160,9 +332,9 @@ if st.session_state.app_tier is None:
             "primary"
         )
     ]
-    
-    cols = st.columns(3)
-    for idx, (name, sub, desc, btn_type) in enumerate(tiers_info):
+
+    cols = st.columns(3, gap="large")
+    for idx, (name, sub, price_lbl, cycle_lbl, desc, btn_type) in enumerate(tiers_info):
         with cols[idx]:
             with st.container(border=True):
                 if name == "Pro":
@@ -171,12 +343,20 @@ if st.session_state.app_tier is None:
                     st.markdown("<span class='badge-prm'>POPULER</span>", unsafe_allow_html=True)
                 else:
                     st.markdown("<span class='badge-std'>DASAR</span>", unsafe_allow_html=True)
-                st.subheader(name)
-                st.caption(sub)
+
+                price_color = "#7c3aed" if name == "Pro" else "#2563eb"
+                st.markdown(f"""
+                <h3 style='margin: 12px 0 2px 0; font-size: 22px; color: #0f172a;'>{name}</h3>
+                <p style='color: #64748b; font-size: 13px; margin-bottom: 14px;'>{sub}</p>
+                <div style='margin-bottom: 8px;'>
+                    <span style='font-size: 28px; font-weight: 800; color: {price_color};'>{price_lbl}</span>
+                    <span style='font-size: 13px; color: #64748b; font-weight: 600;'> {cycle_lbl}</span>
+                </div>
+                """, unsafe_allow_html=True)
                 st.divider()
                 st.markdown(desc)
                 st.write("")
-                code_in = st.text_input(f"Kode Lisensi {name}", placeholder="Ketik kode aktivasi...", key=f"code_{name}")
+                code_in = st.text_input(f"Kode Lisensi {name}", placeholder=f"Contoh: STR-{name[:3].upper()}-8492", key=f"code_{name}")
                 if st.button(f"Aktifkan {name}", type=btn_type, use_container_width=True, key=f"act_{name}"):
                     if code_in.strip():
                         st.session_state.app_tier = name
@@ -210,8 +390,8 @@ history_reqs = [req for req in st.session_state.restock_requests if req["status"
 # HEADER UTAMA
 c_head1, c_head2 = st.columns([3, 1.3], vertical_alignment="center")
 with c_head1:
-    st.title(f"🏷️ Storify — {branch}")
-    tier_tag = "⭐ PRIORITAS PRO" if tier == "Pro" else f"STORIFY {tier.upper()}"
+    st.markdown(f"<h1 style='margin-bottom: 2px;'>🏷️ <span class='gradient-title'>Storify</span> — {branch}</h1>", unsafe_allow_html=True)
+    tier_tag = "⭐ PRIORITAS PRO" if tier == "Pro" else f"PAKET {tier.upper()}"
     st.caption(f"Lisensi: **{tier_tag}** (Unlimited Rak & Akun) | Login: **{current_user['name']}** (`{current_user['role']}`) | 📅 {datetime.now().strftime('%d %b %Y')}")
 with c_head2:
     sync_label = "⚡ Priority Sync E-Paper" if tier == "Pro" else "📡 Sync Semua E-Paper"
@@ -228,7 +408,7 @@ if is_privileged and active_notifs:
 # 5. SIDEBAR KONTROL RINGKAS
 # ==========================================
 with st.sidebar:
-    st.header("⚙️ Panel Kontrol")
+    st.markdown("<h3 style='margin-bottom: 10px;'>⚙️ Panel Kontrol</h3>", unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown(f"**👤 {current_user['name']}** (`{current_user['role']}`)")
         st.caption(f"📍 Lokasi: **{branch}**")
@@ -285,7 +465,7 @@ with st.sidebar:
             existing_cats = sorted(list(set(d["category"] for d in current_inv.values()))) if current_inv else ["Minuman", "Makanan"]
             cat_choice = st.selectbox("Kategori", existing_cats + ["+ Kategori Baru"])
             new_cat = st.text_input("Nama Kategori Baru", "Produk Susu") if cat_choice == "+ Kategori Baru" else cat_choice
-            
+
             img_opt = st.radio("Foto Produk:", ["Link URL", "Upload File"], horizontal=True)
             final_img = "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300"
             if img_opt == "Upload File":
@@ -295,7 +475,8 @@ with st.sidebar:
                     final_img = f"data:image/jpeg;base64,{b64}"
             else:
                 url_in = st.text_input("URL Gambar", final_img)
-                if url_in: final_img = url_in
+                if url_in:
+                    final_img = url_in
 
             new_qty = st.number_input("Stok Awal", min_value=0, value=15)
             new_cost = st.number_input("Harga Modal / HPP (Rp)", min_value=0, value=5500, step=500)
@@ -348,9 +529,12 @@ with st.sidebar:
 
     with st.expander("🔐 Sesi & Lisensi"):
         if st.button("🔄 Ganti Paket Lisensi", use_container_width=True):
-            st.session_state.app_tier = None; st.rerun()
+            st.session_state.app_tier = None
+            st.rerun()
         if st.button("🚪 Logout", use_container_width=True):
-            st.session_state.logged_in = False; st.session_state.app_tier = None; st.rerun()
+            st.session_state.logged_in = False
+            st.session_state.app_tier = None
+            st.rerun()
 
 # ==========================================
 # 6. HALAMAN DETAIL PRODUK & PREVIEW E-PAPER
@@ -358,17 +542,20 @@ with st.sidebar:
 if st.session_state.page == "detail":
     rak_key = st.session_state.selected_rak
     if rak_key not in current_inv:
-        st.session_state.page = "home"; st.rerun()
+        st.session_state.page = "home"
+        st.rerun()
     prod = current_inv[rak_key]
 
     if st.button("⬅️ Kembali ke Dashboard"):
-        st.session_state.page = "home"; st.rerun()
+        st.session_state.page = "home"
+        st.rerun()
 
     c_det1, c_det2 = st.columns([1.4, 1])
     with c_det1:
         with st.container(border=True):
             ic1, ic2 = st.columns([1, 2])
-            with ic1: st.image(prod["image"], use_container_width=True)
+            with ic1:
+                st.image(prod["image"], use_container_width=True)
             with ic2:
                 st.subheader(f"{prod['item']} ({rak_key})")
                 st.write(f"📂 **Kategori:** {prod['category']} | 📅 **Exp:** {prod.get('exp_date', '-')}")
@@ -429,7 +616,7 @@ with tab1:
     inv_list = list(current_inv.values())
     low_raks = [k for k, v in current_inv.items() if v["qty"] <= 5]
     checked_count = sum(1 for v in inv_list if v.get("checked_today", False))
-    
+
     near_exp_raks = []
     for k, v in current_inv.items():
         if v.get("exp_date"):
@@ -503,22 +690,28 @@ with tab1:
         st.info(f"Belum ada produk terdaftar di **{branch}**. Tambahkan produk melalui menu **➕ Tambah Produk & Label** di sidebar.")
     else:
         for rak_id, data in list(current_inv.items()):
-            if sel_cat != "Semua Kategori" and data["category"] != sel_cat: continue
-            if sel_status == "Stok Menipis (≤5)" and data["qty"] > 5: continue
-            if sel_status == "Belum Cek Fisik" and data.get("checked_today", False): continue
-            if sel_status == "Dekat Kedaluwarsa" and rak_id not in near_exp_raks: continue
-            if search_q.lower() not in data["item"].lower() and search_q.lower() not in rak_id.lower(): continue
+            if sel_cat != "Semua Kategori" and data["category"] != sel_cat:
+                continue
+            if sel_status == "Stok Menipis (≤5)" and data["qty"] > 5:
+                continue
+            if sel_status == "Belum Cek Fisik" and data.get("checked_today", False):
+                continue
+            if sel_status == "Dekat Kedaluwarsa" and rak_id not in near_exp_raks:
+                continue
+            if search_q.lower() not in data["item"].lower() and search_q.lower() not in rak_id.lower():
+                continue
 
             with st.container(border=True):
                 c_img, c_inf, c_stk, c_prc, c_act = st.columns([0.8, 2.1, 1.5, 1.6, 2], vertical_alignment="center")
-                with c_img: st.image(data["image"], use_container_width=True)
+                with c_img:
+                    st.image(data["image"], use_container_width=True)
                 with c_inf:
                     st.markdown(f"**📍 {rak_id} — {data['item']}**")
                     bat = data.get("battery", 95)
                     bat_icon = "🪫" if bat < 80 else "🔋"
                     exp_info = f" | 📅 Exp: {data['exp_date']}" if tier in ["Premium", "Pro"] and data.get("exp_date") else ""
                     st.caption(f"📂 {data['category']} | {bat_icon} {bat}%{exp_info}")
-                    
+
                     # Fitur Standard+: Checkbox Cek Fisik Harian (Stock Opname)
                     chk = st.checkbox("Sudah cek fisik hari ini", value=data.get("checked_today", False), key=f"chk_{branch}_{rak_id}")
                     if chk != data.get("checked_today", False):
@@ -529,8 +722,10 @@ with tab1:
                 with c_stk:
                     st.write(f"📦 **{data['qty']} Pcs**")
                     badges = []
-                    if data["qty"] <= 5: badges.append("<span class='badge-low'>⚠️ Stok Tipis</span>")
-                    else: badges.append("<span class='badge-ok'>✔ Aman</span>")
+                    if data["qty"] <= 5:
+                        badges.append("<span class='badge-low'>⚠️ Stok Tipis</span>")
+                    else:
+                        badges.append("<span class='badge-ok'>✔ Aman</span>")
                     if tier in ["Premium", "Pro"] and rak_id in near_exp_raks:
                         badges.append("<span class='badge-exp'>⏳ Dekat Exp</span>")
                     st.markdown(" ".join(badges), unsafe_allow_html=True)
@@ -583,8 +778,10 @@ with tab1:
                                 new_c = data.get("cost", 0)
 
                             if st.button("💾 Simpan", type="primary", key=f"sv_{branch}_{rak_id}", use_container_width=True):
-                                if new_q > data["qty"]: current_inv[rak_id]["inflow"].append(new_q - data["qty"])
-                                elif new_q < data["qty"]: current_inv[rak_id]["outflow"].append(data["qty"] - new_q)
+                                if new_q > data["qty"]:
+                                    current_inv[rak_id]["inflow"].append(new_q - data["qty"])
+                                elif new_q < data["qty"]:
+                                    current_inv[rak_id]["outflow"].append(data["qty"] - new_q)
                                 current_inv[rak_id]["qty"] = new_q
                                 current_inv[rak_id]["price"] = new_p
                                 current_inv[rak_id]["cost"] = new_c
@@ -609,7 +806,7 @@ with tab2:
 
     with col_req:
         st.subheader(f"🔔 Notifikasi Permintaan Restock ({branch})")
-        
+
         with st.container(border=True):
             st.markdown("**Kirim Notifikasi Permintaan Barang**")
             rak_options = list(current_inv.keys())
@@ -716,7 +913,7 @@ with tab3:
             })
         st.dataframe(pd.DataFrame(branch_summary), use_container_width=True, hide_index=True)
         st.divider()
-    
+
     st.markdown("### ✅ Pencatatan Permintaan Restock (Sudah Diproses)")
     if not history_reqs:
         st.info("Belum ada riwayat permintaan restock yang ditandai 'Sudah' di cabang ini.")
