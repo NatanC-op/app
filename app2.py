@@ -597,7 +597,7 @@ if st.session_state.app_tier is None:
             "✔️ **Kalkulator Harga & Margin Profit**\n"
             "✔️ **Bulk Edit Harga & Stok Massal**\n"
             "✔️ **Flash Sale Otomatis & Diskon Coret**\n"
-            "✔️ **Tracker Kedaluwarsa (Expired Alert)**\n"
+            "✔️ **Tracker kadaluwarsa (Expired Alert)**\n"
             "✔️ **Cetak Daftar Harga & Grafik Stok**",
             "secondary"
         ),
@@ -775,7 +775,7 @@ with st.sidebar:
                 margin_rp = new_price - new_cost
                 margin_pct = (margin_rp / new_price) * 100
                 st.caption(f"💰 Estimasi Margin: **Rp {margin_rp:,}** ({margin_pct:.1f}%)")
-            new_exp = st.date_input("Tanggal Kedaluwarsa", value=date.today() + timedelta(days=60))
+            new_exp = st.date_input("Tanggal Kadaluwarsa", value=date.today() + timedelta(days=60))
 
             if st.button("Simpan & Pasang Label", type="primary", use_container_width=True):
                 if new_rak.strip() and new_item.strip():
@@ -928,7 +928,7 @@ with tab1:
     m4.metric("Cek Fisik (Opname)", f"{checked_count} / {len(inv_list)} Rak", delta=f"{len(low_raks)} stok tipis" if low_raks else "Semua aman", delta_color="inverse")
 
     if tier in ["Premium", "Pro"] and near_exp_raks:
-        st.warning(f"📅 **Peringatan Kedaluwarsa (≤7 Hari):** Produk pada **{', '.join(near_exp_raks)}** mendekati tanggal kedaluwarsa. Pertimbangkan memberi diskon cepat.", icon="⏳")
+        st.warning(f"📅 **Peringatan Kadaluwarsa (≤7 Hari):** Produk pada **{', '.join(near_exp_raks)}** mendekati tanggal kadaluwarsa. Pertimbangkan memberi diskon cepat.", icon="⏳")
 
     # Toolbar Filter, Pencarian & Export CSV
     fc1, fc2, fc3, fc4 = st.columns([1.3, 1.3, 1.8, 1])
@@ -938,7 +938,7 @@ with tab1:
     with fc2:
         status_opts = ["Semua Status", "Stok Menipis (≤5)", "Belum Cek Fisik"]
         if tier in ["Premium", "Pro"]:
-            status_opts.append("Dekat Kedaluwarsa")
+            status_opts.append("Dekat Kadaluwarsa")
         sel_status = st.selectbox("Status", status_opts, label_visibility="collapsed")
     with fc3:
         search_q = st.text_input("Cari", placeholder="🔍 Cari nama barang atau kode rak...", label_visibility="collapsed")
@@ -996,7 +996,7 @@ with tab1:
                 continue
             if sel_status == "Belum Cek Fisik" and data.get("checked_today", False):
                 continue
-            if sel_status == "Dekat Kedaluwarsa" and rak_id not in near_exp_raks:
+            if sel_status == "Dekat Kadaluwarsa" and rak_id not in near_exp_raks:
                 continue
             if search_q.lower() not in data["item"].lower() and search_q.lower() not in rak_id.lower():
                 continue
