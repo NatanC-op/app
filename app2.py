@@ -15,6 +15,14 @@ def get_ts():
 def get_ts_sec():
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
+def get_time_only():
+    return datetime.now().strftime("%H:%M")
+
+def get_today_str():
+    return date.today().strftime("%Y-%m-%d")
+
+ROLE_LEVEL = {"STAFF": 1, "DEVELOPER": 2, "MANAGER": 3, "OWNER": 4}
+
 soon_exp = (date.today() + timedelta(days=5)).strftime("%Y-%m-%d")
 safe_exp = (date.today() + timedelta(days=90)).strftime("%Y-%m-%d")
 
@@ -29,12 +37,28 @@ defaults = {
     "epaper_style": "Klasik Terang",
     "epaper_footer": "Harga sudah termasuk PPN",
     "accounts": [
-        {"name": "Beatrix", "role": "OWNER", "email": "beatrix@storify.id"},
-        {"name": "Natannael", "role": "DEVELOPER", "email": "natannael@storify.id"},
-        {"name": "Walden", "role": "DEVELOPER", "email": "walden@storify.id"},
-        {"name": "Nathalee", "role": "STAFF", "email": "nathalee@storify.id"},
+        {"name": "Beatrix", "role": "OWNER", "email": "beatrix@storify.id", "password": "owner123"},
+        {"name": "Natannael", "role": "DEVELOPER", "email": "natannael@storify.id", "password": "dev123"},
+        {"name": "Walden", "role": "DEVELOPER", "email": "walden@storify.id", "password": "dev123"},
+        {"name": "Nathalee", "role": "STAFF", "email": "nathalee@storify.id", "password": "staff123"},
     ],
     "current_user_idx": 0,
+    "switch_target_idx": None,
+    "shift_configs": {
+        "Pagi": {"start": "07:00", "end": "15:00"},
+        "Siang": {"start": "14:00", "end": "22:00"},
+        "Malam": {"start": "22:00", "end": "07:00"},
+    },
+    "shift_roster": [
+        {"date": get_today_str(), "branch": "Cabang Utama", "staff": "Nathalee", "shift": "Pagi", "assigned_by": "Beatrix"},
+        {"date": get_today_str(), "branch": "Cabang Utama", "staff": "Walden", "shift": "Siang", "assigned_by": "Beatrix"},
+    ],
+    "attendance_logs": [
+        {
+            "date": get_today_str(), "branch": "Cabang Utama", "name": "Nathalee", "role": "STAFF",
+            "shift": "Pagi", "clock_in": "06:55", "clock_out": "-", "status": "Tepat Waktu", "note": "Hadir sesuai jadwal"
+        }
+    ],
     "logs": [{"time": get_ts_sec(), "type": "INFO", "action": "Sistem Storify & E-Paper Gateway aktif."}],
     "restock_requests": [
         {
@@ -44,10 +68,10 @@ defaults = {
         }
     ],
     "sales_history": [
-        {"time": get_ts(), "branch": "Cabang Utama", "rak": "Rak A1", "item": "Kopi Sachet 25g", "qty": 2, "total": 30000, "cashier": "Nathalee"}
+        {"time": get_ts(), "branch": "Cabang Utama", "rak": "Rak A1", "item": "Kopi Sachet 25g", "qty": 2, "total": 30000, "profit": 8000, "cashier": "Nathalee"}
     ],
     "shift_notes": [
-        {"time": get_ts(), "branch": "Cabang Utama", "author": "Nathalee", "shift": "Pagi", "note": "Semua label E-Paper rak depan sudah dicek dan menyala normal."}
+        {"time": get_ts(), "branch": "Cabang Utama", "author": "Nathalee", "shift": "Pagi", "rak_ok": True, "note": "Semua label E-Paper rak depan sudah dicek dan menyala normal."}
     ],
     "team_chat": [
         {"sender": "Nathalee", "role": "STAFF", "msg": "Halo kak, Rak B2 keripik singkong sudah hampir habis ya.", "time": get_ts()},
@@ -76,12 +100,17 @@ for k, v in defaults.items():
 def add_log(log_type, msg):
     st.session_state.logs.insert(0, {"time": get_ts_sec(), "type": log_type, "action": msg})
 
+def needs_password_to_switch(from_role, to_role):
+    """Wajib password jika berpindah ke jabatan yang lebih tinggi (misal STAFF/DEV -> OWNER/MANAGER)."""
+    return ROLE_LEVEL.get(to_role, 1) > ROLE_LEVEL.get(from_role, 1)
+
 # Pastikan indeks akun selalu valid
 if st.session_state.current_user_idx >= len(st.session_state.accounts):
     st.session_state.current_user_idx = 0
 
 current_user = st.session_state.accounts[st.session_state.current_user_idx]
 is_privileged = current_user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
+is_shift_admin = current_user["role"] in ["OWNER", "MANAGER"]
 tier = st.session_state.app_tier
 is_dark = st.session_state.dark_mode
 
@@ -304,7 +333,7 @@ st.markdown(f"""
         transform: translateY(-1px);
     }}
 
-    /* Tombol Secondary, Download & Popover Trigger (Termasuk tombol Kelola Barang & Harga) */
+    /* Tombol Secondary, Download & Popover Trigger */
     .stButton > button[kind="secondary"],
     button[kind="secondaryFormSubmit"],
     .stDownloadButton > button,
@@ -342,7 +371,7 @@ st.markdown(f"""
         cursor: not-allowed !important;
     }}
 
-    /* Input Fields, Number Input & Selectbox (Semua lapisan BaseWeb dipaksa putih di Light Mode) */
+    /* Input Fields, Number Input & Selectbox */
     .stTextInput > div > div,
     .stNumberInput > div > div,
     .stDateInput > div > div,
@@ -378,7 +407,7 @@ st.markdown(f"""
         border-color: {t['input_border']} !important;
     }}
 
-    /* Popover & Dropdown Listbox (Saat selectbox/popover dibuka) */
+    /* Popover & Dropdown Listbox */
     [data-testid="stPopoverBody"],
     [data-testid="stPopoverBody"] > div,
     div[data-baseweb="popover"],
@@ -403,7 +432,7 @@ st.markdown(f"""
         color: {t['pill_text']} !important;
     }}
 
-    /* Alert Boxes (st.warning, st.info, st.success) hingga div bagian dalam */
+    /* Alert Boxes */
     [data-testid="stAlert"],
     [data-testid="stAlert"] > div {{
         background-color: {t['warn_bg']} !important;
@@ -432,7 +461,7 @@ st.markdown(f"""
         border-radius: 10px !important;
         font-weight: 700 !important;
         font-size: 14px !important;
-        padding: 8px 16px !important;
+        padding: 8px 14px !important;
         border: none !important;
         background-color: transparent !important;
     }}
@@ -526,6 +555,7 @@ st.markdown(f"""
     .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
 </style>
 """, unsafe_allow_html=True)
+
 def render_theme_toggle(key_suffix="top"):
     label = "☀️ Light Mode" if st.session_state.dark_mode else "🌙 Dark Mode"
     if st.button(label, key=f"theme_btn_{key_suffix}", use_container_width=True):
@@ -551,7 +581,7 @@ if not st.session_state.logged_in:
         """, unsafe_allow_html=True)
         with st.container(border=True):
             email_in = st.text_input("Email Perusahaan", "beatrix@storify.id")
-            pass_in = st.text_input("Password", type="password", value="demo123")
+            pass_in = st.text_input("Password", type="password", value="owner123")
             st.write("")
             if st.button("Masuk ke Dashboard", type="primary", use_container_width=True):
                 if email_in.strip() and pass_in.strip():
@@ -587,8 +617,8 @@ if st.session_state.app_tier is None:
             "✔️ Update Harga & Stok Smart Label\n"
             "✔️ Kasir Cepat (-1 Terjual) & Export CSV\n"
             "✔️ Stock Opname / Cek Fisik Harian\n"
-            "✔️ Notifikasi Restock & Chat Tim\n"
-            "✔️ Simulasi Layar Fisik E-Paper",
+            "✔️ Absensi Karyawan & Jadwal Shift\n"
+            "✔️ Notifikasi Restock & Chat Tim",
             "secondary"
         ),
         (
@@ -597,7 +627,7 @@ if st.session_state.app_tier is None:
             "✔️ **Kalkulator Harga & Margin Profit**\n"
             "✔️ **Bulk Edit Harga & Stok Massal**\n"
             "✔️ **Flash Sale Otomatis & Diskon Coret**\n"
-            "✔️ **Tracker kedaluwarsa (Expired Alert)**\n"
+            "✔️ **Tracker Kedaluwarsa (Expired Alert)**\n"
             "✔️ **Cetak Daftar Harga & Grafik Stok**",
             "secondary"
         ),
@@ -608,7 +638,7 @@ if st.session_state.app_tier is None:
             "✔️ **Ringkasan Perbandingan Semua Cabang**\n"
             "✔️ **Kustomisasi Tema Layar E-Paper**\n"
             "✔️ **LED Locator (Tes Kedip Label Rak)**\n"
-            "✔️ **Buku Handover Shift & Priority Sync**",
+            "✔️ **Handover Shift Terverifikasi & Priority Sync**",
             "primary"
         )
     ]
@@ -683,6 +713,7 @@ with c_head_sync:
             time.sleep(0.15 if tier == "Pro" else 0.5)
         add_log("SUCCESS", f"[{current_user['name']}] Sinkronisasi {len(current_inv)} Smart Label di {branch} selesai.")
         st.toast(f"Semua label di {branch} berhasil diperbarui!", icon="✅")
+
 if is_privileged and active_notifs:
     st.warning(f"🔔 **Notifikasi Masuk ({branch}):** Ada **{len(active_notifs)} permintaan restock** berstatus **Belum**. Buka tab **📩 Notifikasi & Chat** untuk menandai **Sudah**.", icon="📢")
 
@@ -696,9 +727,36 @@ with st.sidebar:
         st.caption(f"📍 Lokasi: **{branch}**")
         render_theme_toggle("sidebar")
 
+    # Ganti Akun dengan Aturan Password Berjenjang Jabatan
+    with st.expander("🔄 Ganti Akun Login", expanded=True):
+        acc_labels = [f"{a['name']} ({a['role']})" for a in st.session_state.accounts]
+        sel_idx = st.selectbox("Pilih Akun Tujuan:", range(len(acc_labels)), index=st.session_state.current_user_idx, format_func=lambda x: acc_labels[x])
+        target_acc = st.session_state.accounts[sel_idx]
+
+        if sel_idx == st.session_state.current_user_idx:
+            st.caption("✅ Sedang login sebagai akun ini.")
+        else:
+            req_pass = needs_password_to_switch(current_user["role"], target_acc["role"])
+            if req_pass:
+                st.caption(f"🔒 Naik ke jabatan `{target_acc['role']}` wajib password.")
+                sw_pass = st.text_input(f"Password {target_acc['name']}", type="password", placeholder="Masukkan password akun...", key="sb_sw_pass")
+                if st.button("Verifikasi & Masuk", type="primary", use_container_width=True, key="sb_sw_btn_lock"):
+                    if sw_pass == target_acc.get("password", ""):
+                        st.session_state.current_user_idx = sel_idx
+                        add_log("INFO", f"Pergantian akun terverifikasi ke {target_acc['name']} ({target_acc['role']})")
+                        st.rerun()
+                    else:
+                        st.error("Password salah! Akses ditolak.")
+            else:
+                st.caption(f"🔓 Akses langsung tanpa password (`{current_user['role']}` → `{target_acc['role']}`).")
+                if st.button("Masuk Langsung", type="primary", use_container_width=True, key="sb_sw_btn_free"):
+                    st.session_state.current_user_idx = sel_idx
+                    add_log("INFO", f"{current_user['name']} berpindah ke akun {target_acc['name']} ({target_acc['role']})")
+                    st.rerun()
+
     # Fitur Khusus PRO: Multi-Cabang & Transfer Stok
     if tier == "Pro":
-        with st.expander("🏢 Cabang & Transfer Stok (Pro)", expanded=True):
+        with st.expander("🏢 Cabang & Transfer Stok (Pro)", expanded=False):
             sel_br = st.selectbox("Cabang Aktif:", st.session_state.branches, index=st.session_state.branches.index(branch))
             if sel_br != branch:
                 st.session_state.active_branch = sel_br
@@ -740,13 +798,6 @@ with st.sidebar:
                             st.rerun()
                     else:
                         st.caption("⚠️ Stok produk asal kosong (0 pcs).")
-
-    with st.expander("🔄 Ganti Akun Login"):
-        acc_labels = [f"{a['name']} ({a['role']})" for a in st.session_state.accounts]
-        sel_idx = st.selectbox("Pilih Akun:", range(len(acc_labels)), index=st.session_state.current_user_idx, format_func=lambda x: acc_labels[x])
-        if st.button("Masuk Sebagai Akun Ini", use_container_width=True):
-            st.session_state.current_user_idx = sel_idx
-            st.rerun()
 
     if is_privileged:
         with st.expander("➕ Tambah Produk & Label"):
@@ -896,10 +947,11 @@ if st.session_state.page == "detail":
 # 7. SISTEM TAB UTAMA DASHBOARD
 # ==========================================
 notif_badge = f" ({len(active_notifs)})" if active_notifs else ""
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📦 Monitoring Rak & Label",
+    "🕒 Shift & Absensi",
     f"📩 Notifikasi & Chat{notif_badge}",
-    "📊 History & Pencatatan",
+    "📊 History & Laporan",
     "👥 Manajemen Akun Tim"
 ])
 
@@ -1012,7 +1064,6 @@ with tab1:
                     exp_info = f" | 📅 Exp: {data['exp_date']}" if tier in ["Premium", "Pro"] and data.get("exp_date") else ""
                     st.caption(f"📂 {data['category']} | {bat_icon} {bat}%{exp_info}")
 
-                    # Fitur Standard+: Checkbox Cek Fisik Harian (Stock Opname)
                     chk = st.checkbox("Sudah cek fisik hari ini", value=data.get("checked_today", False), key=f"chk_{branch}_{rak_id}")
                     if chk != data.get("checked_today", False):
                         current_inv[rak_id]["checked_today"] = chk
@@ -1048,9 +1099,10 @@ with tab1:
                         if st.button("🛒 -1 Terjual", key=f"sell_{branch}_{rak_id}", use_container_width=True, disabled=(data["qty"] == 0)):
                             current_inv[rak_id]["qty"] -= 1
                             current_inv[rak_id]["outflow"].append(1)
+                            item_profit = data["price"] - data.get("cost", 0)
                             st.session_state.sales_history.insert(0, {
                                 "time": get_ts(), "branch": branch, "rak": rak_id, "item": data["item"],
-                                "qty": 1, "total": data["price"], "cashier": current_user["name"]
+                                "qty": 1, "total": data["price"], "profit": item_profit, "cashier": current_user["name"]
                             })
                             add_log("INFO", f"[{current_user['name']}] Terjual 1 pcs {data['item']} ({rak_id} - {branch})")
                             st.rerun()
@@ -1106,9 +1158,172 @@ with tab1:
                                 st.rerun()
 
 # ------------------------------------------
-# TAB 2: NOTIFIKASI RESTOCK, CHAT & SHIFT
+# TAB 2: SHIFT & ABSENSI KARYAWAN
 # ------------------------------------------
 with tab2:
+    st.subheader(f"🕒 Manajemen Jadwal Shift & Absensi ({branch})")
+    today_str = get_today_str()
+
+    # Ringkasan Jam Shift Aktif
+    sc_cols = st.columns(3)
+    for idx_s, (sh_name, sh_time) in enumerate(st.session_state.shift_configs.items()):
+        with sc_cols[idx_s]:
+            with st.container(border=True):
+                st.markdown(f"**🌤️ Shift {sh_name}**")
+                st.markdown(f"<span style='font-size:20px; font-weight:800; color:{t['price_color']};'>{sh_time['start']} — {sh_time['end']} WIB</span>", unsafe_allow_html=True)
+                assigned_names = [r["staff"] for r in st.session_state.shift_roster if r["date"] == today_str and r["branch"] == branch and r["shift"] == sh_name]
+                st.caption(f"Petugas: {', '.join(assigned_names) if assigned_names else 'Belum dijadwalkan'}")
+
+    st.write("")
+    col_absen, col_roster = st.columns([1.15, 1.35])
+
+    # KOLOM KIRI: ABSENSI HARIAN KARYAWAN + HANDOVER SHIFT
+    with col_absen:
+        with st.container(border=True):
+            st.markdown(f"### 🪪 Absensi Harian — {current_user['name']}")
+            st.caption(f"Tanggal: **{datetime.now().strftime('%d %B %Y')}** | Jam Sistem: **{get_time_only()} WIB**")
+
+            my_today_att = next(
+                (a for a in st.session_state.attendance_logs if a["date"] == today_str and a["branch"] == branch and a["name"] == current_user["name"]),
+                None
+            )
+
+            if not my_today_att:
+                # Cek apakah karyawan sudah dijadwalkan hari ini
+                my_roster = next(
+                    (r for r in st.session_state.shift_roster if r["date"] == today_str and r["branch"] == branch and r["staff"] == current_user["name"]),
+                    None
+                )
+                default_sh = my_roster["shift"] if my_roster else "Pagi"
+                sh_opts = list(st.session_state.shift_configs.keys())
+                sel_my_sh = st.selectbox("Pilih Shift Bertugas:", sh_opts, index=sh_opts.index(default_sh))
+                att_note = st.text_input("Catatan Kehadiran (Opsional)", placeholder="Contoh: Hadir tepat waktu / izin telat 5 menit")
+
+                if st.button("🟢 Clock-In (Absen Masuk Sekarang)", type="primary", use_container_width=True):
+                    now_hm = get_time_only()
+                    sched_start = st.session_state.shift_configs[sel_my_sh]["start"]
+                    att_status = "Terlambat" if (sel_my_sh != "Malam" and now_hm > sched_start) else "Tepat Waktu"
+                    st.session_state.attendance_logs.insert(0, {
+                        "date": today_str, "branch": branch, "name": current_user["name"], "role": current_user["role"],
+                        "shift": sel_my_sh, "clock_in": now_hm, "clock_out": "-",
+                        "status": att_status, "note": att_note.strip() or "-"
+                    })
+                    add_log("SUCCESS", f"[{current_user['name']}] Clock-In Shift {sel_my_sh} pukul {now_hm} ({att_status})")
+                    st.toast(f"Absen masuk tercatat pukul {now_hm} ({att_status})!", icon="✅")
+                    st.rerun()
+            else:
+                st.success(f"✔️ Sudah Clock-In **Shift {my_today_att['shift']}** pukul **{my_today_att['clock_in']} WIB** (`{my_today_att['status']}`)")
+                if my_today_att["clock_out"] == "-":
+                    if st.button("🔴 Clock-Out (Absen Pulang Sekarang)", type="primary", use_container_width=True):
+                        now_hm = get_time_only()
+                        my_today_att["clock_out"] = now_hm
+                        add_log("INFO", f"[{current_user['name']}] Clock-Out Shift {my_today_att['shift']} pukul {now_hm}")
+                        st.toast(f"Absen pulang tercatat pukul {now_hm}!", icon="👋")
+                        st.rerun()
+                else:
+                    st.info(f"🏁 Shift selesai. Clock-Out pukul **{my_today_att['clock_out']} WIB**.")
+
+        st.write("")
+        with st.container(border=True):
+            st.markdown("### 📋 Laporan Handover Pergantian Shift")
+            with st.form("shift_handover_form", clear_on_submit=True):
+                h_c1, h_c2 = st.columns([1, 2])
+                with h_c1:
+                    ho_shift = st.selectbox("Shift", list(st.session_state.shift_configs.keys()))
+                with h_c2:
+                    ho_note = st.text_input("Ringkasan Kondisi Toko & Rak", placeholder="Contoh: Semua label E-Paper normal, laci kasir sesuai.")
+                ho_rak_ok = st.checkbox("Saya memastikan seluruh label harga E-Paper menyala & akurat", value=True)
+                if st.form_submit_button("💾 Simpan Laporan Handover", type="primary", use_container_width=True):
+                    if ho_note.strip():
+                        st.session_state.shift_notes.insert(0, {
+                            "time": get_ts(), "branch": branch, "author": current_user["name"],
+                            "shift": ho_shift, "rak_ok": ho_rak_ok, "note": ho_note.strip()
+                        })
+                        add_log("INFO", f"[{current_user['name']}] Mengirim laporan handover Shift {ho_shift}")
+                        st.toast("Laporan handover tersimpan!", icon="📋")
+                        st.rerun()
+                    else:
+                        st.warning("Isi ringkasan kondisi toko terlebih dahulu.")
+
+    # KOLOM KANAN: PENGATURAN SHIFT (KHUSUS OWNER/MANAGER) & REKAP ABSENSI
+    with col_roster:
+        if is_shift_admin:
+            with st.container(border=True):
+                st.markdown("### 🛠️ Pengaturan Jadwal Shift (Owner / Manager)")
+                with st.expander("⏰ Atur Jam Operasional Tiap Shift", expanded=False):
+                    cfg_sh = st.selectbox("Pilih Shift yang Diatur:", list(st.session_state.shift_configs.keys()), key="cfg_sh_sel")
+                    c_tm1, c_tm2 = st.columns(2)
+                    with c_tm1:
+                        new_start = st.text_input("Jam Masuk (HH:MM)", value=st.session_state.shift_configs[cfg_sh]["start"], key="cfg_start")
+                    with c_tm2:
+                        new_end = st.text_input("Jam Pulang (HH:MM)", value=st.session_state.shift_configs[cfg_sh]["end"], key="cfg_end")
+                    if st.button("Simpan Jam Shift", use_container_width=True):
+                        st.session_state.shift_configs[cfg_sh] = {"start": new_start.strip(), "end": new_end.strip()}
+                        add_log("INFO", f"[{current_user['name']}] Mengubah jam Shift {cfg_sh} menjadi {new_start} - {new_end}")
+                        st.toast("Jam shift diperbarui!", icon="⏰")
+                        st.rerun()
+
+                st.markdown("**📅 Tugaskan Karyawan ke Shift**")
+                r_c1, r_c2, r_c3 = st.columns([1.3, 1.2, 1.1])
+                with r_c1:
+                    staff_names = [a["name"] for a in st.session_state.accounts]
+                    sel_staff_r = st.selectbox("Karyawan", staff_names, key="rost_staff")
+                with r_c2:
+                    sel_date_r = st.date_input("Tanggal", value=date.today(), key="rost_date")
+                with r_c3:
+                    sel_shift_r = st.selectbox("Shift", list(st.session_state.shift_configs.keys()), key="rost_shift")
+
+                if st.button("➕ Tetapkan Jadwal Shift", type="primary", use_container_width=True):
+                    d_str = sel_date_r.strftime("%Y-%m-%d")
+                    # Hapus jadwal lama karyawan yang sama di tanggal & cabang yang sama jika ada
+                    st.session_state.shift_roster = [
+                        r for r in st.session_state.shift_roster
+                        if not (r["date"] == d_str and r["branch"] == branch and r["staff"] == sel_staff_r)
+                    ]
+                    st.session_state.shift_roster.insert(0, {
+                        "date": d_str, "branch": branch, "staff": sel_staff_r,
+                        "shift": sel_shift_r, "assigned_by": current_user["name"]
+                    })
+                    add_log("SUCCESS", f"[{current_user['name']}] Menjadwalkan {sel_staff_r} pada Shift {sel_shift_r} ({d_str})")
+                    st.toast(f"Jadwal {sel_staff_r} berhasil diatur!", icon="📅")
+                    st.rerun()
+        else:
+            st.info("ℹ️ Jadwal shift dan jam operasional diatur oleh **Owner** atau **Manager**.")
+
+        st.write("")
+        with st.container(border=True):
+            st.markdown(f"### 📆 Jadwal Shift Aktif ({branch})")
+            b_roster = [r for r in st.session_state.shift_roster if r["branch"] == branch]
+            if b_roster:
+                for idx_r, r in enumerate(b_roster):
+                    rc1, rc2 = st.columns([3, 1], vertical_alignment="center")
+                    with rc1:
+                        sh_info = st.session_state.shift_configs.get(r["shift"], {"start": "-", "end": "-"})
+                        st.markdown(f"**{r['staff']}** — Shift **{r['shift']}** (`{sh_info['start']} - {sh_info['end']}`)")
+                        st.caption(f"📅 {r['date']} | Diatur oleh: {r['assigned_by']}")
+                    with rc2:
+                        if is_shift_admin:
+                            if st.button("Hapus", key=f"del_rost_{idx_r}", use_container_width=True):
+                                st.session_state.shift_roster.remove(r)
+                                st.rerun()
+            else:
+                st.caption("Belum ada jadwal shift terdaftar.")
+
+        st.write("")
+        with st.container(border=True):
+            st.markdown("### 🧾 Log Absensi Karyawan Hari Ini")
+            b_att = [a for a in st.session_state.attendance_logs if a["branch"] == branch]
+            if b_att:
+                df_att = pd.DataFrame(b_att)[["date", "name", "role", "shift", "clock_in", "clock_out", "status"]]
+                df_att.columns = ["Tanggal", "Nama", "Jabatan", "Shift", "Masuk", "Pulang", "Status"]
+                st.dataframe(df_att, use_container_width=True, hide_index=True)
+            else:
+                st.caption("Belum ada karyawan yang melakukan absensi hari ini.")
+
+# ------------------------------------------
+# TAB 3: NOTIFIKASI RESTOCK & CHAT TIM
+# ------------------------------------------
+with tab3:
     col_req, col_chat = st.columns([1.2, 1])
 
     with col_req:
@@ -1137,7 +1352,7 @@ with tab2:
 
         st.write(f"**Antrean Notifikasi Masuk ({len(active_notifs)}):**")
         if not active_notifs:
-            st.success("✨ Tidak ada notifikasi tertunda. Semua permintaan sudah ditindaklanjuti dan masuk ke tab **History & Pencatatan**.")
+            st.success("✨ Tidak ada notifikasi tertunda. Semua permintaan sudah ditindaklanjuti dan masuk ke tab **History & Laporan**.")
         else:
             for req in active_notifs:
                 with st.container(border=True):
@@ -1153,7 +1368,7 @@ with tab2:
                                 req["resolved_at"] = get_ts()
                                 req["resolved_by"] = current_user["name"]
                                 add_log("SUCCESS", f"[{current_user['name']}] Menyelesaikan notifikasi restock {req['rak']} (Masuk ke History)")
-                                st.toast("Dipindahkan ke History & Pencatatan!", icon="✅")
+                                st.toast("Dipindahkan ke History & Laporan!", icon="✅")
                                 time.sleep(0.3)
                                 st.rerun()
                         else:
@@ -1161,7 +1376,7 @@ with tab2:
 
     with col_chat:
         st.subheader("💬 Kontak Chat Tim (Gudang ↔ Manager)")
-        with st.container(border=True, height=340):
+        with st.container(border=True, height=380):
             for chat in st.session_state.team_chat:
                 is_me = chat["sender"] == current_user["name"]
                 align_icon = "🧑‍💼" if chat["role"] != "STAFF" else "👷"
@@ -1182,27 +1397,23 @@ with tab2:
                 })
                 st.rerun()
 
-        if tier == "Pro":
-            st.divider()
-            st.markdown("**📋 Buku Catatan Handover Shift (Pro)**")
-            with st.form("shift_form", clear_on_submit=True):
-                sc1, sc2 = st.columns([1, 2.5])
-                with sc1:
-                    sh_type = st.selectbox("Shift", ["Pagi", "Siang", "Malam"], label_visibility="collapsed")
-                with sc2:
-                    sh_note = st.text_input("Catatan Shift", placeholder="Tulis laporan kondisi toko/rak saat ganti shift...", label_visibility="collapsed")
-                if st.form_submit_button("Simpan Catatan Shift", use_container_width=True) and sh_note.strip():
-                    st.session_state.shift_notes.insert(0, {
-                        "time": get_ts(), "branch": branch, "author": current_user["name"],
-                        "shift": sh_type, "note": sh_note.strip()
-                    })
-                    st.rerun()
+# ------------------------------------------
+# TAB 4: HISTORY & LAPORAN OPERASIONAL
+# ------------------------------------------
+with tab4:
+    st.subheader(f"📊 Riwayat & Laporan Operasional ({branch})")
 
-# ------------------------------------------
-# TAB 3: HISTORY & PENCATATAN OPERASIONAL
-# ------------------------------------------
-with tab3:
-    st.subheader(f"📊 Riwayat & Pencatatan Operasional ({branch})")
+    branch_sales = [s for s in st.session_state.sales_history if s.get("branch", "Cabang Utama") == branch]
+    total_omzet = sum(s["total"] for s in branch_sales)
+    total_profit = sum(s.get("profit", 0) for s in branch_sales)
+    total_sold_pcs = sum(s["qty"] for s in branch_sales)
+
+    hm1, hm2, hm3 = st.columns(3)
+    hm1.metric("Total Omzet Tercatat", f"Rp {total_omzet:,}")
+    hm2.metric("Estimasi Profit Kotor", f"Rp {total_profit:,}" if tier in ["Premium", "Pro"] else "🔒 Paket Premium/Pro")
+    hm3.metric("Total Barang Terjual", f"{total_sold_pcs} Pcs")
+
+    st.divider()
 
     # Fitur Eksklusif PRO: Perbandingan Ringkas Seluruh Cabang
     if tier == "Pro" and len(st.session_state.branches) > 1:
@@ -1251,7 +1462,6 @@ with tab3:
     col_h_sales, col_h_logs = st.columns(2)
     with col_h_sales:
         st.markdown("### 🛒 Pencatatan Barang Terjual")
-        branch_sales = [s for s in st.session_state.sales_history if s.get("branch", "Cabang Utama") == branch]
         if branch_sales:
             df_sales = pd.DataFrame(branch_sales)[["time", "rak", "item", "qty", "total", "cashier"]]
             df_sales.columns = ["Waktu", "Rak", "Produk", "Qty", "Total (Rp)", "Petugas"]
@@ -1260,42 +1470,36 @@ with tab3:
             st.info("Belum ada pencatatan penjualan di cabang ini.")
 
     with col_h_logs:
-        if tier == "Pro":
-            st.markdown("### 📋 Riwayat Catatan Shift")
-            b_shifts = [s for s in st.session_state.shift_notes if s.get("branch", "Cabang Utama") == branch]
-            if b_shifts:
-                for sh in b_shifts[:5]:
-                    with st.container(border=True):
-                        st.markdown(f"**Shift {sh['shift']}** — {sh['author']} (`{sh['time']}`)")
-                        st.caption(sh["note"])
-            else:
-                st.info("Belum ada catatan shift.")
+        st.markdown("### 📋 Riwayat Handover Shift")
+        b_shifts = [s for s in st.session_state.shift_notes if s.get("branch", "Cabang Utama") == branch]
+        if b_shifts:
+            for sh in b_shifts[:5]:
+                with st.container(border=True):
+                    rak_badge = "🟢 Label Terverifikasi" if sh.get("rak_ok", True) else "🟡 Perlu Cek Label"
+                    st.markdown(f"**Shift {sh['shift']}** — {sh['author']} (`{sh['time']}`) • {rak_badge}")
+                    st.caption(sh["note"])
         else:
-            st.markdown("### 📜 Log Aktivitas & Sinkronisasi Sistem")
-            if tier == "Premium" and is_privileged:
-                with st.container(border=True, height=280):
-                    for l in st.session_state.logs[:25]:
-                        st.text(f"{l['time']} [{l['type']}] >> {l['action']}")
-            else:
-                st.info("🔒 Log aktivitas sistem tersedia pada paket Premium & Pro untuk Owner/Manager.")
+            st.info("Belum ada catatan handover shift.")
 
-    if tier == "Pro" and is_privileged:
+    if is_privileged and tier in ["Premium", "Pro"]:
         st.divider()
-        with st.expander("📜 Log Aktivitas & Sinkronisasi Sistem Lengkap (Pro)", expanded=False):
-            for l in st.session_state.logs[:30]:
+        with st.expander("📜 Log Aktivitas & Sinkronisasi Sistem Lengkap", expanded=False):
+            for l in st.session_state.logs[:35]:
                 st.text(f"{l['time']} [{l['type']}] >> {l['action']}")
 
 # ------------------------------------------
-# TAB 4: MANAJEMEN AKUN TIM
+# TAB 5: MANAJEMEN AKUN TIM (DENGAN PROTEKSI JABATAN)
 # ------------------------------------------
-with tab4:
+with tab5:
     st.subheader(f"👥 Daftar & Pendaftaran Akun Karyawan ({len(st.session_state.accounts)} Akun Aktif)")
+    st.caption("ℹ️ Berpindah ke jabatan lebih rendah/setara (misal `OWNER` → `STAFF`) langsung tanpa password. Berpindah ke jabatan lebih tinggi (`STAFF`/`DEVELOPER` → `OWNER`/`MANAGER`) wajib verifikasi password.")
+
     col_acc_list, col_acc_add = st.columns([1.5, 1])
 
     with col_acc_list:
         for idx, acc in enumerate(st.session_state.accounts):
             with st.container(border=True):
-                ac1, ac2, ac3 = st.columns([2.5, 1, 1], vertical_alignment="center")
+                ac1, ac2, ac3 = st.columns([2.3, 1.2, 0.9], vertical_alignment="center")
                 with ac1:
                     st.markdown(f"**{acc['name']}** ({acc['email']})")
                     st.caption(f"Hak Akses: `{acc['role']}`")
@@ -1303,15 +1507,43 @@ with tab4:
                     if idx == st.session_state.current_user_idx:
                         st.success("Aktif")
                     else:
-                        if st.button("Login", key=f"sw_{idx}", use_container_width=True):
-                            st.session_state.current_user_idx = idx
-                            st.rerun()
+                        req_pw = needs_password_to_switch(current_user["role"], acc["role"])
+                        btn_lbl = "🔒 Login" if req_pw else "🔓 Login"
+                        if st.button(btn_lbl, key=f"sw_{idx}", use_container_width=True):
+                            if not req_pw:
+                                st.session_state.current_user_idx = idx
+                                st.session_state.switch_target_idx = None
+                                add_log("INFO", f"{current_user['name']} berpindah ke akun {acc['name']} ({acc['role']})")
+                                st.rerun()
+                            else:
+                                st.session_state.switch_target_idx = idx
                 with ac3:
                     if is_privileged and idx != st.session_state.current_user_idx and len(st.session_state.accounts) > 1:
                         if st.button("🗑️ Hapus", key=f"del_acc_{idx}", use_container_width=True):
                             active_acc = st.session_state.accounts[st.session_state.current_user_idx]
                             st.session_state.accounts.pop(idx)
                             st.session_state.current_user_idx = st.session_state.accounts.index(active_acc)
+                            st.session_state.switch_target_idx = None
+                            st.rerun()
+
+                # Form verifikasi password jika memilih akun dengan jabatan lebih tinggi
+                if st.session_state.switch_target_idx == idx and idx != st.session_state.current_user_idx:
+                    st.divider()
+                    pw_c1, pw_c2, pw_c3 = st.columns([2.2, 1, 0.8], vertical_alignment="center")
+                    with pw_c1:
+                        in_pw = st.text_input(f"Password untuk {acc['name']} ({acc['role']})", type="password", key=f"pw_in_{idx}", label_visibility="collapsed", placeholder=f"Masukkan password {acc['name']}...")
+                    with pw_c2:
+                        if st.button("Masuk", type="primary", key=f"pw_ok_{idx}", use_container_width=True):
+                            if in_pw == acc.get("password", ""):
+                                st.session_state.current_user_idx = idx
+                                st.session_state.switch_target_idx = None
+                                add_log("INFO", f"Pergantian akun terverifikasi ke {acc['name']} ({acc['role']})")
+                                st.rerun()
+                            else:
+                                st.error("Password salah!")
+                    with pw_c3:
+                        if st.button("Batal", key=f"pw_cancel_{idx}", use_container_width=True):
+                            st.session_state.switch_target_idx = None
                             st.rerun()
 
     with col_acc_add:
@@ -1321,21 +1553,23 @@ with tab4:
                 new_acc_name = st.text_input("Nama Lengkap", placeholder="Contoh: Budi Santoso")
                 new_acc_email = st.text_input("Email", placeholder="budi@storify.id")
                 new_acc_role = st.selectbox("Jabatan (Role)", ["STAFF", "MANAGER", "DEVELOPER", "OWNER"])
+                new_acc_pass = st.text_input("Password Akun", type="password", placeholder="Minimal 4 karakter")
                 if st.button("Daftarkan Akun", type="primary", use_container_width=True):
-                    if new_acc_name.strip() and new_acc_email.strip():
+                    if new_acc_name.strip() and new_acc_email.strip() and len(new_acc_pass.strip()) >= 4:
                         if any(a["email"].lower() == new_acc_email.strip().lower() for a in st.session_state.accounts):
                             st.warning("Email tersebut sudah terdaftar.")
                         else:
                             st.session_state.accounts.append({
                                 "name": new_acc_name.strip(),
                                 "role": new_acc_role,
-                                "email": new_acc_email.strip()
+                                "email": new_acc_email.strip(),
+                                "password": new_acc_pass.strip()
                             })
                             add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name} ({new_acc_role})")
                             st.success(f"Akun {new_acc_name} berhasil dibuat!")
                             time.sleep(0.4)
                             st.rerun()
                     else:
-                        st.warning("Nama dan email wajib diisi.")
+                        st.warning("Nama, email, dan password (min. 4 karakter) wajib diisi.")
             else:
                 st.info("🔒 Hanya Owner, Manager, atau Developer yang dapat menambahkan akun baru.")
