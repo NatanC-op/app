@@ -154,7 +154,7 @@
     </div>
   </section>
 
-  <!-- Hardware Add-on -->
+  <!-- Hardware Add-on (Harga Tetap Awal) -->
   <section id="hardware" class="py-14 bg-white border-y border-slate-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mb-8">
@@ -170,8 +170,8 @@
             <p class="text-sm text-slate-600 mt-2">Layar E-Ink hemat daya + LED Locator + chip Bluetooth Low Energy (BLE) + jepit rak universal.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 935.000</span>
-            <button onclick="addToCart('hw-10', 'Paket 10x Smart Label 2.13&quot;', 935000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+            <span class="text-lg font-extrabold text-slate-900">Rp 850.000</span>
+            <button onclick="addToCart('hw-10', 'Paket 10x Smart Label 2.13&quot;', 850000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
           </div>
         </div>
 
@@ -182,8 +182,8 @@
             <p class="text-sm text-slate-600 mt-2">Layar lebih besar untuk promo dinamis, harga coret & barcode produk. Termasuk rel rak.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 2.145.000</span>
-            <button onclick="addToCart('hw-25', 'Paket 25x Smart Label 2.9&quot;', 2145000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+            <span class="text-lg font-extrabold text-slate-900">Rp 1.950.000</span>
+            <button onclick="addToCart('hw-25', 'Paket 25x Smart Label 2.9&quot;', 1950000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
           </div>
         </div>
 
@@ -194,8 +194,8 @@
             <p class="text-sm text-slate-600 mt-2">Unit label elektronik tambahan dengan indikator baterai & LED Locator.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 99.000</span>
-            <button onclick="addToCart('hw-1', 'Add-on Smart Label BLE 2.13&quot;', 99000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+            <span class="text-lg font-extrabold text-slate-900">Rp 90.000</span>
+            <button onclick="addToCart('hw-1', 'Add-on Smart Label BLE 2.13&quot;', 90000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
           </div>
         </div>
       </div>
@@ -301,7 +301,7 @@
     let cart = [];
     let currentLicenseKey = '';
 
-    // Harga dinaikkan 10% dan dibulatkan rapi (angka psikologis & genap)
+    // Harga paket dinaikkan 10% dan dibulatkan rapi
     const plansData = [
       {
         id: 'Standard',
