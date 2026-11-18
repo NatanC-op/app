@@ -102,7 +102,7 @@
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Notifikasi Restock & Kontak Chat Tim (Gudang ↔ Manager)</td>
+            <td class="py-3 px-6 font-medium">Absensi Karyawan (Clock-In/Out), Jadwal Shift & Chat Tim</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
@@ -144,7 +144,7 @@
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Buku Handover Shift & Priority Sync E-Paper</td>
+            <td class="py-3 px-6 font-medium">Handover Shift Terverifikasi & Priority Sync E-Paper</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
@@ -170,8 +170,8 @@
             <p class="text-sm text-slate-600 mt-2">Layar E-Ink hemat daya + LED Locator + chip Bluetooth Low Energy (BLE) + jepit rak universal.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 850.000</span>
-            <button onclick="addToCart('hw-10', 'Paket 10x Smart Label 2.13&quot;', 850000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+            <span class="text-lg font-extrabold text-slate-900">Rp 935.000</span>
+            <button onclick="addToCart('hw-10', 'Paket 10x Smart Label 2.13&quot;', 935000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
           </div>
         </div>
 
@@ -182,8 +182,8 @@
             <p class="text-sm text-slate-600 mt-2">Layar lebih besar untuk promo dinamis, harga coret & barcode produk. Termasuk rel rak.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 1.950.000</span>
-            <button onclick="addToCart('hw-25', 'Paket 25x Smart Label 2.9&quot;', 1950000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+            <span class="text-lg font-extrabold text-slate-900">Rp 2.145.000</span>
+            <button onclick="addToCart('hw-25', 'Paket 25x Smart Label 2.9&quot;', 2145000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
           </div>
         </div>
 
@@ -194,8 +194,8 @@
             <p class="text-sm text-slate-600 mt-2">Unit label elektronik tambahan dengan indikator baterai & LED Locator.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 90.000</span>
-            <button onclick="addToCart('hw-1', 'Add-on Smart Label BLE 2.13&quot;', 90000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
+            <span class="text-lg font-extrabold text-slate-900">Rp 99.000</span>
+            <button onclick="addToCart('hw-1', 'Add-on Smart Label BLE 2.13&quot;', 99000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
           </div>
         </div>
       </div>
@@ -301,7 +301,7 @@
     let cart = [];
     let currentLicenseKey = '';
 
-    // Harga sudah dinaikkan 25% dari harga dasar (35k/125k/1.4jt, 50k/230k/2.5jt, 100k/350k/4jt)
+    // Harga dinaikkan 10% dan dibulatkan rapi (angka psikologis & genap)
     const plansData = [
       {
         id: 'Standard',
@@ -311,14 +311,14 @@
         name: 'Standard',
         desc: 'Operasional Toko Lengkap',
         popular: false,
-        prices: { Mingguan: 43750, Bulanan: 156250, Tahunan: 1750000 },
+        prices: { Mingguan: 49000, Bulanan: 175000, Tahunan: 1925000 },
         features: [
           { text: 'Unlimited Rak & Unlimited Akun Tim', ok: true, bold: true },
           { text: 'Update Harga & Stok Smart Label', ok: true },
           { text: 'Kasir Cepat (-1 Terjual) & Export CSV', ok: true },
           { text: 'Stock Opname / Cek Fisik Harian', ok: true },
+          { text: 'Absensi Karyawan & Jadwal Shift', ok: true },
           { text: 'Notifikasi Restock & Chat Tim', ok: true },
-          { text: 'Simulasi Layar Fisik E-Paper', ok: true },
         ]
       },
       {
@@ -329,7 +329,7 @@
         name: 'Premium',
         desc: 'Otomasi Promo & Profit',
         popular: false,
-        prices: { Mingguan: 62500, Bulanan: 287500, Tahunan: 3125000 },
+        prices: { Mingguan: 69000, Bulanan: 319000, Tahunan: 3450000 },
         features: [
           { text: 'Semua Fitur Standard', ok: true, bold: true },
           { text: 'Kalkulator Harga & Margin Profit', ok: true, bold: true },
@@ -347,14 +347,14 @@
         name: 'Pro',
         desc: 'Prioritas & Multi-Cabang',
         popular: true,
-        prices: { Mingguan: 125000, Bulanan: 437500, Tahunan: 5000000 },
+        prices: { Mingguan: 139000, Bulanan: 485000, Tahunan: 5500000 },
         features: [
           { text: 'Semua Fitur Premium', ok: true, bold: true },
           { text: 'Manajemen Multi-Cabang & Transfer Stok', ok: true, bold: true },
           { text: 'Ringkasan Perbandingan Semua Cabang', ok: true, bold: true },
           { text: 'Kustomisasi Tema Layar E-Paper', ok: true, bold: true },
           { text: 'LED Locator (Tes Kedip Label Rak)', ok: true, bold: true },
-          { text: 'Buku Handover Shift & Priority Sync', ok: true, bold: true },
+          { text: 'Handover Shift Terverifikasi & Priority Sync', ok: true, bold: true },
         ]
       }
     ];
