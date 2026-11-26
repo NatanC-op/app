@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Storify — Smart Label & Retail OS</title>
+  <title>Storify — Smart Label & Inventory OS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -38,13 +38,13 @@
   <section class="bg-gradient-to-b from-blue-50/80 via-white to-slate-50 pt-14 pb-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
       <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4">
-        🎟️ Smart Label & Retail OS
+        📦 Smart Label & Inventory OS
       </span>
       <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
         Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify</span>
       </h1>
       <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-7">
-        Semua paket bebas batasan jumlah rak & akun tim. Pilih paket <b>Standard</b>, <b>Premium</b>, atau <b>Pro</b> untuk mendapatkan <b>Kode Lisensi</b> aplikasi Anda.
+        Kontrol stok akurat hingga ke level <b>Batch & Tanggal Kedaluwarsa</b>. Semua paket bebas batasan jumlah rak & akun tim.
       </p>
     </div>
   </section>
@@ -70,13 +70,13 @@
 
   <!-- Tabel Perbandingan Fitur Lengkap -->
   <section id="perbandingan" class="py-14 max-w-5xl mx-auto px-4 sm:px-6">
-    <h2 class="text-2xl font-extrabold text-center text-slate-900 mb-2">Perbandingan Detail Fitur Retail OS</h2>
+    <h2 class="text-2xl font-extrabold text-center text-slate-900 mb-2">Perbandingan Detail Fitur Inventory & Retail OS</h2>
     <p class="text-sm text-slate-600 text-center mb-8">Seluruh paket sudah mendukung Unlimited Rak & Unlimited Akun Tim.</p>
     <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
       <table class="w-full text-sm text-left">
         <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
           <tr>
-            <th class="py-4 px-6">Fitur Operasional Toko</th>
+            <th class="py-4 px-6">Fitur Manajemen Stok & Toko</th>
             <th class="py-4 px-4 text-center">Standard</th>
             <th class="py-4 px-4 text-center text-blue-600">Premium</th>
             <th class="py-4 px-4 text-center text-violet-600">Pro</th>
@@ -96,32 +96,44 @@
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Manajemen Jadwal Shift & Absensi Karyawan (Clock-In/Out Real-Time)</td>
+            <td class="py-3 px-6 font-medium">Pencatatan Stok Masuk/Keluar & Update Harga Smart Label E-Paper</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Deteksi Otomatis Kehadiran (Tepat Waktu / Terlambat) & Log Absensi</td>
+            <td class="py-3 px-6 font-medium">Kasir Cepat (-1 Terjual), Stock Opname Harian & Export Laporan CSV</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Update Harga & Stok Smart Label + Simulasi Layar E-Paper</td>
+            <td class="py-3 px-6 font-medium">Kontak Chat Tim Operasional (Gudang ↔ Kasir ↔ Manager)</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Kasir Cepat (-1 Terjual), Stock Opname & Export Laporan CSV</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
+            <td class="py-3 px-6 font-medium">Multi-Batch Exp Date (Tanggal Kedaluwarsa Terpisah Tiap Batch Restock)</td>
+            <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Notifikasi Restock & Kontak Chat Tim (Gudang ↔ Manager)</td>
+            <td class="py-3 px-6 font-medium">Prioritas Stok Keluar FEFO (First Expired, First Out) & Expired Alert ≤7 Hari</td>
+            <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
+            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
+          </tr>
+          <tr>
+            <td class="py-3 px-6 font-medium">Peringatan Stok Menipis (Low-Stock Alert) & Rekomendasi Restock</td>
+            <td class="py-3 px-4 text-center text-slate-400">❌</td>
+            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
+            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
+          </tr>
+          <tr>
+            <td class="py-3 px-6 font-medium">Bulk Edit Stok & Harga Massal (Tabel Editor) + Grafik Pergerakan Stok</td>
+            <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
@@ -132,37 +144,19 @@
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Bulk Edit Harga & Stok Massal (Tabel Editor)</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Flash Sale Otomatis & Diskon Coret (-10% / -20% / -50%)</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Tracker Kedaluwarsa (Expired Alert ≤7 Hari) & Grafik Pergerakan Stok</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Manajemen Multi-Cabang, Transfer Stok & Ringkasan Cabang</td>
+            <td class="py-3 px-6 font-medium">Manajemen Multi-Cabang, Transfer Stok Antar-Cabang & Ringkasan Cabang</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Kustomisasi Tema Layar E-Paper & LED Locator Rak</td>
+            <td class="py-3 px-6 font-medium">Kustomisasi Tema Layar E-Paper & LED Locator Pencarian Rak</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
           </tr>
           <tr>
-            <td class="py-3 px-6 font-medium">Laporan Handover Shift Terverifikasi & Priority Sync E-Paper</td>
+            <td class="py-3 px-6 font-medium">Audit Log Mutasi Stok Lengkap & Priority Sync E-Paper</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-slate-400">❌</td>
             <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
@@ -197,7 +191,7 @@
           <div>
             <span class="px-3 py-1 rounded-lg bg-violet-100 text-violet-700 text-xs font-bold">Minimarket Pack (25 Unit)</span>
             <h3 class="text-lg font-extrabold text-slate-900 mt-3">Paket 25x Smart Label 2.9"</h3>
-            <p class="text-sm text-slate-600 mt-2">Layar lebih besar untuk promo dinamis, harga coret & barcode produk. Termasuk rel rak.</p>
+            <p class="text-sm text-slate-600 mt-2">Layar lebih besar untuk info stok, harga & barcode produk. Termasuk rel rak.</p>
           </div>
           <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
             <span class="text-lg font-extrabold text-slate-900">Rp 1.950.000</span>
@@ -326,16 +320,16 @@
         badge: 'DASAR',
         badgeStyle: 'bg-slate-600 text-white',
         name: 'Standard',
-        desc: 'Operasional Toko Lengkap',
+        desc: 'Kontrol Stok Harian Toko',
         popular: false,
         prices: { Mingguan: 54000, Bulanan: 195000, Tahunan: 2120000 },
         features: [
           { text: 'Unlimited Rak & Unlimited Akun Tim', ok: true, bold: true },
           { text: 'Proteksi Password Berjenjang Jabatan', ok: true, bold: true },
-          { text: 'Jadwal Shift & Absensi Clock-In/Out Real-Time', ok: true, bold: true },
           { text: 'Update Harga & Stok Smart Label + E-Paper', ok: true },
-          { text: 'Kasir Cepat (-1 Terjual), Stock Opname & Export CSV', ok: true },
-          { text: 'Notifikasi Restock & Kontak Chat Tim', ok: true },
+          { text: 'Kasir Cepat (-1 Terjual) & Export CSV', ok: true },
+          { text: 'Stock Opname / Cek Fisik Harian', ok: true },
+          { text: 'Kontak Chat Tim (Gudang ↔ Manager)', ok: true },
         ]
       },
       {
@@ -344,16 +338,16 @@
         badge: 'POPULER',
         badgeStyle: 'bg-blue-600 text-white',
         name: 'Premium',
-        desc: 'Otomasi Promo & Profit',
+        desc: 'Manajemen Batch, Exp Date & Profit',
         popular: false,
         prices: { Mingguan: 76000, Bulanan: 350000, Tahunan: 3795000 },
         features: [
-          { text: 'Semua Fitur Standard (Shift, Absensi & Keamanan)', ok: true, bold: true },
-          { text: 'Kalkulator Harga, Margin Profit & Laba Kotor', ok: true, bold: true },
-          { text: 'Bulk Edit Harga & Stok Massal (Tabel Editor)', ok: true, bold: true },
-          { text: 'Flash Sale Otomatis & Diskon Coret (-10% s/d -50%)', ok: true, bold: true },
-          { text: 'Tracker Kedaluwarsa (Expired Alert ≤7 Hari)', ok: true, bold: true },
-          { text: 'Cetak Daftar Harga & Grafik Pergerakan Stok', ok: true, bold: true },
+          { text: 'Semua Fitur Standard', ok: true, bold: true },
+          { text: 'Multi-Batch Exp Date (Tanggal Exp Tiap Batch Restock)', ok: true, bold: true },
+          { text: 'Prioritas Stok Keluar FEFO & Expired Alert ≤7 Hari', ok: true, bold: true },
+          { text: 'Notifikasi Stok Menipis & Rekomendasi Restock', ok: true, bold: true },
+          { text: 'Bulk Edit Stok & Harga Massal (Tabel Editor)', ok: true, bold: true },
+          { text: 'Kalkulator Margin Profit (HPP) & Grafik Stok', ok: true, bold: true },
         ]
       },
       {
@@ -362,16 +356,16 @@
         badge: '⭐ PRIORITAS ENTERPRISE',
         badgeStyle: 'bg-gradient-to-r from-blue-600 to-violet-600 text-white',
         name: 'Pro',
-        desc: 'Prioritas & Multi-Cabang',
+        desc: 'Multi-Cabang & Audit Stok Lengkap',
         popular: true,
         prices: { Mingguan: 155000, Bulanan: 535000, Tahunan: 6050000 },
         features: [
-          { text: 'Semua Fitur Premium & Standard', ok: true, bold: true },
+          { text: 'Semua Fitur Premium (Termasuk Multi-Batch Exp Date)', ok: true, bold: true },
           { text: 'Manajemen Multi-Cabang & Transfer Stok', ok: true, bold: true },
-          { text: 'Ringkasan Perbandingan Semua Cabang', ok: true, bold: true },
-          { text: 'Kustomisasi Tema Layar E-Paper (Promo/Normal)', ok: true, bold: true },
+          { text: 'Ringkasan Perbandingan Stok Semua Cabang', ok: true, bold: true },
+          { text: 'Kustomisasi Tema Layar E-Paper', ok: true, bold: true },
           { text: 'LED Locator (Tes Kedip Label Rak)', ok: true, bold: true },
-          { text: 'Handover Shift Terverifikasi & Priority Sync', ok: true, bold: true },
+          { text: 'Audit Log Mutasi Stok & Priority Sync E-Paper', ok: true, bold: true },
         ]
       }
     ];
