@@ -1333,7 +1333,7 @@ if st.session_state.page == "detail":
                     if st.button("🔦 Tes Kedip LED Label Rak", use_container_width=True):
                         st.toast(f"Lampu LED pada perangkat {rak_key} berkedip hijau selama 10 detik!", icon="💡")
 
-      with c_det2:
+    with c_det2:
             st.caption("📟 **Simulasi Layar Fisik Smart Label (E-Ink):**")
             is_promo = bool(prod.get("old_price"))
             is_red_theme = (tier == "Pro" and st.session_state.epaper_style == "Mode Gelap Merah (Promo)")
