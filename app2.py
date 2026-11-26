@@ -1938,7 +1938,7 @@ if "team" in tab_map:
                                     st.session_state.switch_target_idx = None
                                     st.rerun()
 
-            with col_acc_add:
+          with col_acc_add:
                 with st.container(border=True):
                     st.markdown("**➕ Tambah Akun Baru**")
                     if can_manage_roles:
@@ -1947,34 +1947,91 @@ if "team" in tab_map:
                             key=lambda r: get_role_level(r),
                             reverse=True
                         )
+                        role_choices = available_roles + ["➕ Ketik Jabatan Custom Baru..."]
+
                         new_acc_name = st.text_input("Nama Lengkap", placeholder="Contoh: Budi Santoso")
                         new_acc_email = st.text_input("Email", placeholder="budi@storify.id")
-                        new_acc_role = st.selectbox(
+                        new_acc_role_sel = st.selectbox(
                             "Pilih Jabatan (Role)",
-                            available_roles,
-                            format_func=lambda r: f"{r} (Level {get_role_level(r)})"
+                            role_choices,
+                            format_func=lambda r: r if r.startswith("➕") else f"{r} (Level {get_role_level(r)})"
                         )
+
+                        is_custom_role = (new_acc_role_sel == "➕ Ketik Jabatan Custom Baru...")
+                        if is_custom_role:
+                            custom_role_input = st.text_input(
+                                "Nama Jabatan Custom",
+                                placeholder="Contoh: KASIR / KEPALA GUDANG / SUPERVISOR / ADMIN"
+                            )
+                            c_r1, c_r2 = st.columns([1, 1.3])
+                            with c_r1:
+                                custom_role_lvl = st.number_input("Level (1–9)", min_value=1, max_value=9, value=3, step=1)
+                            with c_r2:
+                                custom_preset = st.selectbox(
+                                    "Template Hak Akses",
+                                    ["Kasir / Staf Lapangan", "Supervisor / Kepala Gudang", "Manajer Operasional", "Hanya Lihat (Read-Only)"]
+                                )
+                            st.caption("ℹ️ Izin menu & aksi detail jabatan ini bisa diatur ulang kapan saja di tab **Custom Jabatan**.")
+
                         new_acc_pass = st.text_input("Password Akun", type="password", placeholder="Minimal 4 karakter")
+
                         if st.button("Daftarkan Akun", type="primary", use_container_width=True):
-                            if new_acc_name.strip() and new_acc_email.strip() and len(new_acc_pass.strip()) >= 4:
-                                if any(a["email"].lower() == new_acc_email.strip().lower() for a in st.session_state.accounts):
-                                    st.warning("Email tersebut sudah terdaftar.")
-                                else:
-                                    st.session_state.accounts.append({
-                                        "name": new_acc_name.strip(),
-                                        "role": new_acc_role,
-                                        "email": new_acc_email.strip(),
-                                        "password": new_acc_pass.strip()
-                                    })
-                                    add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name} ({new_acc_role})")
-                                    st.success(f"Akun {new_acc_name} berhasil dibuat!")
-                                    time.sleep(0.3)
-                                    st.rerun()
-                            else:
+                            if not new_acc_name.strip() or not new_acc_email.strip() or len(new_acc_pass.strip()) < 4:
                                 st.warning("Nama, email, dan password (min. 4 karakter) wajib diisi.")
+                            elif any(a["email"].lower() == new_acc_email.strip().lower() for a in st.session_state.accounts):
+                                st.warning("Email tersebut sudah terdaftar.")
+                            elif is_custom_role and not custom_role_input.strip():
+                                st.warning("Nama jabatan custom wajib diisi.")
+                            else:
+                                if is_custom_role:
+                                    final_role = custom_role_input.strip().upper()
+                                    if final_role not in st.session_state.roles_config:
+                                        if custom_preset == "Manajer Operasional":
+                                            preset_perms = {k: True for k in ALL_PERMISSIONS}
+                                            preset_perms["act_manage_roles"] = False
+                                        elif custom_preset == "Supervisor / Kepala Gudang":
+                                            preset_perms = {
+                                                "menu_monitoring": True, "menu_notif_chat": True, "menu_history": True, "menu_team": False,
+                                                "act_sell": True, "act_opname": True, "act_manage_batches": True, "act_manage_products": True,
+                                                "act_manage_prices": False, "act_view_margin": False, "act_approve_restock": True,
+                                                "act_manage_branches": False, "act_manage_roles": False
+                                            }
+                                        elif custom_preset == "Kasir / Staf Lapangan":
+                                            preset_perms = {
+                                                "menu_monitoring": True, "menu_notif_chat": True, "menu_history": False, "menu_team": False,
+                                                "act_sell": True, "act_opname": True, "act_manage_batches": False, "act_manage_products": False,
+                                                "act_manage_prices": False, "act_view_margin": False, "act_approve_restock": False,
+                                                "act_manage_branches": False, "act_manage_roles": False
+                                            }
+                                        else:  # Hanya Lihat (Read-Only)
+                                            preset_perms = {
+                                                "menu_monitoring": True, "menu_notif_chat": True, "menu_history": True, "menu_team": False,
+                                                "act_sell": False, "act_opname": False, "act_manage_batches": False, "act_manage_products": False,
+                                                "act_manage_prices": False, "act_view_margin": False, "act_approve_restock": False,
+                                                "act_manage_branches": False, "act_manage_roles": False
+                                            }
+
+                                        st.session_state.roles_config[final_role] = {
+                                            "level": safe_int(custom_role_lvl, 3),
+                                            "core": False,
+                                            "desc": f"Jabatan custom ({custom_preset}).",
+                                            "perms": preset_perms
+                                        }
+                                else:
+                                    final_role = new_acc_role_sel
+
+                                st.session_state.accounts.append({
+                                    "name": new_acc_name.strip(),
+                                    "role": final_role,
+                                    "email": new_acc_email.strip(),
+                                    "password": new_acc_pass.strip()
+                                })
+                                add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name.strip()} ({final_role})")
+                                st.success(f"Akun {new_acc_name.strip()} dengan jabatan {final_role} berhasil dibuat!")
+                                time.sleep(0.35)
+                                st.rerun()
                     else:
                         st.info("🔒 Jabatan Anda tidak memiliki izin untuk menambahkan akun baru.")
-
         # SUB-TAB 2: BUAT & CUSTOM JABATAN LENGKAP (NAMA, DESKRIPSI, LEVEL, MENU & AKSI)
         with sub_role:
             st.subheader("🛡️ Custom Jabatan: Menu yang Diakses & Aksi yang Bisa Dilakukan")
