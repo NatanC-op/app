@@ -1105,7 +1105,6 @@ with st.sidebar:
                         dest_inv = st.session_state.inventory.setdefault(tr_dest, {})
                         src_name_lower = current_inv[tr_rak]["item"].strip().lower()
 
-                        # Cek apakah produk sama sudah ada di cabang tujuan
                         matched_dest_rak = None
                         for dk, dv in dest_inv.items():
                             if dv["item"].strip().lower() == src_name_lower:
@@ -1164,7 +1163,7 @@ with st.sidebar:
             st.rerun()
 
 # ==========================================
-# 6. HALAMAN DETAIL BATCH (DESAIN BARU RAPI & INTERAKTIF)
+# 6. HALAMAN DETAIL BATCH
 # ==========================================
 if st.session_state.page == "detail":
     rak_key = st.session_state.selected_rak
@@ -1243,7 +1242,6 @@ if st.session_state.page == "detail":
             else:
                 st.info("🔒 Jabatan Anda tidak memiliki izin menambah atau mengubah batch stok.")
 
-    # DESAIN BARU DAFTAR BATCH: KARTU MODERN + PROGRESS BAR + INLINE POPOVER EDIT
     with col_edit_b:
         with st.container(border=True):
             bh1, bh2 = st.columns([2, 1], vertical_alignment="center")
@@ -1938,7 +1936,7 @@ if "team" in tab_map:
                                     st.session_state.switch_target_idx = None
                                     st.rerun()
 
-          with col_acc_add:
+            with col_acc_add:
                 with st.container(border=True):
                     st.markdown("**➕ Tambah Akun Baru**")
                     if can_manage_roles:
@@ -1958,6 +1956,10 @@ if "team" in tab_map:
                         )
 
                         is_custom_role = (new_acc_role_sel == "➕ Ketik Jabatan Custom Baru...")
+                        custom_role_input = ""
+                        custom_role_lvl = 3
+                        custom_preset = "Kasir / Staf Lapangan"
+
                         if is_custom_role:
                             custom_role_input = st.text_input(
                                 "Nama Jabatan Custom",
@@ -2003,7 +2005,7 @@ if "team" in tab_map:
                                                 "act_manage_prices": False, "act_view_margin": False, "act_approve_restock": False,
                                                 "act_manage_branches": False, "act_manage_roles": False
                                             }
-                                        else:  # Hanya Lihat (Read-Only)
+                                        else:
                                             preset_perms = {
                                                 "menu_monitoring": True, "menu_notif_chat": True, "menu_history": True, "menu_team": False,
                                                 "act_sell": False, "act_opname": False, "act_manage_batches": False, "act_manage_products": False,
@@ -2032,7 +2034,8 @@ if "team" in tab_map:
                                 st.rerun()
                     else:
                         st.info("🔒 Jabatan Anda tidak memiliki izin untuk menambahkan akun baru.")
-        # SUB-TAB 2: BUAT & CUSTOM JABATAN LENGKAP (NAMA, DESKRIPSI, LEVEL, MENU & AKSI)
+
+        # SUB-TAB 2: BUAT & CUSTOM JABATAN LENGKAP
         with sub_role:
             st.subheader("🛡️ Custom Jabatan: Menu yang Diakses & Aksi yang Bisa Dilakukan")
             st.caption("Buat atau modifikasi jabatan sesuai kebutuhan operasional toko Anda. Anda bebas mengatur **Nama Jabatan**, **Deskripsi Peran**, **Level Hierarki (1–9)**, **Menu Dashboard yang Muncul**, dan **Aksi yang Diizinkan**.")
