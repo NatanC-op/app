@@ -684,10 +684,12 @@ st.markdown(f"""
         transform: none !important;
     }}
 
-    /* TOMBOL UPLOAD FILE AGAR SERAGAM */
-    [data-testid="stFileUploaderDropzone"] {{
+    /* TOMBOL UPLOAD FILE & INPUT FORM AGAR SERAGAM PUTIH DI LIGHT MODE */
+    [data-testid="stFileUploaderDropzone"],
+    [data-testid="stFileUploaderDropzone"] > div {{
         background-color: {t['input_bg']} !important;
-        border: 1px dashed {t['input_border']} !important;
+        border-color: {t['input_border']} !important;
+        color: {t['text_main']} !important;
         border-radius: 12px !important;
     }}
     [data-testid="stFileUploaderDropzone"] button {{
@@ -698,23 +700,43 @@ st.markdown(f"""
         font-weight: 700 !important;
     }}
 
-    .stTextInput > div > div,
-    .stNumberInput > div > div,
-    .stDateInput > div > div,
+    /* PAKSA SEMUA DROPDOWN (SELECTBOX: KATEGORI, STATUS, KARYAWAN) JADI PUTIH DI LIGHT MODE */
+    .stSelectbox > div > div,
     .stSelectbox [data-baseweb="select"],
     .stSelectbox [data-baseweb="select"] > div,
-    .stSelectbox [data-baseweb="select"] > div > div {{
+    .stSelectbox [data-baseweb="select"] > div > div,
+    .stSelectbox [data-baseweb="select"] [role="combobox"],
+    div[data-baseweb="select"] > div {{
         background-color: {t['input_bg']} !important;
+        background: {t['input_bg']} !important;
         border-color: {t['input_border']} !important;
-        border-radius: 12px !important;
         color: {t['text_main']} !important;
+        border-radius: 12px !important;
     }}
     .stSelectbox [data-baseweb="select"] > div {{
         border: 1px solid {t['input_border']} !important;
     }}
-    .stSelectbox [data-baseweb="select"] * {{
+    .stSelectbox [data-baseweb="select"] span,
+    .stSelectbox [data-baseweb="select"] div,
+    .stSelectbox [data-baseweb="select"] input,
+    .stSelectbox [data-baseweb="select"] svg {{
+        background-color: transparent !important;
         color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
         fill: {t['text_main']} !important;
+    }}
+
+    /* INPUT TEKS, ANGKA, TANGGAL & TOMBOL +/- NUMBER INPUT */
+    .stTextInput > div > div,
+    .stNumberInput > div > div,
+    .stDateInput > div > div,
+    div[data-baseweb="input"],
+    div[data-baseweb="base-input"] {{
+        background-color: {t['input_bg']} !important;
+        background: {t['input_bg']} !important;
+        border-color: {t['input_border']} !important;
+        border-radius: 12px !important;
+        color: {t['text_main']} !important;
     }}
     .stTextInput input, .stNumberInput input, .stDateInput input {{
         background-color: transparent !important;
@@ -727,10 +749,19 @@ st.markdown(f"""
         -webkit-text-fill-color: {t['text_muted']} !important;
         opacity: 0.85 !important;
     }}
-    .stNumberInput button {{
-        background-color: {t['input_bg']} !important;
-        color: {t['text_main']} !important;
-        border-color: {t['input_border']} !important;
+    .stNumberInput button,
+    .stNumberInput [data-testid="stNumberInputStepDown"],
+    .stNumberInput [data-testid="stNumberInputStepUp"],
+    [data-testid="stPopover"] button {{
+        background-color: {t['sec_btn_bg']} !important;
+        background: {t['sec_btn_bg']} !important;
+        color: {t['sec_btn_text']} !important;
+        border-color: {t['sec_btn_border']} !important;
+    }}
+    .stNumberInput button svg,
+    [data-testid="stPopover"] button svg {{
+        fill: {t['sec_btn_text']} !important;
+        color: {t['sec_btn_text']} !important;
     }}
 
     [data-testid="stPopoverBody"],
