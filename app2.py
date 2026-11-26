@@ -911,6 +911,9 @@ if not st.session_state.logged_in:
 # ==========================================
 # 3. HALAMAN AKTIVASI LISENSI PAKET
 # ==========================================
+# ==========================================
+# 3. HALAMAN AKTIVASI LISENSI PAKET
+# ==========================================
 if st.session_state.app_tier is None:
     _, _, col_t2 = st.columns([5, 1, 1.1])
     with col_t2:
@@ -926,7 +929,7 @@ if st.session_state.app_tier is None:
     </div>
     """, unsafe_allow_html=True)
 
-   tiers_info = [
+    tiers_info = [
         (
             "Standard", "Kontrol Stok Harian Toko",
             "**✔️ Unlimited Rak & Unlimited Akun Tim**  \n"
@@ -958,6 +961,7 @@ if st.session_state.app_tier is None:
             "primary"
         )
     ]
+
     cols = st.columns(3, gap="large")
     for idx, (name, sub, desc, btn_type) in enumerate(tiers_info):
         with cols[idx]:
