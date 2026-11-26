@@ -926,39 +926,38 @@ if st.session_state.app_tier is None:
     </div>
     """, unsafe_allow_html=True)
 
-    tiers_info = [
+   tiers_info = [
         (
             "Standard", "Kontrol Stok Harian Toko",
-            "✔️ **Unlimited Rak & Unlimited Akun Tim**\n"
-            "✔️ **Custom Jabatan & Matriks Menu/Aksi**\n"
-            "✔️ Update Harga & Stok Smart Label + E-Paper\n"
-            "✔️ Kasir Cepat (-1 Terjual) & Export CSV\n"
-            "✔️ Stock Opname / Cek Fisik Harian\n"
-            "✔️ Kontak Chat Tim (Gudang ↔ Manager)",
+            "**✔️ Unlimited Rak & Unlimited Akun Tim**  \n"
+            "**✔️ Custom Jabatan & Matriks Menu/Aksi**  \n"
+            "**✔️ Update Harga & Stok Smart Label + E-Paper**  \n"
+            "**✔️ Kasir Cepat (-1 Terjual) & Export CSV**  \n"
+            "**✔️ Stock Opname / Cek Fisik Harian**  \n"
+            "**✔️ Kontak Chat Tim (Gudang ↔ Manager)**",
             "secondary"
         ),
         (
             "Premium", "Manajemen Batch, Exp Date & Profit",
-            "✔️ **Semua Fitur Standard**\n"
-            "✔️ **Multi-Batch Exp Date (Custom Batch per Produk)**\n"
-            "✔️ **Prioritas Stok Keluar FEFO & Expired Alert ≤7 Hari**\n"
-            "✔️ **Notifikasi Stok Menipis & Rekomendasi Restock**\n"
-            "✔️ **Bulk Edit Harga Massal (Tabel Editor)**\n"
-            "✔️ **Kalkulator Margin Profit (Sesuai Izin Jabatan)**",
+            "**✔️ Semua Fitur Standard**  \n"
+            "**✔️ Multi-Batch Exp Date (Custom Batch per Produk)**  \n"
+            "**✔️ Prioritas Stok Keluar FEFO & Expired Alert ≤7 Hari**  \n"
+            "**✔️ Notifikasi Stok Menipis & Rekomendasi Restock**  \n"
+            "**✔️ Bulk Edit Harga Massal (Tabel Editor)**  \n"
+            "**✔️ Kalkulator Margin Profit (Sesuai Izin Jabatan)**",
             "secondary"
         ),
         (
             "Pro", "Multi-Cabang & Audit Stok Lengkap",
-            "✔️ **Semua Fitur Premium (Termasuk Multi-Batch Exp Date)**\n"
-            "✔️ **Manajemen Multi-Cabang & Transfer Stok FEFO**\n"
-            "✔️ **Ringkasan Perbandingan Stok Semua Cabang**\n"
-            "✔️ **Kustomisasi Tema Layar E-Paper**\n"
-            "✔️ **LED Locator (Tes Kedip Label Rak)**\n"
-            "✔️ **Audit Log Mutasi Stok & Priority Sync E-Paper**",
+            "**✔️ Semua Fitur Premium (Termasuk Multi-Batch Exp Date)**  \n"
+            "**✔️ Manajemen Multi-Cabang & Transfer Stok FEFO**  \n"
+            "**✔️ Ringkasan Perbandingan Stok Semua Cabang**  \n"
+            "**✔️ Kustomisasi Tema Layar E-Paper**  \n"
+            "**✔️ LED Locator (Tes Kedip Label Rak)**  \n"
+            "**✔️ Audit Log Mutasi Stok & Priority Sync E-Paper**",
             "primary"
         )
     ]
-
     cols = st.columns(3, gap="large")
     for idx, (name, sub, desc, btn_type) in enumerate(tiers_info):
         with cols[idx]:
