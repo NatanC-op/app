@@ -608,7 +608,7 @@ st.markdown(f"""
     /* TOMBOL UTAMA (PRIMARY) */
     .stButton > button[kind="primary"],
     button[kind="primaryFormSubmit"],
-    [data-testid="stFormSubmitButton"] > button[kind="primary"] {
+    [data-testid="stFormSubmitButton"] > button[kind="primary"] {{
         background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
         border: 1px solid #2563eb !important;
@@ -617,20 +617,20 @@ st.markdown(f"""
         padding: 0.52rem 1.05rem !important;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
         transition: all 0.18s ease !important;
-    }
+    }}
     .stButton > button[kind="primary"] *,
     button[kind="primaryFormSubmit"] *,
-    [data-testid="stFormSubmitButton"] > button[kind="primary"] * {
+    [data-testid="stFormSubmitButton"] > button[kind="primary"] * {{
         color: #ffffff !important;
         fill: #ffffff !important;
-    }
+    }}
     .stButton > button[kind="primary"]:hover,
     button[kind="primaryFormSubmit"]:hover,
-    [data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
+    [data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {{
         background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%) !important;
         transform: translateY(-1px);
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
-    }
+    }}
 
     /* TOMBOL SEKUNDER (SERAGAM PUTIH BERSIH DI LIGHT MODE / SLATE DI DARK MODE) */
     .stButton > button[kind="secondary"],
@@ -638,7 +638,7 @@ st.markdown(f"""
     [data-testid="stFormSubmitButton"] > button[kind="secondary"],
     .stDownloadButton > button,
     [data-testid="stPopover"] > div > button,
-    button[data-testid="baseButton-secondary"] {
+    button[data-testid="baseButton-secondary"] {{
         background-color: {t['sec_btn_bg']} !important;
         background-image: none !important;
         color: {t['sec_btn_text']} !important;
@@ -647,42 +647,57 @@ st.markdown(f"""
         font-weight: 700 !important;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
         transition: all 0.18s ease !important;
-    }
+    }}
     .stButton > button[kind="secondary"] *,
     button[kind="secondaryFormSubmit"] *,
     [data-testid="stFormSubmitButton"] > button[kind="secondary"] *,
     .stDownloadButton > button *,
     [data-testid="stPopover"] > div > button *,
-    button[data-testid="baseButton-secondary"] * {
+    button[data-testid="baseButton-secondary"] * {{
         color: {t['sec_btn_text']} !important;
         fill: {t['sec_btn_text']} !important;
-    }
+    }}
     .stButton > button[kind="secondary"]:hover,
     button[kind="secondaryFormSubmit"]:hover,
     [data-testid="stFormSubmitButton"] > button[kind="secondary"]:hover,
     .stDownloadButton > button:hover,
     [data-testid="stPopover"] > div > button:hover,
-    button[data-testid="baseButton-secondary"]:hover {
+    button[data-testid="baseButton-secondary"]:hover {{
         background-color: {t['sec_btn_hover_bg']} !important;
         border-color: #3b82f6 !important;
         color: {t['sec_btn_hover_txt']} !important;
         transform: translateY(-1px);
-    }
+    }}
     .stButton > button[kind="secondary"]:hover *,
     button[kind="secondaryFormSubmit"]:hover *,
     [data-testid="stFormSubmitButton"] > button[kind="secondary"]:hover *,
     .stDownloadButton > button:hover *,
     [data-testid="stPopover"] > div > button:hover *,
-    button[data-testid="baseButton-secondary"]:hover * {
+    button[data-testid="baseButton-secondary"]:hover * {{
         color: {t['sec_btn_hover_txt']} !important;
         fill: {t['sec_btn_hover_txt']} !important;
-    }
+    }}
     .stButton > button:disabled,
-    button:disabled {
+    button:disabled {{
         opacity: 0.45 !important;
         cursor: not-allowed !important;
         transform: none !important;
-    }
+    }}
+
+    /* TOMBOL UPLOAD FILE AGAR SERAGAM */
+    [data-testid="stFileUploaderDropzone"] {{
+        background-color: {t['input_bg']} !important;
+        border: 1px dashed {t['input_border']} !important;
+        border-radius: 12px !important;
+    }}
+    [data-testid="stFileUploaderDropzone"] button {{
+        background-color: {t['sec_btn_bg']} !important;
+        color: {t['sec_btn_text']} !important;
+        border: 1px solid {t['sec_btn_border']} !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+    }}
+
     .stTextInput > div > div,
     .stNumberInput > div > div,
     .stDateInput > div > div,
