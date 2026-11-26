@@ -928,6 +928,71 @@ st.markdown(f"""
         box-shadow: 0 8px 20px rgba(239,68,68,0.22);
     }}
     .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
+        /* PAKSA SEMUA TEKS BIASA & TEKS DALAM BUTTON SOLID 100% (ANTI TRANSPARAN) */
+    .stApp p,
+    .stApp span,
+    .stApp label,
+    .stApp li,
+    .stApp strong,
+    .stApp b,
+    .stMarkdown p,
+    .stMarkdown span,
+    .stMarkdown li,
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] label,
+    [data-testid="stCheckbox"] label p,
+    [data-testid="stExpander"] summary p,
+    [data-testid="stExpander"] summary span {
+        color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
+        opacity: 1 !important;
+    }
+
+    /* KHUSUS TEKS CAPTION / SUB-TEKS AGAR TETAP RAPI NAMUN JELAS TERBACA */
+    .stCaption,
+    [data-testid="stCaptionContainer"] p,
+    [data-testid="stCaptionContainer"] span {
+        color: {t['text_muted']} !important;
+        -webkit-text-fill-color: {t['text_muted']} !important;
+        opacity: 1 !important;
+    }
+
+    /* TEKS DALAM SEMUA BUTTON SEKUNDER (PUTIH DI LIGHT MODE / GELAP DI DARK MODE) */
+    .stButton > button[kind="secondary"] p,
+    .stButton > button[kind="secondary"] span,
+    .stButton > button[kind="secondary"] div,
+    button[kind="secondaryFormSubmit"] p,
+    button[kind="secondaryFormSubmit"] span,
+    [data-testid="stFormSubmitButton"] > button[kind="secondary"] p,
+    .stDownloadButton > button p,
+    .stDownloadButton > button span,
+    [data-testid="stPopover"] button p,
+    [data-testid="stPopover"] button span,
+    [data-testid="stFileUploaderDropzone"] button {
+        color: {t['sec_btn_text']} !important;
+        -webkit-text-fill-color: {t['sec_btn_text']} !important;
+        opacity: 1 !important;
+    }
+
+    /* TEKS DALAM SEMUA BUTTON UTAMA (PRIMARY BIRU) */
+    .stButton > button[kind="primary"] p,
+    .stButton > button[kind="primary"] span,
+    .stButton > button[kind="primary"] div,
+    button[kind="primaryFormSubmit"] p,
+    button[kind="primaryFormSubmit"] span,
+    [data-testid="stFormSubmitButton"] > button[kind="primary"] p {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        opacity: 1 !important;
+    }
+
+    /* HANYA TOMBOL YANG BENAR-BENAR DISABLED (STOK 0) YANG SEDIKIT REDUP */
+    .stButton > button:disabled p,
+    .stButton > button:disabled span,
+    button:disabled p,
+    button:disabled span {
+        opacity: 0.55 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
