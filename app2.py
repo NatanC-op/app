@@ -1351,24 +1351,27 @@ if st.session_state.page == "detail":
             img_filter = "grayscale(100%) contrast(130%)"
 
             st.markdown(f"""
-            <div class="{box_cls}">
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; border-bottom:2px solid currentColor; padding-bottom:6px; margin-bottom:10px;">
-                    <span>📍 {rak_key.upper()}</span>
-                    <span style="background:{promo_bg}; color:{promo_fg} !important; -webkit-text-fill-color:{promo_fg} !important; padding:2px 8px; border-radius:4px; font-size:11px;">{promo_tag}</span>
-                </div>
-                <div style="display:flex; gap:12px; align-items:center;">
-                    <img src="{prod['image']}" style="width:74px; height:74px; object-fit:cover; border-radius:8px; border:2px solid currentColor; filter:{img_filter}; flex-shrink:0;" />
-                    <div style="flex:1; min-width:0;">
-                        <div style="font-size:15px; font-weight:900; line-height:1.25; margin-bottom:4px;">{prod['item']}</div>
-                        {old_p_html}
-                        <div style="font-size:26px; font-weight:900; line-height:1.1;">Rp {prod['price']:,}</div>
-                    </div>
-                </div>
-                <div style="margin-top:10px; padding-top:6px; border-top:1px dashed currentColor; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
-                    <span style="letter-spacing:2px; font-weight:900;">▌▌▌ ▌▌ ▌▌▌▌ ▌▌</span>
-                    <span>{footer_txt}</span>
-                </div>
-            </div>
+            epaper_html = (
+            f'<div class="{box_cls}">'
+            f'<div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; border-bottom:2px solid currentColor; padding-bottom:6px; margin-bottom:10px;">'
+            f'<span>📍 {rak_key.upper()}</span>'
+            f'<span style="background:{promo_bg}; color:{promo_fg} !important; -webkit-text-fill-color:{promo_fg} !important; padding:2px 8px; border-radius:4px; font-size:11px;">{promo_tag}</span>'
+            f'</div>'
+            f'<div style="display:flex; gap:12px; align-items:center;">'
+            f'<img src="{prod["image"]}" style="width:74px; height:74px; object-fit:cover; border-radius:8px; border:2px solid currentColor; filter:{img_filter}; flex-shrink:0;" />'
+            f'<div style="flex:1; min-width:0;">'
+            f'<div style="font-size:15px; font-weight:900; line-height:1.25; margin-bottom:4px;">{prod["item"]}</div>'
+            f'{old_p_html}'
+            f'<div style="font-size:26px; font-weight:900; line-height:1.1;">Rp {prod["price"]:,}</div>'
+            f'</div>'
+            f'</div>'
+            f'<div style="margin-top:10px; padding-top:6px; border-top:1px dashed currentColor; display:flex; justify-content:space-between; align-items:center; font-size:11px;">'
+            f'<span style="letter-spacing:2px; font-weight:900;">▌▌▌ ▌▌ ▌▌▌▌ ▌▌</span>'
+            f'<span>{footer_txt}</span>'
+            f'</div>'
+            f'</div>'
+        )
+        st.markdown(epaper_html, unsafe_allow_html=True)
             """, unsafe_allow_html=True)
     
     st.write("")
