@@ -1,548 +1,1505 @@
-<!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Storify — Smart Label & Inventory OS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
-  </style>
-</head>
-<body class="bg-slate-50 text-slate-900 antialiased">
+import streamlit as st
+import pandas as pd
+import base64
+import time
+from datetime import datetime, date, timedelta
 
-  <!-- Navbar -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">🏷️</div>
-        <span class="font-extrabold text-xl tracking-tight text-slate-900">Storify</span>
-      </div>
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-        <a href="#paket" class="hover:text-blue-600 transition">Paket Lisensi</a>
-        <a href="#perbandingan" class="hover:text-blue-600 transition">Perbandingan Fitur</a>
-        <a href="#hardware" class="hover:text-blue-600 transition">Smart Label BLE</a>
-        <a href="#cara-aktivasi" class="hover:text-blue-600 transition">Cara Aktivasi</a>
-      </nav>
-      <div class="flex items-center gap-3">
-        <button onclick="toggleCart()" class="relative inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold transition">
-          🛒 Keranjang
-          <span id="cart-badge" class="px-2 py-0.5 text-xs rounded-full bg-blue-600 text-white">0</span>
-        </button>
-      </div>
-    </div>
-  </header>
+# ==========================================
+# 1. KONFIGURASI & INISIALISASI STATE
+# ==========================================
+st.set_page_config(page_title="Storify - Smart Label & Inventory OS", layout="wide", page_icon="🏷️")
 
-  <!-- Hero -->
-  <section class="bg-gradient-to-b from-blue-50/80 via-white to-slate-50 pt-14 pb-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-      <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4">
-        📦 Smart Label & Inventory OS
-      </span>
-      <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
-        Dapatkan Kode Aktivasi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Storify</span>
-      </h1>
-      <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-7">
-        Kontrol stok akurat hingga ke level <b>Batch & Tanggal Kedaluwarsa</b>. Semua paket bebas batasan jumlah rak & akun tim.
-      </p>
-    </div>
-  </section>
+def get_ts():
+    return datetime.now().strftime("%d/%m/%Y %H:%M")
 
-  <!-- Paket Lisensi -->
-  <section id="paket" class="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-10">
-      <div class="inline-flex p-1.5 rounded-2xl bg-slate-200/80 border border-slate-300/60">
-        <button onclick="setCycle('Mingguan')" id="btn-Mingguan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
-          Mingguan
-        </button>
-        <button onclick="setCycle('Bulanan')" id="btn-Bulanan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition bg-white text-blue-600 shadow-sm">
-          Bulanan
-        </button>
-        <button onclick="setCycle('Tahunan')" id="btn-Tahunan" class="cycle-btn px-5 py-2 rounded-xl text-sm font-bold transition text-slate-600 hover:text-slate-900">
-          Tahunan <span class="ml-1 text-[11px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">Hemat</span>
-        </button>
-      </div>
-    </div>
+def get_ts_sec():
+    return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-    <div id="plans-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch"></div>
-  </section>
+ROLE_LEVEL = {"STAFF": 1, "DEVELOPER": 2, "MANAGER": 3, "OWNER": 4}
 
-  <!-- Tabel Perbandingan Fitur Lengkap -->
-  <section id="perbandingan" class="py-14 max-w-5xl mx-auto px-4 sm:px-6">
-    <h2 class="text-2xl font-extrabold text-center text-slate-900 mb-2">Perbandingan Detail Fitur Inventory & Retail OS</h2>
-    <p class="text-sm text-slate-600 text-center mb-8">Seluruh paket sudah mendukung Unlimited Rak & Unlimited Akun Tim.</p>
-    <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
-      <table class="w-full text-sm text-left">
-        <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-          <tr>
-            <th class="py-4 px-6">Fitur Manajemen Stok & Toko</th>
-            <th class="py-4 px-4 text-center">Standard</th>
-            <th class="py-4 px-4 text-center text-blue-600">Premium</th>
-            <th class="py-4 px-4 text-center text-violet-600">Pro</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-200">
-          <tr>
-            <td class="py-3 px-6 font-medium">Unlimited Rak & Unlimited Akun Tim (Owner, Manager, Dev, Staff)</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Proteksi Password Berjenjang Jabatan (Keamanan Ganti Akun)</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Pencatatan Stok Masuk/Keluar & Update Harga Smart Label E-Paper</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Kasir Cepat (-1 Terjual), Stock Opname Harian & Export Laporan CSV</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Kontak Chat Tim Operasional (Gudang ↔ Kasir ↔ Manager)</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Multi-Batch Exp Date (Tanggal Kedaluwarsa Terpisah Tiap Batch Restock)</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Prioritas Stok Keluar FEFO (First Expired, First Out) & Expired Alert ≤7 Hari</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Peringatan Stok Menipis (Low-Stock Alert) & Rekomendasi Restock</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Bulk Edit Stok & Harga Massal (Tabel Editor) + Grafik Pergerakan Stok</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Kalkulator Harga, Margin Profit (HPP) & Laporan Laba Kotor</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Manajemen Multi-Cabang, Transfer Stok Antar-Cabang & Ringkasan Cabang</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Kustomisasi Tema Layar E-Paper & LED Locator Pencarian Rak</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-          <tr>
-            <td class="py-3 px-6 font-medium">Audit Log Mutasi Stok Lengkap & Priority Sync E-Paper</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-slate-400">❌</td>
-            <td class="py-3 px-4 text-center text-emerald-600 font-bold">✔️</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+soon_exp = (date.today() + timedelta(days=5)).strftime("%Y-%m-%d")
+mid_exp = (date.today() + timedelta(days=35)).strftime("%Y-%m-%d")
+safe_exp = (date.today() + timedelta(days=90)).strftime("%Y-%m-%d")
 
-  <!-- Hardware Add-on (Harga Tetap Awal) -->
-  <section id="hardware" class="py-14 bg-white border-y border-slate-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="mb-8">
-        <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Hardware Opsional</span>
-        <h2 class="text-2xl font-extrabold text-slate-900 mt-1">Tambahan Perangkat Smart Label E-Ink (BLE)</h2>
-      </div>
+defaults = {
+    "dark_mode": True,
+    "logged_in": False,
+    "app_tier": None,
+    "active_branch": "Cabang Utama",
+    "branches": ["Cabang Utama", "Cabang Karawang Barat"],
+    "page": "home",
+    "selected_rak": None,
+    "epaper_style": "Klasik Terang",
+    "epaper_footer": "Harga sudah termasuk PPN",
+    "accounts": [
+        {"name": "Beatrix", "role": "OWNER", "email": "beatrix@storify.id", "password": "owner123"},
+        {"name": "Natannael", "role": "DEVELOPER", "email": "natannael@storify.id", "password": "dev123"},
+        {"name": "Walden", "role": "DEVELOPER", "email": "walden@storify.id", "password": "dev123"},
+        {"name": "Nathalee", "role": "STAFF", "email": "nathalee@storify.id", "password": "staff123"},
+    ],
+    "current_user_idx": 0,
+    "switch_target_idx": None,
+    "logs": [{"time": get_ts_sec(), "type": "INFO", "action": "Sistem Storify Inventory & E-Paper Gateway aktif."}],
+    "restock_requests": [
+        {
+            "id": 1, "branch": "Cabang Utama", "rak": "Rak B2", "item": "Keripik Singkong 100g", "qty": 20,
+            "by": "Nathalee", "note": "Stok sisa 4 pcs, ramai pembeli.",
+            "status": "Belum", "created_at": get_ts(), "resolved_at": "-", "resolved_by": "-"
+        }
+    ],
+    "sales_history": [
+        {"time": get_ts(), "branch": "Cabang Utama", "rak": "Rak A1", "item": "Kopi Sachet 25g", "qty": 2, "total": 30000, "profit": 8000, "cashier": "Nathalee"}
+    ],
+    "team_chat": [
+        {"sender": "Nathalee", "role": "STAFF", "msg": "Halo kak, Rak B2 keripik singkong sudah hampir habis ya.", "time": get_ts()},
+        {"sender": "Beatrix", "role": "OWNER", "msg": "Oke siap, sudah saya catat untuk restock batch baru.", "time": get_ts()}
+    ],
+    "inventory": {
+        "Cabang Utama": {
+            "Rak A1": {
+                "item": "Kopi Sachet 25g", "category": "Minuman", "qty": 20, "cost": 11000, "price": 15000, "old_price": None,
+                "batches": [{"qty": 8, "exp": mid_exp}, {"qty": 12, "exp": safe_exp}],
+                "battery": 98, "checked_today": True,
+                "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300",
+                "inflow": [10, 15, 20], "outflow": [5, 12, 18]
+            },
+            "Rak B2": {
+                "item": "Keripik Singkong 100g", "category": "Makanan", "qty": 4, "cost": 8500, "price": 12000, "old_price": None,
+                "batches": [{"qty": 4, "exp": soon_exp}],
+                "battery": 85, "checked_today": False,
+                "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300",
+                "inflow": [5, 8, 10], "outflow": [4, 7, 14]
+            },
+            "Rak C3": {
+                "item": "Air Mineral 600ml", "category": "Minuman", "qty": 15, "cost": 3000, "price": 5000, "old_price": None,
+                "batches": [{"qty": 15, "exp": safe_exp}],
+                "battery": 92, "checked_today": True,
+                "image": "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300",
+                "inflow": [15, 25, 30], "outflow": [10, 20, 25]
+            },
+            "Rak D4": {
+                "item": "Deterjen Bubuk 800g", "category": "Rumah Tangga", "qty": 8, "cost": 19000, "price": 25000, "old_price": None,
+                "batches": [{"qty": 3, "exp": mid_exp}, {"qty": 5, "exp": safe_exp}],
+                "battery": 74, "checked_today": False,
+                "image": "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=300",
+                "inflow": [6, 9, 12], "outflow": [3, 7, 10]
+            },
+        },
+        "Cabang Karawang Barat": {
+            "Rak A1": {
+                "item": "Teh Botol 350ml", "category": "Minuman", "qty": 24, "cost": 3200, "price": 4500, "old_price": None,
+                "batches": [{"qty": 24, "exp": safe_exp}],
+                "battery": 96, "checked_today": True,
+                "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300",
+                "inflow": [12, 24], "outflow": [6, 10]
+            },
+            "Rak B1": {
+                "item": "Roti Tawar Kupas", "category": "Makanan", "qty": 3, "cost": 10500, "price": 14000, "old_price": None,
+                "batches": [{"qty": 3, "exp": soon_exp}],
+                "battery": 89, "checked_today": False,
+                "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300",
+                "inflow": [10, 10], "outflow": [8, 9]
+            },
+        }
+    }
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
-          <div>
-            <span class="px-3 py-1 rounded-lg bg-blue-100 text-blue-700 text-xs font-bold">Starter Kit (10 Unit)</span>
-            <h3 class="text-lg font-extrabold text-slate-900 mt-3">Paket 10x Smart Label 2.13"</h3>
-            <p class="text-sm text-slate-600 mt-2">Layar E-Ink hemat daya + LED Locator + chip Bluetooth Low Energy (BLE) + jepit rak universal.</p>
-          </div>
-          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 850.000</span>
-            <button onclick="addToCart('hw-10', 'Paket 10x Smart Label 2.13&quot;', 850000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
-          </div>
-        </div>
+# ==========================================
+# HELPER MULTI-BATCH & FEFO (FIRST EXPIRED, FIRST OUT)
+# ==========================================
+def ensure_batches(prod):
+    """Pastikan setiap produk memiliki struktur list batches terurut berdasarkan tanggal exp terdekat."""
+    if "batches" not in prod or not isinstance(prod["batches"], list):
+        exp_val = prod.get("exp_date", safe_exp)
+        prod["batches"] = [{"qty": prod.get("qty", 0), "exp": exp_val}] if prod.get("qty", 0) > 0 else []
+    prod["batches"] = sorted([b for b in prod["batches"] if b.get("qty", 0) > 0], key=lambda x: x["exp"])
+    prod["qty"] = sum(b["qty"] for b in prod["batches"])
 
-        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
-          <div>
-            <span class="px-3 py-1 rounded-lg bg-violet-100 text-violet-700 text-xs font-bold">Minimarket Pack (25 Unit)</span>
-            <h3 class="text-lg font-extrabold text-slate-900 mt-3">Paket 25x Smart Label 2.9"</h3>
-            <p class="text-sm text-slate-600 mt-2">Layar lebih besar untuk info stok, harga & barcode produk. Termasuk rel rak.</p>
-          </div>
-          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 1.950.000</span>
-            <button onclick="addToCart('hw-25', 'Paket 25x Smart Label 2.9&quot;', 1950000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
-          </div>
-        </div>
+def add_batch_stock(prod, add_qty, exp_str):
+    """Tambahkan stok ke batch dengan tanggal exp yang sama, atau buat batch baru jika tanggal exp berbeda."""
+    ensure_batches(prod)
+    if add_qty <= 0:
+        return
+    for b in prod["batches"]:
+        if b["exp"] == exp_str:
+            b["qty"] += add_qty
+            break
+    else:
+        prod["batches"].append({"qty": add_qty, "exp": exp_str})
+    prod["batches"].sort(key=lambda x: x["exp"])
+    prod["qty"] = sum(b["qty"] for b in prod["batches"])
+    prod["inflow"].append(add_qty)
 
-        <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between">
-          <div>
-            <span class="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold">Satuan (1 Unit)</span>
-            <h3 class="text-lg font-extrabold text-slate-900 mt-3">Add-on Smart Label BLE 2.13"</h3>
-            <p class="text-sm text-slate-600 mt-2">Unit label elektronik tambahan dengan indikator baterai & LED Locator.</p>
-          </div>
-          <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-            <span class="text-lg font-extrabold text-slate-900">Rp 90.000</span>
-            <button onclick="addToCart('hw-1', 'Add-on Smart Label BLE 2.13&quot;', 90000, 'Hardware')" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold transition">+ Keranjang</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+def consume_stock_fefo(prod, reduce_qty):
+    """Kurangi stok otomatis dari batch paling cepat kedaluwarsa (FEFO). Mengembalikan list batch terpakai."""
+    ensure_batches(prod)
+    rem = min(reduce_qty, prod["qty"])
+    if rem <= 0:
+        return []
+    consumed = []
+    for b in prod["batches"]:
+        if rem <= 0:
+            break
+        take = min(b["qty"], rem)
+        b["qty"] -= take
+        rem -= take
+        consumed.append({"qty": take, "exp": b["exp"]})
+    prod["batches"] = [b for b in prod["batches"] if b["qty"] > 0]
+    prod["qty"] = sum(b["qty"] for b in prod["batches"])
+    prod["outflow"].append(sum(c["qty"] for c in consumed))
+    return consumed
 
-  <!-- Panduan Singkat -->
-  <section id="cara-aktivasi" class="py-14 max-w-5xl mx-auto px-4 sm:px-6 text-center">
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-8">3 Langkah Aktivasi Aplikasi Storify</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-      <div class="p-5 rounded-2xl bg-white border border-slate-200">
-        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">1</span>
-        <h3 class="font-bold text-slate-900">Beli Paket di Website</h3>
-        <p class="text-sm text-slate-600 mt-1">Pilih paket Standard, Premium, atau Pro lalu selesaikan checkout.</p>
-      </div>
-      <div class="p-5 rounded-2xl bg-white border border-slate-200">
-        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">2</span>
-        <h3 class="font-bold text-slate-900">Salin Kode Lisensi</h3>
-        <p class="text-sm text-slate-600 mt-1">Salin kode unik (contoh: <code class="text-blue-600 font-bold">STR-PRO-8492</code>) yang muncul di Invoice.</p>
-      </div>
-      <div class="p-5 rounded-2xl bg-white border border-slate-200">
-        <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center mb-3">3</span>
-        <h3 class="font-bold text-slate-900">Aktivasi di Aplikasi</h3>
-        <p class="text-sm text-slate-600 mt-1">Login ke Storify Cloud dan masukkan kode lisensi pada kolom paket yang sesuai.</p>
-      </div>
-    </div>
-  </section>
+def get_nearest_exp(prod):
+    ensure_batches(prod)
+    return prod["batches"][0]["exp"] if prod["batches"] else "-"
 
-  <!-- Cart Drawer -->
-  <div id="cart-drawer" class="fixed inset-0 z-50 hidden">
-    <div onclick="toggleCart()" class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs"></div>
-    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col justify-between p-6 overflow-y-auto">
-      <div>
-        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
-          <h3 class="text-lg font-extrabold text-slate-900">🛒 Keranjang Pesanan</h3>
-          <button onclick="toggleCart()" class="p-2 rounded-lg hover:bg-slate-100 text-slate-500 font-bold">✕</button>
-        </div>
-        <div id="cart-items" class="py-4 space-y-3"></div>
-      </div>
+def get_exp_alert_batches(prod, days_threshold=7):
+    ensure_batches(prod)
+    alerts = []
+    for b in prod["batches"]:
+        try:
+            exp_dt = datetime.strptime(b["exp"], "%Y-%m-%d").date()
+            if (exp_dt - date.today()).days <= days_threshold:
+                alerts.append(b)
+        except ValueError:
+            pass
+    return alerts
 
-      <div id="checkout-section" class="pt-4 border-t border-slate-200 hidden">
-        <div class="space-y-1.5 text-sm mb-4">
-          <div class="flex justify-between text-slate-600">
-            <span>Subtotal</span>
-            <span id="cart-subtotal" class="font-semibold">Rp 0</span>
-          </div>
-          <div class="flex justify-between text-slate-600">
-            <span>PPN (11%)</span>
-            <span id="cart-tax" class="font-semibold">Rp 0</span>
-          </div>
-          <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
-            <span>Total Pembayaran</span>
-            <span id="cart-total" class="text-blue-600">Rp 0</span>
-          </div>
-        </div>
+def add_log(log_type, msg):
+    st.session_state.logs.insert(0, {"time": get_ts_sec(), "type": log_type, "action": msg})
 
-        <form onsubmit="processCheckout(event)" class="space-y-3">
-          <input type="text" id="cust-store" required placeholder="Nama Toko / Usaha" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
-          <input type="text" id="cust-owner" required placeholder="Nama Pemilik (Contoh: Beatrix)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
-          <input type="email" id="cust-email" required placeholder="Email Aktivasi" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-blue-600" />
-          <select id="cust-payment" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
-            <option value="QRIS Instan">QRIS Instan (Otomatis Terbit Kode)</option>
-            <option value="Virtual Account BCA / Mandiri">Transfer Virtual Account (BCA / Mandiri)</option>
-          </select>
-          <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/20 transition">
-            Bayar & Terbitkan Kode Lisensi
-          </button>
-        </form>
-      </div>
-    </div>
-  </div>
+def needs_password_to_switch(from_role, to_role):
+    """Wajib password jika berpindah ke jabatan yang lebih tinggi (misal STAFF/DEV -> OWNER/MANAGER)."""
+    return ROLE_LEVEL.get(to_role, 1) > ROLE_LEVEL.get(from_role, 1)
 
-  <!-- Modal Invoice & Kode Lisensi -->
-  <div id="invoice-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
-      <div class="text-center mb-4">
-        <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto mb-2">✅</div>
-        <h3 class="text-xl font-extrabold text-slate-900">Pembayaran Berhasil!</h3>
-        <p class="text-sm text-slate-600 mt-1">Salin kode di bawah ini untuk mengaktifkan aplikasi Anda.</p>
-      </div>
+if st.session_state.current_user_idx >= len(st.session_state.accounts):
+    st.session_state.current_user_idx = 0
 
-      <!-- Kotak Kode Lisensi -->
-      <div class="bg-blue-50 border-2 border-dashed border-blue-400 rounded-2xl p-4 text-center mb-4">
-        <span class="text-xs font-bold uppercase tracking-wider text-blue-700 block mb-1">Kode Lisensi Anda</span>
-        <div id="generated-license-code" class="text-2xl sm:text-3xl font-mono font-extrabold text-slate-900 tracking-wider select-all">
-          STR-PRO-0000
-        </div>
-        <button onclick="copyLicenseCode()" id="copy-btn" class="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition">
-          📋 Salin Kode Lisensi
-        </button>
-      </div>
+current_user = st.session_state.accounts[st.session_state.current_user_idx]
+is_privileged = current_user["role"] in ["OWNER", "DEVELOPER", "MANAGER"]
+tier = st.session_state.app_tier
+is_dark = st.session_state.dark_mode
 
-      <div id="invoice-details" class="bg-slate-50 rounded-xl p-4 border border-slate-200 text-sm space-y-1.5 mb-5"></div>
-
-      <button onclick="closeInvoice()" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition">
-        Selesai & Tutup
-      </button>
-    </div>
-  </div>
-
-  <script>
-    let currentCycle = 'Bulanan';
-    let cart = [];
-    let currentLicenseKey = '';
-
-    const plansData = [
-      {
-        id: 'Standard',
-        codePrefix: 'STD',
-        badge: 'DASAR',
-        badgeStyle: 'bg-slate-600 text-white',
-        name: 'Standard',
-        desc: 'Kontrol Stok Harian Toko',
-        popular: false,
-        prices: { Mingguan: 54000, Bulanan: 195000, Tahunan: 2120000 },
-        features: [
-          { text: 'Unlimited Rak & Unlimited Akun Tim', ok: true, bold: true },
-          { text: 'Proteksi Password Berjenjang Jabatan', ok: true, bold: true },
-          { text: 'Update Harga & Stok Smart Label + E-Paper', ok: true },
-          { text: 'Kasir Cepat (-1 Terjual) & Export CSV', ok: true },
-          { text: 'Stock Opname / Cek Fisik Harian', ok: true },
-          { text: 'Kontak Chat Tim (Gudang ↔ Manager)', ok: true },
-        ]
-      },
-      {
-        id: 'Premium',
-        codePrefix: 'PRM',
-        badge: 'POPULER',
-        badgeStyle: 'bg-blue-600 text-white',
-        name: 'Premium',
-        desc: 'Manajemen Batch, Exp Date & Profit',
-        popular: false,
-        prices: { Mingguan: 76000, Bulanan: 350000, Tahunan: 3795000 },
-        features: [
-          { text: 'Semua Fitur Standard', ok: true, bold: true },
-          { text: 'Multi-Batch Exp Date (Tanggal Exp Tiap Batch Restock)', ok: true, bold: true },
-          { text: 'Prioritas Stok Keluar FEFO & Expired Alert ≤7 Hari', ok: true, bold: true },
-          { text: 'Notifikasi Stok Menipis & Rekomendasi Restock', ok: true, bold: true },
-          { text: 'Bulk Edit Stok & Harga Massal (Tabel Editor)', ok: true, bold: true },
-          { text: 'Kalkulator Margin Profit (HPP) & Grafik Stok', ok: true, bold: true },
-        ]
-      },
-      {
-        id: 'Pro',
-        codePrefix: 'PRO',
-        badge: '⭐ PRIORITAS ENTERPRISE',
-        badgeStyle: 'bg-gradient-to-r from-blue-600 to-violet-600 text-white',
-        name: 'Pro',
-        desc: 'Multi-Cabang & Audit Stok Lengkap',
-        popular: true,
-        prices: { Mingguan: 155000, Bulanan: 535000, Tahunan: 6050000 },
-        features: [
-          { text: 'Semua Fitur Premium (Termasuk Multi-Batch Exp Date)', ok: true, bold: true },
-          { text: 'Manajemen Multi-Cabang & Transfer Stok', ok: true, bold: true },
-          { text: 'Ringkasan Perbandingan Stok Semua Cabang', ok: true, bold: true },
-          { text: 'Kustomisasi Tema Layar E-Paper', ok: true, bold: true },
-          { text: 'LED Locator (Tes Kedip Label Rak)', ok: true, bold: true },
-          { text: 'Audit Log Mutasi Stok & Priority Sync E-Paper', ok: true, bold: true },
-        ]
-      }
-    ];
-
-    const suffixMap = { Mingguan: '/ minggu', Bulanan: '/ bulan', Tahunan: '/ tahun' };
-
-    function formatRp(num) {
-      return 'Rp ' + num.toLocaleString('id-ID');
+# ==========================================
+# GLOBAL THEME & FONT (CLEAN WHITE LIGHT & DEEP DARK MODE)
+# ==========================================
+if is_dark:
+    t = {
+        "scheme": "dark",
+        "bg": "#060913",
+        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.14) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.12) 0%, transparent 45%)",
+        "sidebar_bg": "#0b1120",
+        "card_bg": "#0f172a",
+        "card_hover": "#3b82f6",
+        "card_border": "#1e293b",
+        "card_shadow": "0 8px 24px rgba(0, 0, 0, 0.45)",
+        "text_main": "#f8fafc",
+        "text_muted": "#94a3b8",
+        "input_bg": "#162033",
+        "input_border": "#2d3b52",
+        "popover_bg": "#0f172a",
+        "tab_bg": "#131c31",
+        "tab_text": "#94a3b8",
+        "tab_active_bg": "#1e293b",
+        "tab_active_text": "#60a5fa",
+        "sec_btn_bg": "#1e293b",
+        "sec_btn_text": "#f8fafc",
+        "sec_btn_hover_bg": "#2563eb",
+        "sec_btn_hover_txt": "#ffffff",
+        "sec_btn_border": "#334155",
+        "pill_bg": "rgba(59, 130, 246, 0.18)",
+        "pill_border": "rgba(96, 165, 250, 0.3)",
+        "pill_text": "#93c5fd",
+        "price_color": "#60a5fa",
+        "pro_price_color": "#a78bfa",
+        "badge_ok_bg": "rgba(16, 185, 129, 0.16)",
+        "badge_ok_txt": "#34d399",
+        "badge_low_bg": "rgba(239, 68, 68, 0.18)",
+        "badge_low_txt": "#f87171",
+        "badge_exp_bg": "rgba(245, 158, 11, 0.18)",
+        "badge_exp_txt": "#fbbf24",
+        "warn_bg": "#1e1b18",
+        "warn_border": "#78350f",
+        "warn_txt": "#fde68a",
+        "code_bg": "#1e293b",
+        "code_txt": "#93c5fd",
+        "divider": "#1e293b",
+    }
+else:
+    t = {
+        "scheme": "light",
+        "bg": "#f8fafc",
+        "bg_grad": "radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 45%), radial-gradient(circle at 85% 10%, rgba(124, 58, 237, 0.04) 0%, transparent 45%)",
+        "sidebar_bg": "#ffffff",
+        "card_bg": "#ffffff",
+        "card_hover": "#3b82f6",
+        "card_border": "#e2e8f0",
+        "card_shadow": "0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.03)",
+        "text_main": "#0f172a",
+        "text_muted": "#64748b",
+        "input_bg": "#ffffff",
+        "input_border": "#cbd5e1",
+        "popover_bg": "#ffffff",
+        "tab_bg": "#e2e8f0",
+        "tab_text": "#475569",
+        "tab_active_bg": "#ffffff",
+        "tab_active_text": "#2563eb",
+        "sec_btn_bg": "#ffffff",
+        "sec_btn_text": "#0f172a",
+        "sec_btn_hover_bg": "#eff6ff",
+        "sec_btn_hover_txt": "#1d4ed8",
+        "sec_btn_border": "#cbd5e1",
+        "pill_bg": "#dbeafe",
+        "pill_border": "#bfdbfe",
+        "pill_text": "#1d4ed8",
+        "price_color": "#2563eb",
+        "pro_price_color": "#7c3aed",
+        "badge_ok_bg": "#dcfce7",
+        "badge_ok_txt": "#15803d",
+        "badge_low_bg": "#fee2e2",
+        "badge_low_txt": "#b91c1c",
+        "badge_exp_bg": "#fef3c7",
+        "badge_exp_txt": "#b45309",
+        "warn_bg": "#fffbeb",
+        "warn_border": "#fcd34d",
+        "warn_txt": "#92400e",
+        "code_bg": "#f1f5f9",
+        "code_txt": "#2563eb",
+        "divider": "#e2e8f0",
     }
 
-    function setCycle(cycle) {
-      currentCycle = cycle;
-      document.querySelectorAll('.cycle-btn').forEach(btn => {
-        btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
-        btn.classList.add('text-slate-600');
-      });
-      const activeBtn = document.getElementById('btn-' + cycle);
-      activeBtn.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
-      activeBtn.classList.remove('text-slate-600');
-      renderPlans();
-    }
+st.markdown(f"""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    function renderPlans() {
-      const grid = document.getElementById('plans-grid');
-      grid.innerHTML = plansData.map(plan => {
-        const price = plan.prices[currentCycle];
-        const borderClass = plan.popular
-          ? 'border-2 border-violet-600 shadow-xl shadow-violet-600/10 relative'
-          : 'border border-slate-200 shadow-sm';
-        const btnClass = plan.popular
-          ? 'bg-gradient-to-r from-blue-600 to-violet-600 hover:opacity-95 text-white shadow-md'
-          : 'bg-slate-900 hover:bg-blue-600 text-white';
+    :root {{
+        color-scheme: {t['scheme']} !important;
+    }}
 
-        return `
-          <div class="bg-white rounded-3xl p-7 flex flex-col justify-between ${borderClass}">
-            <div>
-              <span class="inline-block px-3 py-1 rounded-full text-[11px] font-extrabold tracking-wide mb-3 ${plan.badgeStyle}">
-                ${plan.badge}
-              </span>
-              <h3 class="text-2xl font-extrabold text-slate-900">${plan.name}</h3>
-              <p class="text-sm text-slate-500 mt-0.5">${plan.desc}</p>
-              <div class="mt-4 mb-5">
-                <span class="text-3xl font-extrabold ${plan.popular ? 'text-violet-600' : 'text-blue-600'}">${formatRp(price)}</span>
-                <span class="text-sm text-slate-500 font-medium">${suffixMap[currentCycle]}</span>
-              </div>
-              <hr class="border-slate-200 mb-5" />
-              <ul class="space-y-3 text-sm">
-                ${plan.features.map(f => `
-                  <li class="flex items-start gap-2.5 text-slate-700">
-                    <span>✔️</span>
-                    <span class="${f.bold ? 'font-bold text-slate-900' : ''}">${f.text}</span>
-                  </li>
-                `).join('')}
-              </ul>
+    html, body, .stApp, button, input, select, textarea, .stMarkdown, .stText, label, p,
+    span:not([data-testid="stIconMaterial"]):not(.material-symbols-rounded),
+    div:not([data-testid="stIconMaterial"]):not(.material-symbols-rounded) {{
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }}
+
+    [data-testid="stIconMaterial"], .material-symbols-rounded {{
+        font-family: 'Material Symbols Rounded' !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        word-wrap: normal !important;
+    }}
+
+    h1, h2, h3, h4 {{
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em !important;
+        color: {t['text_main']} !important;
+    }}
+
+    .stApp {{
+        background-color: {t['bg']} !important;
+        background-image: {t['bg_grad']} !important;
+        color: {t['text_main']} !important;
+    }}
+    .stApp p, .stApp span, .stApp label, .stApp li {{
+        color: {t['text_main']};
+    }}
+    .stCaption, [data-testid="stCaptionContainer"] p {{
+        color: {t['text_muted']} !important;
+    }}
+    code {{
+        background-color: {t['code_bg']} !important;
+        color: {t['code_txt']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 6px !important;
+        padding: 2px 6px !important;
+        font-weight: 700 !important;
+    }}
+    header[data-testid="stHeader"] {{
+        background-color: transparent !important;
+    }}
+    hr {{
+        border-color: {t['divider']} !important;
+    }}
+
+    [data-testid="stSidebar"] {{
+        background-color: {t['sidebar_bg']} !important;
+        border-right: 1px solid {t['card_border']} !important;
+    }}
+    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
+        color: {t['text_main']};
+    }}
+
+    [data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: {t['card_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 18px !important;
+        box-shadow: {t['card_shadow']} !important;
+        transition: border-color 0.2s ease, transform 0.2s ease !important;
+    }}
+    [data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        border-color: {t['card_hover']} !important;
+    }}
+
+    [data-testid="stMetric"] {{
+        background-color: {t['card_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 16px !important;
+        padding: 16px 20px !important;
+        box-shadow: {t['card_shadow']} !important;
+    }}
+    [data-testid="stMetricLabel"] p {{
+        font-weight: 600 !important;
+        color: {t['text_muted']} !important;
+        font-size: 13px !important;
+    }}
+    [data-testid="stMetricValue"] div {{
+        font-weight: 800 !important;
+        color: {t['text_main']} !important;
+        letter-spacing: -0.02em !important;
+    }}
+    [data-testid="stMetricDelta"] {{
+        background-color: {t['badge_low_bg']} !important;
+        padding: 2px 8px !important;
+        border-radius: 8px !important;
+        width: fit-content !important;
+    }}
+    [data-testid="stMetricDelta"] div, [data-testid="stMetricDelta"] svg {{
+        color: {t['badge_low_txt']} !important;
+        fill: {t['badge_low_txt']} !important;
+        font-weight: 700 !important;
+    }}
+
+    .stButton > button[kind="primary"], button[kind="primaryFormSubmit"] {{
+        background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        padding: 0.55rem 1.1rem !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28) !important;
+        transition: all 0.18s ease !important;
+    }}
+    .stButton > button[kind="primary"] *, button[kind="primaryFormSubmit"] * {{
+        color: #ffffff !important;
+    }}
+    .stButton > button[kind="primary"]:hover, button[kind="primaryFormSubmit"]:hover {{
+        background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%) !important;
+        transform: translateY(-1px);
+    }}
+
+    .stButton > button[kind="secondary"],
+    button[kind="secondaryFormSubmit"],
+    .stDownloadButton > button,
+    [data-testid="stPopover"] button,
+    button[data-testid="baseButton-secondary"] {{
+        background-color: {t['sec_btn_bg']} !important;
+        color: {t['sec_btn_text']} !important;
+        border: 1px solid {t['sec_btn_border']} !important;
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        transition: all 0.18s ease !important;
+    }}
+    .stButton > button[kind="secondary"] *,
+    button[kind="secondaryFormSubmit"] *,
+    .stDownloadButton > button *,
+    [data-testid="stPopover"] button *,
+    button[data-testid="baseButton-secondary"] * {{
+        color: {t['sec_btn_text']} !important;
+    }}
+    .stButton > button[kind="secondary"]:hover,
+    button[kind="secondaryFormSubmit"]:hover,
+    .stDownloadButton > button:hover,
+    [data-testid="stPopover"] button:hover {{
+        background-color: {t['sec_btn_hover_bg']} !important;
+        border-color: #2563eb !important;
+        color: {t['sec_btn_hover_txt']} !important;
+    }}
+    .stButton > button[kind="secondary"]:hover *,
+    .stDownloadButton > button:hover *,
+    [data-testid="stPopover"] button:hover * {{
+        color: {t['sec_btn_hover_txt']} !important;
+    }}
+    .stButton > button:disabled {{
+        opacity: 0.45 !important;
+        cursor: not-allowed !important;
+    }}
+
+    .stTextInput > div > div,
+    .stNumberInput > div > div,
+    .stDateInput > div > div,
+    .stSelectbox [data-baseweb="select"],
+    .stSelectbox [data-baseweb="select"] > div,
+    .stSelectbox [data-baseweb="select"] > div > div {{
+        background-color: {t['input_bg']} !important;
+        border-color: {t['input_border']} !important;
+        border-radius: 12px !important;
+        color: {t['text_main']} !important;
+    }}
+    .stSelectbox [data-baseweb="select"] > div {{
+        border: 1px solid {t['input_border']} !important;
+    }}
+    .stSelectbox [data-baseweb="select"] * {{
+        color: {t['text_main']} !important;
+        fill: {t['text_main']} !important;
+    }}
+    .stTextInput input, .stNumberInput input, .stDateInput input {{
+        background-color: transparent !important;
+        color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
+        font-weight: 500 !important;
+    }}
+    .stTextInput input::placeholder {{
+        color: {t['text_muted']} !important;
+        -webkit-text-fill-color: {t['text_muted']} !important;
+        opacity: 0.85 !important;
+    }}
+    .stNumberInput button {{
+        background-color: {t['input_bg']} !important;
+        color: {t['text_main']} !important;
+        border-color: {t['input_border']} !important;
+    }}
+
+    [data-testid="stPopoverBody"],
+    [data-testid="stPopoverBody"] > div,
+    div[data-baseweb="popover"],
+    div[data-baseweb="popover"] > div,
+    div[data-baseweb="menu"],
+    ul[role="listbox"] {{
+        background-color: {t['popover_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 14px !important;
+        color: {t['text_main']} !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+    }}
+    ul[role="listbox"] li,
+    ul[role="listbox"] li span,
+    ul[role="listbox"] li div {{
+        background-color: transparent !important;
+        color: {t['text_main']} !important;
+    }}
+    ul[role="listbox"] li:hover,
+    ul[role="listbox"] li[aria-selected="true"] {{
+        background-color: {t['pill_bg']} !important;
+        color: {t['pill_text']} !important;
+    }}
+
+    [data-testid="stAlert"],
+    [data-testid="stAlert"] > div {{
+        background-color: {t['warn_bg']} !important;
+        border-color: {t['warn_border']} !important;
+        border-radius: 14px !important;
+    }}
+    [data-testid="stAlert"] {{
+        border: 1px solid {t['warn_border']} !important;
+    }}
+    [data-testid="stAlert"] p,
+    [data-testid="stAlert"] span,
+    [data-testid="stAlert"] strong,
+    [data-testid="stAlert"] div {{
+        color: {t['warn_txt']} !important;
+    }}
+
+    .stTabs [data-baseweb="tab-list"] {{
+        background-color: {t['tab_bg']} !important;
+        padding: 5px !important;
+        border-radius: 14px !important;
+        gap: 6px !important;
+        border: 1px solid {t['card_border']} !important;
+    }}
+    .stTabs [data-baseweb="tab"] {{
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        padding: 8px 14px !important;
+        border: none !important;
+        background-color: transparent !important;
+    }}
+    .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{
+        color: {t['tab_text']} !important;
+    }}
+    .stTabs [aria-selected="true"] {{
+        background-color: {t['tab_active_bg']} !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+    }}
+    .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{
+        color: {t['tab_active_text']} !important;
+    }}
+    .stTabs [data-baseweb="tab-highlight"] {{
+        display: none !important;
+    }}
+
+    [data-testid="stExpander"] {{
+        background-color: {t['card_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+    }}
+    [data-testid="stExpander"] details summary {{
+        background-color: {t['card_bg']} !important;
+        color: {t['text_main']} !important;
+        font-weight: 700 !important;
+        padding: 10px 14px !important;
+    }}
+    [data-testid="stExpander"] details summary:hover {{
+        background-color: {t['pill_bg']} !important;
+    }}
+    [data-testid="stChatMessage"] {{
+        background-color: {t['input_bg']} !important;
+        border: 1px solid {t['card_border']} !important;
+        border-radius: 14px !important;
+    }}
+
+    .hero-pill {{
+        display: inline-block;
+        background-color: {t['pill_bg']};
+        border: 1px solid {t['pill_border']};
+        color: {t['pill_text']} !important;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }}
+    .gradient-title {{
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }}
+    .badge-pro {{
+        background: linear-gradient(90deg, #2563eb, #7c3aed);
+        color: white !important; padding: 4px 12px; border-radius: 9999px;
+        font-size: 11px; font-weight: 800; letter-spacing: 0.03em; display: inline-block;
+    }}
+    .badge-prm {{
+        background: #2563eb; color: white !important; padding: 4px 12px;
+        border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
+    }}
+    .badge-std {{
+        background: #475569; color: white !important; padding: 4px 12px;
+        border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
+    }}
+    .badge-ok {{ background: {t['badge_ok_bg']}; color: {t['badge_ok_txt']} !important; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }}
+    .badge-low {{ background: {t['badge_low_bg']}; color: {t['badge_low_txt']} !important; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }}
+    .badge-exp {{ background: {t['badge_exp_bg']}; color: {t['badge_exp_txt']} !important; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; }}
+    .batch-chip {{
+        display: inline-block;
+        background-color: {t['code_bg']};
+        color: {t['text_main']} !important;
+        border: 1px solid {t['card_border']};
+        padding: 2px 8px;
+        border-radius: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        margin: 2px 4px 2px 0;
+    }}
+    .batch-chip-exp {{
+        display: inline-block;
+        background-color: {t['badge_exp_bg']};
+        color: {t['badge_exp_txt']} !important;
+        border: 1px solid {t['badge_exp_txt']};
+        padding: 2px 8px;
+        border-radius: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        margin: 2px 4px 2px 0;
+    }}
+    .price-text {{ color: {t['price_color']} !important; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }}
+    .old-price {{ text-decoration: line-through; color: {t['text_muted']} !important; font-size: 13px; font-weight: 600; margin-right: 6px; }}
+
+    .epaper-light {{
+        background-color: #f4f4f0; color: #111111 !important; border: 6px solid #334155;
+        border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }}
+    .epaper-light * {{ font-family: 'Courier New', monospace !important; color: #111111 !important; }}
+    .epaper-dark {{
+        background-color: #18181b; color: #f4f4f5 !important; border: 6px solid #ef4444;
+        border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
+        box-shadow: 0 8px 20px rgba(239,68,68,0.22);
+    }}
+    .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
+</style>
+""", unsafe_allow_html=True)
+
+def render_theme_toggle(key_suffix="top"):
+    label = "☀️ Light Mode" if st.session_state.dark_mode else "🌙 Dark Mode"
+    if st.button(label, key=f"theme_btn_{key_suffix}", use_container_width=True):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+
+# ==========================================
+# 2. HALAMAN LOGIN DEMO
+# ==========================================
+if not st.session_state.logged_in:
+    _, _, col_t = st.columns([5, 1, 1.1])
+    with col_t:
+        render_theme_toggle("login")
+
+    _, col_l, _ = st.columns([1, 1.25, 1])
+    with col_l:
+        st.markdown(f"""
+        <div style='text-align: center; margin-top: 12px; margin-bottom: 18px;'>
+            <span class='hero-pill'>📦 Smart Label & Inventory OS</span>
+            <h1 style='font-size: 38px; margin: 4px 0;'>Masuk ke <span class='gradient-title'>Storify</span></h1>
+            <p style='color: {t['text_muted']}; font-size: 15px;'>Sistem Manajemen Smart Label E-Paper & Multi-Batch Inventory</p>
+        </div>
+        """, unsafe_allow_html=True)
+        with st.container(border=True):
+            email_in = st.text_input("Email Perusahaan", "beatrix@storify.id")
+            pass_in = st.text_input("Password", type="password", value="owner123")
+            st.write("")
+            if st.button("Masuk ke Dashboard", type="primary", use_container_width=True):
+                if email_in.strip() and pass_in.strip():
+                    st.session_state.logged_in = True
+                    st.session_state.accounts[0]["email"] = email_in.strip()
+                    st.rerun()
+                else:
+                    st.error("Email dan password wajib diisi.")
+    st.stop()
+
+# ==========================================
+# 3. HALAMAN AKTIVASI LISENSI PAKET (TANPA HARGA)
+# ==========================================
+if st.session_state.app_tier is None:
+    _, _, col_t2 = st.columns([5, 1, 1.1])
+    with col_t2:
+        render_theme_toggle("license")
+
+    st.markdown(f"""
+    <div style='text-align: center; padding-top: 4px; margin-bottom: 24px;'>
+        <span class='hero-pill'>🎟️ Portal Aktivasi Lisensi</span>
+        <h1 style='font-size: 36px; margin: 4px 0;'>Aktivasi Paket <span class='gradient-title'>Storify</span></h1>
+        <p style='color: {t['text_muted']}; font-size: 15px; max-width: 650px; margin: 0 auto;'>
+            Kontrol stok akurat hingga ke level Batch & Tanggal Kedaluwarsa. Masukkan kode lisensi paket Anda untuk mengaktifkan sistem (min. 4 karakter).
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    tiers_info = [
+        (
+            "Standard", "Kontrol Stok Harian Toko",
+            "✔️ **Unlimited Rak & Unlimited Akun Tim**\n"
+            "✔️ **Proteksi Password Berjenjang Jabatan**\n"
+            "✔️ Update Harga & Stok Smart Label + E-Paper\n"
+            "✔️ Kasir Cepat (-1 Terjual) & Export CSV\n"
+            "✔️ Stock Opname / Cek Fisik Harian\n"
+            "✔️ Kontak Chat Tim (Gudang ↔ Manager)",
+            "secondary"
+        ),
+        (
+            "Premium", "Manajemen Batch, Exp Date & Profit",
+            "✔️ **Semua Fitur Standard**\n"
+            "✔️ **Multi-Batch Exp Date (Tanggal Exp Tiap Batch Restock)**\n"
+            "✔️ **Prioritas Stok Keluar FEFO & Expired Alert ≤7 Hari**\n"
+            "✔️ **Notifikasi Stok Menipis & Rekomendasi Restock**\n"
+            "✔️ **Bulk Edit Stok & Harga Massal (Tabel Editor)**\n"
+            "✔️ **Kalkulator Margin Profit (HPP) & Grafik Stok**",
+            "secondary"
+        ),
+        (
+            "Pro", "Multi-Cabang & Audit Stok Lengkap",
+            "✔️ **Semua Fitur Premium (Termasuk Multi-Batch Exp Date)**\n"
+            "✔️ **Manajemen Multi-Cabang & Transfer Stok**\n"
+            "✔️ **Ringkasan Perbandingan Stok Semua Cabang**\n"
+            "✔️ **Kustomisasi Tema Layar E-Paper**\n"
+            "✔️ **LED Locator (Tes Kedip Label Rak)**\n"
+            "✔️ **Audit Log Mutasi Stok & Priority Sync E-Paper**",
+            "primary"
+        )
+    ]
+
+    cols = st.columns(3, gap="large")
+    for idx, (name, sub, desc, btn_type) in enumerate(tiers_info):
+        with cols[idx]:
+            with st.container(border=True):
+                if name == "Pro":
+                    st.markdown("<span class='badge-pro'>⭐ PRIORITAS ENTERPRISE</span>", unsafe_allow_html=True)
+                elif name == "Premium":
+                    st.markdown("<span class='badge-prm'>POPULER</span>", unsafe_allow_html=True)
+                else:
+                    st.markdown("<span class='badge-std'>DASAR</span>", unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <h3 style='margin: 12px 0 2px 0; font-size: 24px; color: {t['text_main']};'>{name}</h3>
+                <p style='color: {t['text_muted']}; font-size: 13px; margin-bottom: 8px;'>{sub}</p>
+                """, unsafe_allow_html=True)
+                st.divider()
+                st.markdown(desc)
+                st.write("")
+                code_in = st.text_input(f"Kode Lisensi {name}", placeholder=f"Contoh: STR-{name[:3].upper()}-8492", key=f"code_{name}")
+                if st.button(f"Aktifkan {name}", type=btn_type, use_container_width=True, key=f"act_{name}"):
+                    clean_code = code_in.strip()
+                    if len(clean_code) >= 4:
+                        st.session_state.app_tier = name
+                        add_log("SUCCESS", f"Lisensi {name} diaktifkan (Kode: {clean_code})")
+                        st.rerun()
+                    else:
+                        st.warning("Masukkan kode lisensi yang valid (minimal 4 karakter).")
+    st.stop()
+
+# ==========================================
+# 4. SINKRONISASI DATA CABANG & BATCH
+# ==========================================
+if tier != "Pro":
+    st.session_state.active_branch = "Cabang Utama"
+
+branch = st.session_state.active_branch
+current_inv = st.session_state.inventory.setdefault(branch, {})
+for prod_item in current_inv.values():
+    ensure_batches(prod_item)
+
+active_notifs = [req for req in st.session_state.restock_requests if req["status"] == "Belum" and req.get("branch", "Cabang Utama") == branch]
+history_reqs = [req for req in st.session_state.restock_requests if req["status"] == "Sudah" and req.get("branch", "Cabang Utama") == branch]
+
+# HEADER UTAMA
+c_head1, c_head_theme, c_head_sync = st.columns([2.6, 0.85, 1.25], vertical_alignment="center")
+with c_head1:
+    st.markdown(f"<h1 style='margin-bottom: 2px;'>🏷️ <span class='gradient-title'>Storify</span> — {branch}</h1>", unsafe_allow_html=True)
+    tier_tag = "⭐ PRIORITAS PRO" if tier == "Pro" else f"PAKET {tier.upper()}"
+    st.caption(f"Lisensi: **{tier_tag}** (Unlimited Rak & Akun) | Login: **{current_user['name']}** (`{current_user['role']}`) | 📅 {datetime.now().strftime('%d %b %Y')}")
+with c_head_theme:
+    render_theme_toggle("main_header")
+with c_head_sync:
+    sync_label = "⚡ Priority Sync E-Paper" if tier == "Pro" else "📡 Sync Semua E-Paper"
+    if st.button(sync_label, type="primary", use_container_width=True):
+        with st.spinner("Mengirim pembaruan ke Smart Label..."):
+            time.sleep(0.15 if tier == "Pro" else 0.5)
+        add_log("SUCCESS", f"[{current_user['name']}] Sinkronisasi {len(current_inv)} Smart Label di {branch} selesai.")
+        st.toast(f"Semua label di {branch} berhasil diperbarui!", icon="✅")
+
+if is_privileged and active_notifs:
+    st.warning(f"🔔 **Notifikasi Masuk ({branch}):** Ada **{len(active_notifs)} permintaan restock** berstatus **Belum**. Buka tab **📩 Notifikasi & Chat** untuk menandai **Sudah**.", icon="📢")
+
+# ==========================================
+# 5. SIDEBAR KONTROL RINGKAS
+# ==========================================
+with st.sidebar:
+    st.markdown("<h3 style='margin-bottom: 10px;'>⚙️ Panel Kontrol</h3>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown(f"**👤 {current_user['name']}** (`{current_user['role']}`)")
+        st.caption(f"📍 Lokasi: **{branch}**")
+        render_theme_toggle("sidebar")
+
+    # Ganti Akun dengan Aturan Password Berjenjang Jabatan
+    with st.expander("🔄 Ganti Akun Login", expanded=True):
+        acc_labels = [f"{a['name']} ({a['role']})" for a in st.session_state.accounts]
+        sel_idx = st.selectbox("Pilih Akun Tujuan:", range(len(acc_labels)), index=st.session_state.current_user_idx, format_func=lambda x: acc_labels[x])
+        target_acc = st.session_state.accounts[sel_idx]
+
+        if sel_idx == st.session_state.current_user_idx:
+            st.caption("✅ Sedang login sebagai akun ini.")
+        else:
+            req_pass = needs_password_to_switch(current_user["role"], target_acc["role"])
+            if req_pass:
+                st.caption(f"🔒 Naik ke jabatan `{target_acc['role']}` wajib password.")
+                sw_pass = st.text_input(f"Password {target_acc['name']}", type="password", placeholder="Masukkan password akun...", key="sb_sw_pass")
+                if st.button("Verifikasi & Masuk", type="primary", use_container_width=True, key="sb_sw_btn_lock"):
+                    if sw_pass == target_acc.get("password", ""):
+                        st.session_state.current_user_idx = sel_idx
+                        add_log("INFO", f"Pergantian akun terverifikasi ke {target_acc['name']} ({target_acc['role']})")
+                        st.rerun()
+                    else:
+                        st.error("Password salah! Akses ditolak.")
+            else:
+                st.caption(f"🔓 Akses langsung tanpa password (`{current_user['role']}` → `{target_acc['role']}`).")
+                if st.button("Masuk Langsung", type="primary", use_container_width=True, key="sb_sw_btn_free"):
+                    st.session_state.current_user_idx = sel_idx
+                    add_log("INFO", f"{current_user['name']} berpindah ke akun {target_acc['name']} ({target_acc['role']})")
+                    st.rerun()
+
+    # Restock Batch Baru (Multi-Batch Exp Date)
+    if current_inv:
+        with st.expander("📥 Restock Batch Baru (Multi-Batch)", expanded=False):
+            st.caption("Tambah stok restock tanpa menimpa tanggal kedaluwarsa batch lama.")
+            rs_rak = st.selectbox("Pilih Produk:", list(current_inv.keys()), format_func=lambda r: f"{r} - {current_inv[r]['item']} (Total: {current_inv[r]['qty']})", key="sb_rs_rak")
+            rs_qty = st.number_input("Jumlah Restock (Pcs)", min_value=1, value=10, step=1, key="sb_rs_qty")
+            rs_exp = st.date_input("Exp Date Batch Baru", value=date.today() + timedelta(days=90), key="sb_rs_exp")
+            if st.button("➕ Simpan Batch Restock", type="primary", use_container_width=True, key="sb_rs_btn"):
+                exp_s = rs_exp.strftime("%Y-%m-%d")
+                add_batch_stock(current_inv[rs_rak], rs_qty, exp_s)
+                add_log("SUCCESS", f"[{current_user['name']}] Restock +{rs_qty} pcs {current_inv[rs_rak]['item']} ({rs_rak}) — Batch Exp: {exp_s}")
+                st.toast(f"Batch baru +{rs_qty} pcs (Exp: {exp_s}) berhasil ditambahkan!", icon="📦")
+                st.rerun()
+
+    # Fitur Khusus PRO: Multi-Cabang & Transfer Stok (FEFO)
+    if tier == "Pro":
+        with st.expander("🏢 Cabang & Transfer Stok (Pro)", expanded=False):
+            sel_br = st.selectbox("Cabang Aktif:", st.session_state.branches, index=st.session_state.branches.index(branch))
+            if sel_br != branch:
+                st.session_state.active_branch = sel_br
+                st.session_state.page = "home"
+                st.rerun()
+            if is_privileged:
+                new_br = st.text_input("Nama Cabang Baru", placeholder="Contoh: Cabang Timur")
+                if st.button("Tambah Cabang", use_container_width=True):
+                    if new_br.strip() and new_br.strip() not in st.session_state.branches:
+                        st.session_state.branches.append(new_br.strip())
+                        st.session_state.inventory[new_br.strip()] = {}
+                        st.session_state.active_branch = new_br.strip()
+                        add_log("SUCCESS", f"Cabang baru ditambahkan: {new_br.strip()}")
+                        st.rerun()
+
+                if len(st.session_state.branches) > 1 and current_inv:
+                    st.divider()
+                    st.caption("**🚚 Transfer Stok Antar Cabang (FEFO)**")
+                    tr_rak = st.selectbox("Produk Asal:", list(current_inv.keys()), format_func=lambda r: f"{r} - {current_inv[r]['item']} ({current_inv[r]['qty']})")
+                    other_branches = [b for b in st.session_state.branches if b != branch]
+                    tr_dest = st.selectbox("Cabang Tujuan:", other_branches)
+                    avail_qty = current_inv[tr_rak]["qty"]
+                    if avail_qty > 0:
+                        tr_qty = st.number_input("Jumlah Transfer", min_value=1, max_value=avail_qty, value=1)
+                        if st.button("Kirim Stok Antar Cabang", use_container_width=True):
+                            moved_batches = consume_stock_fefo(current_inv[tr_rak], tr_qty)
+                            dest_inv = st.session_state.inventory.setdefault(tr_dest, {})
+                            if tr_rak not in dest_inv:
+                                dest_inv[tr_rak] = {
+                                    "item": current_inv[tr_rak]["item"],
+                                    "category": current_inv[tr_rak]["category"],
+                                    "qty": 0,
+                                    "cost": current_inv[tr_rak].get("cost", 0),
+                                    "price": current_inv[tr_rak]["price"],
+                                    "old_price": None,
+                                    "batches": [],
+                                    "battery": 100,
+                                    "checked_today": False,
+                                    "image": current_inv[tr_rak]["image"],
+                                    "inflow": [],
+                                    "outflow": [0]
+                                }
+                            for mb in moved_batches:
+                                add_batch_stock(dest_inv[tr_rak], mb["qty"], mb["exp"])
+                            add_log("INFO", f"[{current_user['name']}] Transfer {tr_qty} pcs {current_inv[tr_rak]['item']} ({branch} -> {tr_dest})")
+                            st.toast("Transfer stok per batch berhasil!", icon="🚚")
+                            st.rerun()
+                    else:
+                        st.caption("⚠️ Stok produk asal kosong (0 pcs).")
+
+    if is_privileged:
+        with st.expander("➕ Tambah Produk & Label Baru"):
+            new_rak = st.text_input("Kode Rak", f"Rak E{len(current_inv)+1}")
+            new_item = st.text_input("Nama Produk", "Susu UHT 250ml")
+            existing_cats = sorted(list(set(d["category"] for d in current_inv.values()))) if current_inv else ["Minuman", "Makanan"]
+            cat_choice = st.selectbox("Kategori", existing_cats + ["+ Kategori Baru"])
+            new_cat = st.text_input("Nama Kategori Baru", "Produk Susu") if cat_choice == "+ Kategori Baru" else cat_choice
+
+            img_opt = st.radio("Foto Produk:", ["Link URL", "Upload File"], horizontal=True)
+            final_img = "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300"
+            if img_opt == "Upload File":
+                up_file = st.file_uploader("Pilih Gambar", type=["png", "jpg", "jpeg"])
+                if up_file:
+                    b64 = base64.b64encode(up_file.getvalue()).decode("utf-8")
+                    final_img = f"data:image/jpeg;base64,{b64}"
+            else:
+                url_in = st.text_input("URL Gambar", final_img)
+                if url_in:
+                    final_img = url_in
+
+            new_qty = st.number_input("Stok Batch Awal", min_value=1, value=15)
+            new_cost = st.number_input("Harga Modal / HPP (Rp)", min_value=0, value=5500, step=500)
+            new_price = st.number_input("Harga Jual E-Paper (Rp)", min_value=0, value=7500, step=500)
+            if tier in ["Premium", "Pro"] and new_price > 0:
+                margin_rp = new_price - new_cost
+                margin_pct = (margin_rp / new_price) * 100
+                st.caption(f"💰 Estimasi Margin: **Rp {margin_rp:,}** ({margin_pct:.1f}%)")
+            new_exp = st.date_input("Exp Date Batch Awal", value=date.today() + timedelta(days=60))
+
+            if st.button("Simpan & Pasang Label", type="primary", use_container_width=True):
+                if new_rak.strip() and new_item.strip():
+                    exp_init = new_exp.strftime("%Y-%m-%d")
+                    current_inv[new_rak.strip()] = {
+                        "item": new_item.strip(), "category": new_cat.strip(), "qty": new_qty,
+                        "cost": new_cost, "price": new_price, "old_price": None,
+                        "batches": [{"qty": new_qty, "exp": exp_init}],
+                        "battery": 100, "checked_today": True,
+                        "image": final_img, "inflow": [new_qty], "outflow": [0]
+                    }
+                    add_log("SUCCESS", f"[{current_user['name']}] Menambah {new_item} di {new_rak} ({branch}) — Batch Exp: {exp_init}")
+                    st.rerun()
+
+        if tier == "Pro":
+            with st.expander("🎨 Kustomisasi Layar E-Paper (Pro)"):
+                st.session_state.epaper_style = st.selectbox("Tema Layar Label", ["Klasik Terang", "Mode Gelap Merah (Promo)"])
+                st.session_state.epaper_footer = st.text_input("Teks Bawah Label", st.session_state.epaper_footer)
+
+    with st.expander("🔐 Sesi & Lisensi"):
+        if st.button("🔄 Ganti Paket Lisensi", use_container_width=True):
+            st.session_state.app_tier = None
+            st.rerun()
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.app_tier = None
+            st.rerun()
+
+# ==========================================
+# 6. HALAMAN DETAIL PRODUK, RINCIAN BATCH & PREVIEW E-PAPER
+# ==========================================
+if st.session_state.page == "detail":
+    rak_key = st.session_state.selected_rak
+    if rak_key not in current_inv:
+        st.session_state.page = "home"
+        st.rerun()
+    prod = current_inv[rak_key]
+    ensure_batches(prod)
+
+    if st.button("⬅️ Kembali ke Dashboard"):
+        st.session_state.page = "home"
+        st.rerun()
+
+    c_det1, c_det2 = st.columns([1.45, 1])
+    with c_det1:
+        with st.container(border=True):
+            ic1, ic2 = st.columns([1, 2])
+            with ic1:
+                st.image(prod["image"], use_container_width=True)
+            with ic2:
+                st.subheader(f"{prod['item']} ({rak_key})")
+                st.write(f"📂 **Kategori:** {prod['category']} | 📅 **Exp Terdekat:** `{get_nearest_exp(prod)}`")
+                st.write(f"📦 **Total Stok Fisik:** {prod['qty']} Pcs ({len(prod['batches'])} Batch) | 🔋 **Baterai:** {prod.get('battery', 95)}%")
+                st.write(f"🏷️ **Harga Jual:** Rp {prod['price']:,}")
+                if tier in ["Premium", "Pro"] and is_privileged:
+                    cost_val = prod.get("cost", 0)
+                    profit_val = prod["price"] - cost_val
+                    st.write(f"💰 **Modal:** Rp {cost_val:,} | **Profit:** Rp {profit_val:,}/pcs")
+                if tier == "Pro":
+                    if st.button("🔦 Tes Kedip LED Label Rak", use_container_width=True):
+                        st.toast(f"Lampu LED pada perangkat {rak_key} berkedip hijau selama 10 detik!", icon="💡")
+
+    with c_det2:
+        st.caption("📟 **Simulasi Layar Fisik Smart Label (E-Ink):**")
+        promo_tag = "🔥 DISKON" if prod.get("old_price") else "HARGA NORMAL"
+        old_p_html = f"<div style='font-size:14px; text-decoration:line-through;'>Rp {prod['old_price']:,}</div>" if prod.get("old_price") else ""
+        box_cls = "epaper-dark" if (tier == "Pro" and st.session_state.epaper_style == "Mode Gelap Merah (Promo)") else "epaper-light"
+        footer_txt = st.session_state.epaper_footer if tier == "Pro" else f"ID-{rak_key.replace(' ', '')}-2026"
+        st.markdown(f"""
+        <div class="{box_cls}">
+            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; border-bottom:2px solid currentColor; padding-bottom:4px;">
+                <span>{rak_key.upper()}</span>
+                <span>{promo_tag}</span>
             </div>
-            <button onclick="selectPlan('${plan.id}', '${plan.codePrefix}', '${plan.name} (${currentCycle})', ${price})" class="mt-8 w-full py-3.5 rounded-xl font-bold text-sm transition ${btnClass}">
-              Beli Paket ${plan.name}
-            </button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function selectPlan(tierId, codePrefix, label, price) {
-      cart = cart.filter(item => item.type !== 'Lisensi');
-      cart.unshift({
-        id: 'lic-' + tierId,
-        tierId: tierId,
-        codePrefix: codePrefix,
-        name: 'Lisensi ' + label,
-        price: price,
-        qty: 1,
-        type: 'Lisensi'
-      });
-      updateCartUI();
-      toggleCart(true);
-    }
-
-    function addToCart(id, name, price, type) {
-      const existing = cart.find(i => i.id === id);
-      if (existing) existing.qty += 1;
-      else cart.push({ id, name, price, qty: 1, type });
-      updateCartUI();
-      toggleCart(true);
-    }
-
-    function removeFromCart(index) {
-      cart.splice(index, 1);
-      updateCartUI();
-    }
-
-    function updateCartUI() {
-      const badge = document.getElementById('cart-badge');
-      const itemsContainer = document.getElementById('cart-items');
-      const checkoutSec = document.getElementById('checkout-section');
-
-      const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
-      badge.textContent = totalQty;
-
-      if (cart.length === 0) {
-        itemsContainer.innerHTML = `<p class="text-sm text-slate-500 text-center py-10">Keranjang kosong. Silakan pilih paket Standard, Premium, atau Pro.</p>`;
-        checkoutSec.classList.add('hidden');
-        return;
-      }
-
-      checkoutSec.classList.remove('hidden');
-      itemsContainer.innerHTML = cart.map((item, idx) => `
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <div>
-            <span class="text-[11px] font-bold uppercase text-blue-600">${item.type}</span>
-            <h4 class="text-sm font-bold text-slate-900">${item.name}</h4>
-            <p class="text-xs text-slate-600">${formatRp(item.price)} x ${item.qty}</p>
-          </div>
-          <button onclick="removeFromCart(${idx})" class="text-xs font-bold text-red-500 hover:underline">Hapus</button>
+            <div style="font-size:16px; font-weight:bold; margin-top:8px;">{prod['item']}</div>
+            {old_p_html}
+            <div style="font-size:30px; font-weight:900; margin:4px 0;">Rp {prod['price']:,}</div>
+            <div style="font-size:11px; border-top:1px dashed currentColor; padding-top:4px;">
+                |||| || ||| |||| ||| &nbsp; {footer_txt}
+            </div>
         </div>
-      `).join('');
+        """, unsafe_allow_html=True)
 
-      const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-      const tax = Math.round(subtotal * 0.11);
-      const total = subtotal + tax;
+    st.write("")
+    # Rincian Batch Stok & Tanggal Kedaluwarsa
+    with st.container(border=True):
+        st.subheader("📅 Rincian Stok per Batch & Tanggal Kedaluwarsa (Urutan FEFO)")
+        st.caption("Sistem otomatis mengeluarkan stok dari batch paling atas (tanggal kedaluwarsa terdekat) saat barang terjual.")
+        if prod["batches"]:
+            batch_rows = []
+            for idx_b, b in enumerate(prod["batches"], start=1):
+                try:
+                    d_left = (datetime.strptime(b["exp"], "%Y-%m-%d").date() - date.today()).days
+                    if d_left < 0:
+                        st_b = f"❌ Sudah Kedaluwarsa ({abs(d_left)} hari lalu)"
+                    elif d_left <= 7:
+                        st_b = f"⚠️ Dekat Exp ({d_left} hari lagi)"
+                    else:
+                        st_b = f"✔️ Aman ({d_left} hari lagi)"
+                except ValueError:
+                    st_b = "-"
+                batch_rows.append({
+                    "Prioritas Keluar": f"Batch #{idx_b}" + (" (Keluar Pertama)" if idx_b == 1 else ""),
+                    "Tanggal Kedaluwarsa (Exp Date)": b["exp"],
+                    "Jumlah Stok Batch": f"{b['qty']} Pcs",
+                    "Status Masa Simpan": st_b
+                })
+            st.dataframe(pd.DataFrame(batch_rows), use_container_width=True, hide_index=True)
+        else:
+            st.warning("Stok kosong (0 Pcs). Tambahkan batch restock baru melalui sidebar atau menu Kelola Barang.")
 
-      document.getElementById('cart-subtotal').textContent = formatRp(subtotal);
-      document.getElementById('cart-tax').textContent = formatRp(tax);
-      document.getElementById('cart-total').textContent = formatRp(total);
-    }
+    st.write("")
+    if tier in ["Premium", "Pro"]:
+        st.subheader("📈 Pergerakan Stok (Masuk vs Terjual)")
+        max_len = max(len(prod["inflow"]), len(prod["outflow"]))
+        in_padded = prod["inflow"] + [0] * (max_len - len(prod["inflow"]))
+        out_padded = prod["outflow"] + [0] * (max_len - len(prod["outflow"]))
+        st.line_chart({"Masuk": in_padded, "Terjual": out_padded})
+    else:
+        st.info("🔒 Upgrade ke paket Premium/Pro untuk melihat grafik riwayat stok.")
+    st.stop()
 
-    function toggleCart(forceOpen = null) {
-      const drawer = document.getElementById('cart-drawer');
-      if (forceOpen === true) drawer.classList.remove('hidden');
-      else if (forceOpen === false) drawer.classList.add('hidden');
-      else drawer.classList.toggle('hidden');
-    }
+# ==========================================
+# 7. SISTEM TAB UTAMA DASHBOARD (TANPA SHIFT)
+# ==========================================
+notif_badge = f" ({len(active_notifs)})" if active_notifs else ""
+tab1, tab2, tab3, tab4 = st.tabs([
+    "📦 Monitoring Rak & Batch Stok",
+    f"📩 Notifikasi & Chat{notif_badge}",
+    "📊 History & Laporan",
+    "👥 Manajemen Akun Tim"
+])
 
-    function processCheckout(e) {
-      e.preventDefault();
-      const store = document.getElementById('cust-store').value;
-      const owner = document.getElementById('cust-owner').value;
-      const email = document.getElementById('cust-email').value;
-      const payment = document.getElementById('cust-payment').value;
-      const totalText = document.getElementById('cart-total').textContent;
+# ------------------------------------------
+# TAB 1: MONITORING RAK & MULTI-BATCH STOK
+# ------------------------------------------
+with tab1:
+    inv_list = list(current_inv.values())
+    low_raks = [k for k, v in current_inv.items() if v["qty"] <= 5]
+    checked_count = sum(1 for v in inv_list if v.get("checked_today", False))
 
-      const licItem = cart.find(i => i.type === 'Lisensi');
-      const prefix = licItem ? licItem.codePrefix : 'STD';
-      const tierName = licItem ? licItem.tierId : 'Standard';
-      const randomDigits = Math.floor(1000 + Math.random() * 9000);
-      
-      currentLicenseKey = `STR-${prefix}-${randomDigits}`;
-      document.getElementById('generated-license-code').textContent = currentLicenseKey;
-      document.getElementById('copy-btn').textContent = '📋 Salin Kode Lisensi';
+    near_exp_raks = [k for k, v in current_inv.items() if len(get_exp_alert_batches(v, 7)) > 0]
 
-      document.getElementById('invoice-details').innerHTML = `
-        <div class="flex justify-between"><span class="text-slate-500">No. Invoice:</span><span class="font-bold">INV-${Math.floor(100000 + Math.random() * 900000)}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Nama Toko:</span><span class="font-bold">${store}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Pemilik:</span><span class="font-bold">${owner} (${email})</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Paket Lisensi:</span><span class="font-bold text-blue-600">${tierName.toUpperCase()}</span></div>
-        <div class="flex justify-between"><span class="text-slate-500">Metode Bayar:</span><span class="font-bold">${payment}</span></div>
-        <div class="flex justify-between pt-2 border-t border-slate-200"><span class="text-slate-700 font-bold">Total Lunas:</span><span class="font-extrabold text-emerald-600">${totalText}</span></div>
-      `;
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Rak Aktif", f"{len(inv_list)} Rak")
+    m2.metric("Total Stok Fisik", f"{sum(d['qty'] for d in inv_list)} Pcs")
+    m3.metric("Nilai Aset Barang", f"Rp {sum(d['qty'] * d['price'] for d in inv_list):,}")
+    m4.metric("Cek Fisik (Opname)", f"{checked_count} / {len(inv_list)} Rak", delta=f"{len(low_raks)} stok tipis" if low_raks else "Semua aman", delta_color="inverse")
 
-      cart = [];
-      updateCartUI();
-      toggleCart(false);
-      document.getElementById('invoice-modal').classList.remove('hidden');
-    }
+    if tier in ["Premium", "Pro"] and near_exp_raks:
+        st.warning(f"📅 **Peringatan Batch Kedaluwarsa (≤7 Hari):** Terdapat batch mendekati kedaluwarsa pada **{', '.join(near_exp_raks)}**. Prioritaskan penjualan batch tersebut.", icon="⏳")
 
-    function copyLicenseCode() {
-      navigator.clipboard.writeText(currentLicenseKey);
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✅ Tersalin ke Clipboard!';
-    }
+    fc1, fc2, fc3, fc4 = st.columns([1.3, 1.3, 1.8, 1])
+    with fc1:
+        cats = ["Semua Kategori"] + sorted(list(set(d["category"] for d in inv_list)))
+        sel_cat = st.selectbox("Kategori", cats, label_visibility="collapsed")
+    with fc2:
+        status_opts = ["Semua Status", "Stok Menipis (≤5)", "Belum Cek Fisik"]
+        if tier in ["Premium", "Pro"]:
+            status_opts.append("Ada Batch Dekat Exp")
+        sel_status = st.selectbox("Status", status_opts, label_visibility="collapsed")
+    with fc3:
+        search_q = st.text_input("Cari", placeholder="🔍 Cari nama barang atau kode rak...", label_visibility="collapsed")
+    with fc4:
+        export_rows = []
+        for k, v in current_inv.items():
+            ensure_batches(v)
+            batch_summary = "; ".join([f"{b['qty']} pcs (Exp {b['exp']})" for b in v["batches"]]) if v["batches"] else "-"
+            export_rows.append({
+                "Cabang": branch, "Kode Rak": k, "Produk": v["item"], "Kategori": v["category"],
+                "Total Stok": v["qty"], "Harga": v["price"], "Rincian Batch & Exp": batch_summary
+            })
+        df_export = pd.DataFrame(export_rows)
+        st.download_button("📥 Export CSV", df_export.to_csv(index=False).encode("utf-8"), f"stok_{branch}.csv", "text/csv", use_container_width=True)
 
-    function closeInvoice() {
-      document.getElementById('invoice-modal').classList.add('hidden');
-    }
+    if tier in ["Premium", "Pro"] and current_inv:
+        b_tool1, b_tool2 = st.columns(2)
+        with b_tool1:
+            if is_privileged:
+                with st.expander("📝 Edit Harga Massal (Bulk Price Editor)"):
+                    bulk_df = pd.DataFrame([
+                        {"Kode Rak": k, "Produk": v["item"], "Total Stok": v["qty"], "Harga Modal": v.get("cost", 0), "Harga Jual (Rp)": v["price"]}
+                        for k, v in current_inv.items()
+                    ])
+                    edited_df = st.data_editor(bulk_df, disabled=["Kode Rak", "Produk", "Total Stok"], use_container_width=True, hide_index=True, key=f"bulk_{branch}")
+                    if st.button("💾 Terapkan Semua Perubahan Harga", type="primary"):
+                        for _, row in edited_df.iterrows():
+                            rk = row["Kode Rak"]
+                            if rk in current_inv:
+                                current_inv[rk]["cost"] = int(row["Harga Modal"])
+                                current_inv[rk]["price"] = int(row["Harga Jual (Rp)"])
+                        add_log("SUCCESS", f"[{current_user['name']}] Melakukan Bulk Edit harga massal di {branch}")
+                        st.toast("Semua perubahan harga berhasil disimpan!", icon="✅")
+                        st.rerun()
+        with b_tool2:
+            with st.expander("🖨️ Katalog Daftar Harga Meja Kasir"):
+                df_catalog = pd.DataFrame([
+                    {"Kode Rak": k, "Nama Produk": v["item"], "Kategori": v["category"], "Harga Resmi": f"Rp {v['price']:,}"}
+                    for k, v in current_inv.items()
+                ])
+                st.dataframe(df_catalog, use_container_width=True, hide_index=True)
 
-    renderPlans();
-    updateCartUI();
-  </script>
-</body>
-</html>
+    st.write("")
+
+    if not current_inv:
+        st.info(f"Belum ada produk terdaftar di **{branch}**. Tambahkan produk melalui menu **➕ Tambah Produk & Label Baru** di sidebar.")
+    else:
+        for rak_id, data in list(current_inv.items()):
+            ensure_batches(data)
+            if sel_cat != "Semua Kategori" and data["category"] != sel_cat:
+                continue
+            if sel_status == "Stok Menipis (≤5)" and data["qty"] > 5:
+                continue
+            if sel_status == "Belum Cek Fisik" and data.get("checked_today", False):
+                continue
+            if sel_status == "Ada Batch Dekat Exp" and rak_id not in near_exp_raks:
+                continue
+            if search_q.lower() not in data["item"].lower() and search_q.lower() not in rak_id.lower():
+                continue
+
+            with st.container(border=True):
+                c_img, c_inf, c_stk, c_prc, c_act = st.columns([0.8, 2.2, 1.5, 1.5, 2], vertical_alignment="center")
+                with c_img:
+                    st.image(data["image"], use_container_width=True)
+                with c_inf:
+                    st.markdown(f"**📍 {rak_id} — {data['item']}**")
+                    bat = data.get("battery", 95)
+                    bat_icon = "🪫" if bat < 80 else "🔋"
+                    st.caption(f"📂 {data['category']} | {bat_icon} {bat}% | 🗂️ {len(data['batches'])} Batch Aktif")
+
+                    # Tampilkan chip rincian exp date tiap batch
+                    if data["batches"]:
+                        chips_html = []
+                        for b_item in data["batches"]:
+                            try:
+                                d_rem = (datetime.strptime(b_item["exp"], "%Y-%m-%d").date() - date.today()).days
+                                is_soon = d_rem <= 7
+                            except ValueError:
+                                is_soon = False
+                            cls_chip = "batch-chip-exp" if (tier in ["Premium", "Pro"] and is_soon) else "batch-chip"
+                            chips_html.append(f"<span class='{cls_chip}'>📦 {b_item['qty']} pcs • Exp: {b_item['exp']}</span>")
+                        st.markdown("".join(chips_html), unsafe_allow_html=True)
+                    else:
+                        st.caption("⚠️ Semua batch stok habis (0 pcs)")
+
+                    chk = st.checkbox("Sudah cek fisik hari ini", value=data.get("checked_today", False), key=f"chk_{branch}_{rak_id}")
+                    if chk != data.get("checked_today", False):
+                        current_inv[rak_id]["checked_today"] = chk
+                        add_log("INFO", f"[{current_user['name']}] Cek fisik {rak_id}: {'Sudah' if chk else 'Batal'}")
+                        st.rerun()
+
+                with c_stk:
+                    st.write(f"📦 **Total: {data['qty']} Pcs**")
+                    badges = []
+                    if data["qty"] <= 5:
+                        badges.append("<span class='badge-low'>⚠️ Stok Tipis</span>")
+                    else:
+                        badges.append("<span class='badge-ok'>✔ Aman</span>")
+                    if tier in ["Premium", "Pro"] and rak_id in near_exp_raks:
+                        badges.append("<span class='badge-exp'>⏳ Batch Dekat Exp</span>")
+                    st.markdown(" ".join(badges), unsafe_allow_html=True)
+
+                with c_prc:
+                    old_html = f"<span class='old-price'>Rp {data['old_price']:,}</span><br>" if data.get("old_price") else ""
+                    st.markdown(f"{old_html}<span class='price-text'>Rp {data['price']:,}</span>", unsafe_allow_html=True)
+                    if tier in ["Premium", "Pro"] and is_privileged and data.get("cost", 0) > 0:
+                        profit = data["price"] - data["cost"]
+                        st.caption(f"Margin: Rp {profit:,}")
+
+                with c_act:
+                    b_c1, b_c2 = st.columns(2)
+                    with b_c1:
+                        if st.button("📊 Detail Batch", key=f"det_{branch}_{rak_id}", use_container_width=True):
+                            st.session_state.selected_rak = rak_id
+                            st.session_state.page = "detail"
+                            st.rerun()
+                    with b_c2:
+                        if st.button("🛒 -1 Terjual", key=f"sell_{branch}_{rak_id}", use_container_width=True, disabled=(data["qty"] == 0)):
+                            used = consume_stock_fefo(current_inv[rak_id], 1)
+                            exp_used = used[0]["exp"] if used else "-"
+                            item_profit = data["price"] - data.get("cost", 0)
+                            st.session_state.sales_history.insert(0, {
+                                "time": get_ts(), "branch": branch, "rak": rak_id, "item": data["item"],
+                                "qty": 1, "total": data["price"], "profit": item_profit, "cashier": current_user["name"]
+                            })
+                            add_log("INFO", f"[{current_user['name']}] Terjual 1 pcs {data['item']} ({rak_id}, Batch Exp: {exp_used})")
+                            st.rerun()
+
+                    with st.popover("⚙️ Kelola Batch & Harga", use_container_width=True):
+                        st.markdown("**📥 Tambah Batch Restock Baru**")
+                        add_b_qty = st.number_input("Jumlah Masuk (Pcs)", min_value=1, value=10, key=f"abq_{branch}_{rak_id}")
+                        add_b_exp = st.date_input("Exp Date Batch Ini", value=date.today() + timedelta(days=90), key=f"abe_{branch}_{rak_id}")
+                        if st.button("➕ Tambah ke Stok (Batch Baru)", type="primary", key=f"abb_{branch}_{rak_id}", use_container_width=True):
+                            exp_str_new = add_b_exp.strftime("%Y-%m-%d")
+                            add_batch_stock(current_inv[rak_id], add_b_qty, exp_str_new)
+                            add_log("SUCCESS", f"[{current_user['name']}] Restock +{add_b_qty} pcs {rak_id} (Batch Exp: {exp_str_new})")
+                            st.rerun()
+
+                        if data["batches"]:
+                            st.divider()
+                            st.markdown("**🗂️ Edit / Koreksi Batch yang Ada**")
+                            for idx_eb, b_eb in enumerate(list(data["batches"])):
+                                ec1, ec2 = st.columns([1.3, 1])
+                                with ec1:
+                                    st.caption(f"Batch #{idx_eb+1} • Exp: `{b_eb['exp']}`")
+                                with ec2:
+                                    upd_bq = st.number_input("Qty", min_value=0, value=b_eb["qty"], key=f"ebq_{branch}_{rak_id}_{idx_eb}", label_visibility="collapsed")
+                                if upd_bq != b_eb["qty"]:
+                                    diff_q = upd_bq - b_eb["qty"]
+                                    if diff_q > 0:
+                                        current_inv[rak_id]["inflow"].append(diff_q)
+                                    else:
+                                        current_inv[rak_id]["outflow"].append(abs(diff_q))
+                                    b_eb["qty"] = upd_bq
+                                    ensure_batches(current_inv[rak_id])
+                                    add_log("INFO", f"[{current_user['name']}] Koreksi stok batch Exp {b_eb['exp']} ({rak_id}) -> {upd_bq} pcs")
+                                    st.rerun()
+
+                        if is_privileged:
+                            st.divider()
+                            st.markdown("**🏷️ Pengaturan Harga E-Paper**")
+                            new_p = st.number_input("Harga Jual (Rp)", min_value=0, value=int(data["price"]), step=500, key=f"p_{branch}_{rak_id}")
+                            if tier in ["Premium", "Pro"]:
+                                new_c = st.number_input("Harga Modal (Rp)", min_value=0, value=int(data.get("cost", 0)), step=500, key=f"c_{branch}_{rak_id}")
+                                st.caption("Diskon Cepat Per Produk (Misal Mendekati Exp):")
+                                d1, d2, d3, d4 = st.columns(4)
+                                for col_d, pct in zip([d1, d2, d3], [10, 20, 50]):
+                                    if col_d.button(f"-{pct}%", key=f"d{pct}_{branch}_{rak_id}", use_container_width=True):
+                                        base_p = data["old_price"] if data.get("old_price") else data["price"]
+                                        current_inv[rak_id]["old_price"] = base_p
+                                        current_inv[rak_id]["price"] = int(base_p * (1 - pct/100))
+                                        add_log("INFO", f"[{current_user['name']}] Diskon {pct}% pada {rak_id}")
+                                        st.rerun()
+                                if d4.button("Reset", key=f"rst_{branch}_{rak_id}", use_container_width=True):
+                                    if data.get("old_price"):
+                                        current_inv[rak_id]["price"] = data["old_price"]
+                                        current_inv[rak_id]["old_price"] = None
+                                        st.rerun()
+                            else:
+                                new_c = data.get("cost", 0)
+
+                            if st.button("💾 Simpan Harga", type="primary", key=f"sv_{branch}_{rak_id}", use_container_width=True):
+                                current_inv[rak_id]["price"] = new_p
+                                current_inv[rak_id]["cost"] = new_c
+                                add_log("INFO", f"[{current_user['name']}] Update harga {rak_id} -> Rp {new_p:,}")
+                                st.rerun()
+
+                            if st.button("🗑️ Hapus Rak", key=f"del_{branch}_{rak_id}", use_container_width=True):
+                                del current_inv[rak_id]
+                                add_log("ERROR", f"[{current_user['name']}] Menghapus {rak_id} ({branch})")
+                                st.rerun()
+
+# ------------------------------------------
+# TAB 2: NOTIFIKASI RESTOCK & CHAT TIM
+# ------------------------------------------
+with tab2:
+    col_req, col_chat = st.columns([1.2, 1])
+
+    with col_req:
+        st.subheader(f"🔔 Notifikasi Permintaan Restock ({branch})")
+
+        with st.container(border=True):
+            st.markdown("**Kirim Notifikasi Permintaan Barang**")
+            rak_options = list(current_inv.keys())
+            if rak_options:
+                sel_rak_req = st.selectbox("Pilih Rak / Produk:", rak_options, format_func=lambda r: f"{r} - {current_inv[r]['item']} (Sisa: {current_inv[r]['qty']})")
+                req_qty = st.number_input("Jumlah Dibutuhkan (Pcs)", min_value=1, value=20, step=5)
+                req_note = st.text_input("Catatan", placeholder="Contoh: Stok menipis, mohon dipesan ke supplier")
+                if st.button("📨 Kirim Notifikasi", type="primary", use_container_width=True):
+                    new_id = max([r["id"] for r in st.session_state.restock_requests], default=0) + 1
+                    st.session_state.restock_requests.insert(0, {
+                        "id": new_id, "branch": branch, "rak": sel_rak_req, "item": current_inv[sel_rak_req]["item"],
+                        "qty": req_qty, "by": current_user["name"], "note": req_note or "-",
+                        "status": "Belum", "created_at": get_ts(), "resolved_at": "-", "resolved_by": "-"
+                    })
+                    add_log("WARNING", f"[{current_user['name']}] Mengirim notifikasi restock {sel_rak_req} ({branch})")
+                    st.toast("Notifikasi restock terkirim!", icon="🔔")
+                    time.sleep(0.3)
+                    st.rerun()
+            else:
+                st.info("Tambahkan produk terlebih dahulu di cabang ini.")
+
+        st.write(f"**Antrean Notifikasi Masuk ({len(active_notifs)}):**")
+        if not active_notifs:
+            st.success("✨ Tidak ada notifikasi tertunda. Semua permintaan sudah ditindaklanjuti dan masuk ke tab **History & Laporan**.")
+        else:
+            for req in active_notifs:
+                with st.container(border=True):
+                    r_c1, r_c2 = st.columns([2.2, 1.2], vertical_alignment="center")
+                    with r_c1:
+                        st.markdown(f"**📦 {req['rak']} — {req['item']}** (`{req['qty']} Pcs`)")
+                        st.caption(f"🕒 **Waktu Kirim:** {req['created_at']} | 👤 **Oleh:** {req['by']}")
+                        st.caption(f"📝 **Catatan:** {req['note']}")
+                    with r_c2:
+                        if is_privileged:
+                            if st.button("✅ Sudah", key=f"done_{req['id']}", type="primary", use_container_width=True):
+                                req["status"] = "Sudah"
+                                req["resolved_at"] = get_ts()
+                                req["resolved_by"] = current_user["name"]
+                                add_log("SUCCESS", f"[{current_user['name']}] Menyelesaikan notifikasi restock {req['rak']} (Masuk ke History)")
+                                st.toast("Dipindahkan ke History & Laporan!", icon="✅")
+                                time.sleep(0.3)
+                                st.rerun()
+                        else:
+                            st.warning("⏳ Belum")
+
+    with col_chat:
+        st.subheader("💬 Kontak Chat Tim (Gudang ↔ Manager)")
+        with st.container(border=True, height=380):
+            for chat in st.session_state.team_chat:
+                is_me = chat["sender"] == current_user["name"]
+                align_icon = "🧑‍💼" if chat["role"] != "STAFF" else "👷"
+                with st.chat_message("user" if is_me else "assistant", avatar=align_icon):
+                    st.markdown(f"**{chat['sender']}** `{chat['role']}` • <span style='font-size:11px; opacity:0.7;'>{chat['time']}</span>", unsafe_allow_html=True)
+                    st.write(chat["msg"])
+
+        with st.form("chat_form", clear_on_submit=True):
+            c_in1, c_in2 = st.columns([4, 1])
+            with c_in1:
+                chat_msg = st.text_input("Ketik pesan...", placeholder="Tulis pesan untuk manager atau staf gudang...", label_visibility="collapsed")
+            with c_in2:
+                sent = st.form_submit_button("Kirim", type="primary", use_container_width=True)
+            if sent and chat_msg.strip():
+                st.session_state.team_chat.append({
+                    "sender": current_user["name"], "role": current_user["role"],
+                    "msg": chat_msg.strip(), "time": get_ts()
+                })
+                st.rerun()
+
+# ------------------------------------------
+# TAB 3: HISTORY & LAPORAN OPERASIONAL
+# ------------------------------------------
+with tab3:
+    st.subheader(f"📊 Riwayat & Laporan Operasional ({branch})")
+
+    branch_sales = [s for s in st.session_state.sales_history if s.get("branch", "Cabang Utama") == branch]
+    total_omzet = sum(s["total"] for s in branch_sales)
+    total_profit = sum(s.get("profit", 0) for s in branch_sales)
+    total_sold_pcs = sum(s["qty"] for s in branch_sales)
+
+    hm1, hm2, hm3 = st.columns(3)
+    hm1.metric("Total Omzet Tercatat", f"Rp {total_omzet:,}")
+    hm2.metric("Estimasi Profit Kotor", f"Rp {total_profit:,}" if tier in ["Premium", "Pro"] else "🔒 Paket Premium/Pro")
+    hm3.metric("Total Barang Terjual", f"{total_sold_pcs} Pcs")
+
+    st.divider()
+
+    if tier == "Pro" and len(st.session_state.branches) > 1:
+        st.markdown("### 🏢 Ringkasan Seluruh Cabang (Pro)")
+        branch_summary = []
+        for b_name in st.session_state.branches:
+            b_inv = st.session_state.inventory.get(b_name, {})
+            b_sales_total = sum(s["total"] for s in st.session_state.sales_history if s.get("branch") == b_name)
+            branch_summary.append({
+                "Nama Cabang": b_name,
+                "Jumlah Rak": len(b_inv),
+                "Total Stok Fisik": sum(d["qty"] for d in b_inv.values()),
+                "Nilai Aset Barang": f"Rp {sum(d['qty'] * d['price'] for d in b_inv.values()):,}",
+                "Total Penjualan Tercatat": f"Rp {b_sales_total:,}"
+            })
+        st.dataframe(pd.DataFrame(branch_summary), use_container_width=True, hide_index=True)
+        st.divider()
+
+    st.markdown("### ✅ Pencatatan Permintaan Restock (Sudah Diproses)")
+    if not history_reqs:
+        st.info("Belum ada riwayat permintaan restock yang ditandai 'Sudah' di cabang ini.")
+    else:
+        df_hist_req = pd.DataFrame([
+            {
+                "Waktu Permintaan": r["created_at"],
+                "Waktu Selesai": r["resolved_at"],
+                "Kode Rak": r["rak"],
+                "Produk": r["item"],
+                "Jumlah (Pcs)": r["qty"],
+                "Diminta Oleh": r["by"],
+                "Diproses Oleh": r["resolved_by"],
+                "Catatan": r["note"]
+            }
+            for r in history_reqs
+        ])
+        st.dataframe(df_hist_req, use_container_width=True, hide_index=True)
+        st.download_button(
+            "📥 Download Pencatatan Restock (CSV)",
+            df_hist_req.to_csv(index=False).encode("utf-8"),
+            f"pencatatan_restock_{branch}.csv",
+            "text/csv"
+        )
+
+    st.divider()
+
+    col_h_sales, col_h_logs = st.columns(2)
+    with col_h_sales:
+        st.markdown("### 🛒 Pencatatan Barang Terjual")
+        if branch_sales:
+            df_sales = pd.DataFrame(branch_sales)[["time", "rak", "item", "qty", "total", "cashier"]]
+            df_sales.columns = ["Waktu", "Rak", "Produk", "Qty", "Total (Rp)", "Petugas"]
+            st.dataframe(df_sales, use_container_width=True, hide_index=True)
+        else:
+            st.info("Belum ada pencatatan penjualan di cabang ini.")
+
+    with col_h_logs:
+        st.markdown("### 📜 Log Aktivitas & Mutasi Stok")
+        for l in st.session_state.logs[:15]:
+            st.text(f"{l['time']} [{l['type']}] >> {l['action']}")
+
+# ------------------------------------------
+# TAB 4: MANAJEMEN AKUN TIM (DENGAN PROTEKSI JABATAN)
+# ------------------------------------------
+with tab4:
+    st.subheader(f"👥 Daftar & Pendaftaran Akun Karyawan ({len(st.session_state.accounts)} Akun Aktif)")
+    st.caption("ℹ️ Berpindah ke jabatan lebih rendah/setara (misal `OWNER` → `STAFF`) langsung tanpa password. Berpindah ke jabatan lebih tinggi (`STAFF`/`DEVELOPER` → `OWNER`/`MANAGER`) wajib verifikasi password.")
+
+    col_acc_list, col_acc_add = st.columns([1.5, 1])
+
+    with col_acc_list:
+        for idx, acc in enumerate(st.session_state.accounts):
+            with st.container(border=True):
+                ac1, ac2, ac3 = st.columns([2.3, 1.2, 0.9], vertical_alignment="center")
+                with ac1:
+                    st.markdown(f"**{acc['name']}** ({acc['email']})")
+                    st.caption(f"Hak Akses: `{acc['role']}`")
+                with ac2:
+                    if idx == st.session_state.current_user_idx:
+                        st.success("Aktif")
+                    else:
+                        req_pw = needs_password_to_switch(current_user["role"], acc["role"])
+                        btn_lbl = "🔒 Login" if req_pw else "🔓 Login"
+                        if st.button(btn_lbl, key=f"sw_{idx}", use_container_width=True):
+                            if not req_pw:
+                                st.session_state.current_user_idx = idx
+                                st.session_state.switch_target_idx = None
+                                add_log("INFO", f"{current_user['name']} berpindah ke akun {acc['name']} ({acc['role']})")
+                                st.rerun()
+                            else:
+                                st.session_state.switch_target_idx = idx
+                with ac3:
+                    if is_privileged and idx != st.session_state.current_user_idx and len(st.session_state.accounts) > 1:
+                        if st.button("🗑️ Hapus", key=f"del_acc_{idx}", use_container_width=True):
+                            active_acc = st.session_state.accounts[st.session_state.current_user_idx]
+                            st.session_state.accounts.pop(idx)
+                            st.session_state.current_user_idx = st.session_state.accounts.index(active_acc)
+                            st.session_state.switch_target_idx = None
+                            st.rerun()
+
+                if st.session_state.switch_target_idx == idx and idx != st.session_state.current_user_idx:
+                    st.divider()
+                    pw_c1, pw_c2, pw_c3 = st.columns([2.2, 1, 0.8], vertical_alignment="center")
+                    with pw_c1:
+                        in_pw = st.text_input(f"Password untuk {acc['name']} ({acc['role']})", type="password", key=f"pw_in_{idx}", label_visibility="collapsed", placeholder=f"Masukkan password {acc['name']}...")
+                    with pw_c2:
+                        if st.button("Masuk", type="primary", key=f"pw_ok_{idx}", use_container_width=True):
+                            if in_pw == acc.get("password", ""):
+                                st.session_state.current_user_idx = idx
+                                st.session_state.switch_target_idx = None
+                                add_log("INFO", f"Pergantian akun terverifikasi ke {acc['name']} ({acc['role']})")
+                                st.rerun()
+                            else:
+                                st.error("Password salah!")
+                    with pw_c3:
+                        if st.button("Batal", key=f"pw_cancel_{idx}", use_container_width=True):
+                            st.session_state.switch_target_idx = None
+                            st.rerun()
+
+    with col_acc_add:
+        with st.container(border=True):
+            st.markdown("**➕ Tambah Akun Baru**")
+            if is_privileged:
+                new_acc_name = st.text_input("Nama Lengkap", placeholder="Contoh: Budi Santoso")
+                new_acc_email = st.text_input("Email", placeholder="budi@storify.id")
+                new_acc_role = st.selectbox("Jabatan (Role)", ["STAFF", "MANAGER", "DEVELOPER", "OWNER"])
+                new_acc_pass = st.text_input("Password Akun", type="password", placeholder="Minimal 4 karakter")
+                if st.button("Daftarkan Akun", type="primary", use_container_width=True):
+                    if new_acc_name.strip() and new_acc_email.strip() and len(new_acc_pass.strip()) >= 4:
+                        if any(a["email"].lower() == new_acc_email.strip().lower() for a in st.session_state.accounts):
+                            st.warning("Email tersebut sudah terdaftar.")
+                        else:
+                            st.session_state.accounts.append({
+                                "name": new_acc_name.strip(),
+                                "role": new_acc_role,
+                                "email": new_acc_email.strip(),
+                                "password": new_acc_pass.strip()
+                            })
+                            add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name} ({new_acc_role})")
+                            st.success(f"Akun {new_acc_name} berhasil dibuat!")
+                            time.sleep(0.4)
+                            st.rerun()
+                    else:
+                        st.warning("Nama, email, dan password (min. 4 karakter) wajib diisi.")
+            else:
+                st.info("🔒 Hanya Owner, Manager, atau Developer yang dapat menambahkan akun baru.")
