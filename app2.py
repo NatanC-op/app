@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 import base64
 import time
 import uuid
@@ -1308,7 +1309,50 @@ if st.session_state.page == "detail":
         max_len = max(len(prod["inflow"]), len(prod["outflow"]))
         in_padded = prod["inflow"] + [0] * (max_len - len(prod["inflow"]))
         out_padded = prod["outflow"] + [0] * (max_len - len(prod["outflow"]))
-        st.line_chart({"Masuk": in_padded, "Terjual": out_padded})
+
+        df_chart = pd.DataFrame({
+            "Periode": [f"Ke-{i+1}" for i in range(max_len)] * 2,
+            "Urutan": list(range(1, max_len + 1)) * 2,
+            "Kategori": ["Stok Masuk"] * max_len + ["Terjual"] * max_len,
+            "Jumlah (Pcs)": in_padded + out_padded
+        })
+
+        # Warna dinamis mengikuti Light Mode / Dark Mode
+        chart_bg = "#ffffff" if not is_dark else "#0f172a"
+        chart_text = "#0f172a" if not is_dark else "#f8fafc"
+        chart_muted = "#64748b" if not is_dark else "#94a3b8"
+        chart_grid = "#e2e8f0" if not is_dark else "#1e293b"
+        color_range = ["#059669", "#2563eb"] if not is_dark else ["#34d399", "#60a5fa"]
+
+        line_chart = (
+            alt.Chart(df_chart)
+            .mark_line(point=alt.OverlayMarkDef(size=70, filled=True), strokeWidth=3)
+            .encode(
+                x=alt.X("Urutan:O", title="Periode Mutasi", axis=alt.Axis(labelAngle=0)),
+                y=alt.Y("Jumlah (Pcs):Q", title="Jumlah (Pcs)", scale=alt.Scale(zero=True)),
+                color=alt.Color(
+                    "Kategori:N",
+                    scale=alt.Scale(domain=["Stok Masuk", "Terjual"], range=color_range),
+                    legend=alt.Legend(title="Keterangan", orient="top")
+                ),
+                tooltip=["Periode", "Kategori", "Jumlah (Pcs)"]
+            )
+            .properties(height=280, background=chart_bg)
+            .configure_view(stroke=chart_grid, fill=chart_bg)
+            .configure_axis(
+                labelColor=chart_muted,
+                titleColor=chart_text,
+                gridColor=chart_grid,
+                domainColor=chart_grid
+            )
+            .configure_legend(
+                labelColor=chart_text,
+                titleColor=chart_text
+            )
+        )
+
+        with st.container(border=True):
+            st.altair_chart(line_chart, use_container_width=True)
     else:
         st.info("🔒 Upgrade ke paket Premium/Pro untuk melihat grafik riwayat stok.")
     st.stop()
