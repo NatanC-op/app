@@ -20,6 +20,12 @@ def get_ts_sec():
 def gen_bid():
     return uuid.uuid4().hex[:8]
 
+def safe_int(val, default=0):
+    try:
+        return int(val) if val is not None else default
+    except (ValueError, TypeError):
+        return default
+
 soon_exp = (date.today() + timedelta(days=5)).strftime("%Y-%m-%d")
 mid_exp = (date.today() + timedelta(days=35)).strftime("%Y-%m-%d")
 safe_exp = (date.today() + timedelta(days=90)).strftime("%Y-%m-%d")
@@ -216,11 +222,12 @@ def needs_password_to_switch(from_role, to_role):
 def ensure_batches(prod):
     if "batches" not in prod or not isinstance(prod["batches"], list):
         exp_val = prod.get("exp_date", safe_exp)
-        prod["batches"] = [{"id": gen_bid(), "qty": prod.get("qty", 0), "exp": exp_val, "note": "-"}] if prod.get("qty", 0) > 0 else []
+        q_init = safe_int(prod.get("qty", 0), 0)
+        prod["batches"] = [{"id": gen_bid(), "qty": q_init, "exp": exp_val, "note": "-"}] if q_init > 0 else []
 
     cleaned = []
     for b in prod["batches"]:
-        q = int(b.get("qty", 0) or 0)
+        q = safe_int(b.get("qty", 0), 0)
         if q > 0:
             cleaned.append({
                 "id": b.get("id") or gen_bid(),
@@ -234,28 +241,29 @@ def ensure_batches(prod):
 
 def add_batch_stock(prod, add_qty, exp_str, note_str="-", merge_same_exp=True):
     ensure_batches(prod)
-    if add_qty <= 0:
+    qty_int = safe_int(add_qty, 0)
+    if qty_int <= 0:
         return
     clean_note = note_str.strip() if note_str and note_str.strip() else "-"
     if merge_same_exp:
         for b in prod["batches"]:
             if b["exp"] == exp_str:
-                b["qty"] += int(add_qty)
+                b["qty"] += qty_int
                 if clean_note != "-":
                     b["note"] = clean_note
                 break
         else:
-            prod["batches"].append({"id": gen_bid(), "qty": int(add_qty), "exp": exp_str, "note": clean_note})
+            prod["batches"].append({"id": gen_bid(), "qty": qty_int, "exp": exp_str, "note": clean_note})
     else:
-        prod["batches"].append({"id": gen_bid(), "qty": int(add_qty), "exp": exp_str, "note": clean_note})
+        prod["batches"].append({"id": gen_bid(), "qty": qty_int, "exp": exp_str, "note": clean_note})
 
     prod["batches"].sort(key=lambda x: x["exp"])
     prod["qty"] = sum(b["qty"] for b in prod["batches"])
-    prod["inflow"].append(int(add_qty))
+    prod["inflow"].append(qty_int)
 
 def consume_stock_fefo(prod, reduce_qty):
     ensure_batches(prod)
-    rem = min(int(reduce_qty), prod["qty"])
+    rem = min(safe_int(reduce_qty, 0), prod["qty"])
     if rem <= 0:
         return []
     consumed = []
@@ -290,7 +298,9 @@ def get_exp_alert_batches(prod, days_threshold=7):
 def add_log(log_type, msg):
     st.session_state.logs.insert(0, {"time": get_ts_sec(), "type": log_type, "action": msg})
 
-if st.session_state.current_user_idx >= len(st.session_state.accounts):
+if not st.session_state.accounts:
+    st.session_state.accounts = defaults["accounts"]
+if st.session_state.current_user_idx >= len(st.session_state.accounts) or st.session_state.current_user_idx < 0:
     st.session_state.current_user_idx = 0
 
 current_user = st.session_state.accounts[st.session_state.current_user_idx]
@@ -552,7 +562,6 @@ st.markdown(f"""
         margin-top: 2px;
     }}
 
-    /* BATCH CARD & PROGRESS BAR STYLING */
     .batch-prog-bg {{
         width: 100%;
         height: 8px;
@@ -911,9 +920,6 @@ if not st.session_state.logged_in:
 # ==========================================
 # 3. HALAMAN AKTIVASI LISENSI PAKET
 # ==========================================
-# ==========================================
-# 3. HALAMAN AKTIVASI LISENSI PAKET
-# ==========================================
 if st.session_state.app_tier is None:
     _, _, col_t2 = st.columns([5, 1, 1.1])
     with col_t2:
@@ -1054,6 +1060,7 @@ with st.sidebar:
                 if st.button("Verifikasi & Masuk", type="primary", use_container_width=True, key="sb_sw_btn_lock"):
                     if sw_pass == target_acc.get("password", ""):
                         st.session_state.current_user_idx = sel_idx
+                        st.session_state.switch_target_idx = None
                         st.session_state.page = "home"
                         add_log("INFO", f"Pergantian akun terverifikasi ke {target_acc['name']} ({target_acc['role']})")
                         st.rerun()
@@ -1063,6 +1070,7 @@ with st.sidebar:
                 st.caption(f"🔓 Akses langsung tanpa password (Lv.{get_role_level(u_role)} → Lv.{get_role_level(target_acc['role'])}).")
                 if st.button("Masuk Langsung", type="primary", use_container_width=True, key="sb_sw_btn_free"):
                     st.session_state.current_user_idx = sel_idx
+                    st.session_state.switch_target_idx = None
                     st.session_state.page = "home"
                     add_log("INFO", f"{current_user['name']} berpindah ke akun {target_acc['name']} ({target_acc['role']})")
                     st.rerun()
@@ -1095,14 +1103,29 @@ with st.sidebar:
                     if avail_qty > 0:
                         tr_qty = st.number_input("Jumlah Transfer", min_value=1, max_value=avail_qty, value=1)
                         dest_inv = st.session_state.inventory.setdefault(tr_dest, {})
-                        conflict = (tr_rak in dest_inv) and (dest_inv[tr_rak]["item"].lower() != current_inv[tr_rak]["item"].lower())
-                        if conflict:
-                            st.warning(f"⚠️ Kode `{tr_rak}` di {tr_dest} sudah ditempati **{dest_inv[tr_rak]['item']}**. Transfer akan menggunakan kode rak baru otomatis.")
+                        src_name_lower = current_inv[tr_rak]["item"].strip().lower()
+
+                        # Cek apakah produk sama sudah ada di cabang tujuan
+                        matched_dest_rak = None
+                        for dk, dv in dest_inv.items():
+                            if dv["item"].strip().lower() == src_name_lower:
+                                matched_dest_rak = dk
+                                break
+
+                        if matched_dest_rak:
+                            target_rak_code = matched_dest_rak
+                            st.caption(f"ℹ️ Stok akan digabungkan ke `{target_rak_code}` di {tr_dest}.")
+                        elif tr_rak in dest_inv:
+                            suffix_num = 2
+                            while f"{tr_rak}-{suffix_num}" in dest_inv:
+                                suffix_num += 1
+                            target_rak_code = f"{tr_rak}-{suffix_num}"
+                            st.warning(f"⚠️ Kode `{tr_rak}` di {tr_dest} sudah terpakai produk lain. Akan dibuatkan kode `{target_rak_code}`.")
+                        else:
+                            target_rak_code = tr_rak
+
                         if st.button("Kirim Stok Antar Cabang", use_container_width=True):
                             moved_batches = consume_stock_fefo(current_inv[tr_rak], tr_qty)
-                            target_rak_code = tr_rak
-                            if conflict:
-                                target_rak_code = f"{tr_rak}-TR"
                             if target_rak_code not in dest_inv:
                                 dest_inv[target_rak_code] = {
                                     "item": current_inv[tr_rak]["item"],
@@ -1211,10 +1234,11 @@ if st.session_state.page == "detail":
                     new_b_note = st.text_input("Keterangan Batch", placeholder="Contoh: Supplier A / Batch #2")
                     merge_opt = st.checkbox("Gabungkan jika tanggal exp sama", value=True)
                     if st.form_submit_button("📥 Simpan Batch Baru", type="primary", use_container_width=True):
+                        qty_clean = safe_int(new_b_qty, 1)
                         exp_str_b = new_b_exp.strftime("%Y-%m-%d")
-                        add_batch_stock(prod, new_b_qty, exp_str_b, note_str=new_b_note, merge_same_exp=merge_opt)
-                        add_log("SUCCESS", f"[{current_user['name']}] Tambah batch +{new_b_qty} pcs untuk {prod['item']} ({rak_key}) — Exp: {exp_str_b}")
-                        st.toast(f"Batch baru +{new_b_qty} pcs ditambahkan!", icon="✅")
+                        add_batch_stock(prod, qty_clean, exp_str_b, note_str=new_b_note, merge_same_exp=merge_opt)
+                        add_log("SUCCESS", f"[{current_user['name']}] Tambah batch +{qty_clean} pcs untuk {prod['item']} ({rak_key} - {branch}) — Exp: {exp_str_b}")
+                        st.toast(f"Batch baru +{qty_clean} pcs ditambahkan!", icon="✅")
                         st.rerun()
             else:
                 st.info("🔒 Jabatan Anda tidak memiliki izin menambah atau mengubah batch stok.")
@@ -1277,21 +1301,22 @@ if st.session_state.page == "detail":
                             if can_manage_batches:
                                 with st.popover("✏️ Edit", use_container_width=True):
                                     st.markdown(f"**Edit Batch #{idx_b}**")
-                                    ed_q = st.number_input("Jumlah (Pcs)", min_value=1, value=int(b["qty"]), step=1, key=f"ed_bq_{b['id']}")
+                                    ed_q = st.number_input("Jumlah (Pcs)", min_value=1, value=safe_int(b["qty"], 1), step=1, key=f"ed_bq_{b['id']}")
                                     ed_e = st.date_input("Exp Date", value=exp_obj, key=f"ed_be_{b['id']}")
                                     ed_n = st.text_input("Keterangan", value=b.get("note", "-"), key=f"ed_bn_{b['id']}")
                                     if st.button("💾 Simpan", type="primary", key=f"sv_b_{b['id']}", use_container_width=True):
                                         old_q = b["qty"]
-                                        b["qty"] = int(ed_q)
+                                        new_q_int = safe_int(ed_q, old_q)
+                                        b["qty"] = new_q_int
                                         b["exp"] = ed_e.strftime("%Y-%m-%d")
                                         b["note"] = ed_n.strip() or "-"
                                         ensure_batches(prod)
-                                        diff = ed_q - old_q
+                                        diff = new_q_int - old_q
                                         if diff > 0:
                                             prod["inflow"].append(diff)
                                         elif diff < 0:
                                             prod["outflow"].append(abs(diff))
-                                        add_log("INFO", f"[{current_user['name']}] Edit batch {prod['item']} ({rak_key}) -> {ed_q} pcs, Exp {b['exp']}")
+                                        add_log("INFO", f"[{current_user['name']}] Edit batch {prod['item']} ({rak_key}) -> {new_q_int} pcs, Exp {b['exp']}")
                                         st.toast("Batch diperbarui!", icon="✅")
                                         st.rerun()
 
@@ -1309,7 +1334,7 @@ if st.session_state.page == "detail":
     st.write("")
     if tier in ["Premium", "Pro"]:
         st.subheader("📈 Pergerakan Stok (Masuk vs Terjual)")
-        max_len = max(len(prod["inflow"]), len(prod["outflow"]))
+        max_len = max(len(prod["inflow"]), len(prod["outflow"]), 1)
         in_padded = prod["inflow"] + [0] * (max_len - len(prod["inflow"]))
         out_padded = prod["outflow"] + [0] * (max_len - len(prod["outflow"]))
 
@@ -1320,7 +1345,6 @@ if st.session_state.page == "detail":
             "Jumlah (Pcs)": in_padded + out_padded
         })
 
-        # Warna dinamis mengikuti Light Mode / Dark Mode
         chart_bg = "#ffffff" if not is_dark else "#0f172a"
         chart_text = "#0f172a" if not is_dark else "#f8fafc"
         chart_muted = "#64748b" if not is_dark else "#94a3b8"
@@ -1329,7 +1353,7 @@ if st.session_state.page == "detail":
 
         line_chart = (
             alt.Chart(df_chart)
-            .mark_line(point=alt.OverlayMarkDef(size=70, filled=True), strokeWidth=3)
+            .mark_line(point=alt.OverlayMarkDef(size=85, filled=True), strokeWidth=3)
             .encode(
                 x=alt.X("Urutan:O", title="Periode Mutasi", axis=alt.Axis(labelAngle=0)),
                 y=alt.Y("Jumlah (Pcs):Q", title="Jumlah (Pcs)", scale=alt.Scale(zero=True)),
@@ -1445,12 +1469,16 @@ if "monitoring" in tab_map:
                                 final_img = f"data:image/jpeg;base64,{b64}"
 
                             exp_init = new_exp.strftime("%Y-%m-%d")
+                            qty_init_int = safe_int(new_qty, 1)
+                            cost_init_int = safe_int(new_cost, 0)
+                            price_init_int = safe_int(new_price, 0)
+
                             current_inv[rk_clean] = {
-                                "item": it_clean, "category": final_cat, "qty": int(new_qty),
-                                "cost": int(new_cost), "price": int(new_price), "old_price": None,
-                                "batches": [{"id": gen_bid(), "qty": int(new_qty), "exp": exp_init, "note": "Batch Awal"}],
+                                "item": it_clean, "category": final_cat, "qty": qty_init_int,
+                                "cost": cost_init_int, "price": price_init_int, "old_price": None,
+                                "batches": [{"id": gen_bid(), "qty": qty_init_int, "exp": exp_init, "note": "Batch Awal"}],
                                 "battery": 100, "checked_today": True,
-                                "image": final_img, "inflow": [int(new_qty)], "outflow": [0]
+                                "image": final_img, "inflow": [qty_init_int], "outflow": [0]
                             }
                             add_log("SUCCESS", f"[{current_user['name']}] Menambah produk baru {it_clean} di {rk_clean} ({branch}) — Batch Exp: {exp_init}")
                             st.toast(f"Produk {it_clean} berhasil ditambahkan ke {rk_clean}!", icon="✅")
@@ -1514,9 +1542,10 @@ if "monitoring" in tab_map:
                             for _, row in edited_df.iterrows():
                                 rk = row["Kode Rak"]
                                 if rk in current_inv:
-                                    if can_view_margin and "Harga Modal" in row:
-                                        current_inv[rk]["cost"] = int(row["Harga Modal"])
-                                    current_inv[rk]["price"] = int(row["Harga Jual"])
+                                    if can_view_margin and "Harga Modal" in row and pd.notna(row["Harga Modal"]):
+                                        current_inv[rk]["cost"] = safe_int(row["Harga Modal"], current_inv[rk].get("cost", 0))
+                                    if pd.notna(row["Harga Jual"]):
+                                        current_inv[rk]["price"] = safe_int(row["Harga Jual"], current_inv[rk]["price"])
                             add_log("SUCCESS", f"[{current_user['name']}] Melakukan Bulk Edit harga massal di {branch}")
                             st.toast("Semua perubahan harga berhasil disimpan!", icon="✅")
                             st.rerun()
@@ -1578,7 +1607,7 @@ if "monitoring" in tab_map:
                         )
                         if can_opname and chk != data.get("checked_today", False):
                             current_inv[rak_id]["checked_today"] = chk
-                            add_log("INFO", f"[{current_user['name']}] Cek fisik {rak_id}: {'Sudah' if chk else 'Batal'}")
+                            add_log("INFO", f"[{current_user['name']}] Cek fisik {rak_id} ({branch}): {'Sudah' if chk else 'Batal'}")
                             st.rerun()
 
                     with c_stk:
@@ -1615,17 +1644,17 @@ if "monitoring" in tab_map:
                                     "time": get_ts(), "branch": branch, "rak": rak_id, "item": data["item"],
                                     "qty": 1, "total": data["price"], "profit": item_profit, "cashier": current_user["name"]
                                 })
-                                add_log("INFO", f"[{current_user['name']}] Terjual 1 pcs {data['item']} ({rak_id}, Batch Exp: {exp_used})")
+                                add_log("INFO", f"[{current_user['name']}] Terjual 1 pcs {data['item']} ({rak_id} - {branch}, Batch Exp: {exp_used})")
                                 st.rerun()
 
                         if can_manage_prices or can_manage_products:
                             with st.popover("🏷️ Kelola Harga & Rak", use_container_width=True):
                                 if can_manage_prices:
-                                    new_p = st.number_input("Harga Jual (Rp)", min_value=0, value=int(data["price"]), step=500, key=f"p_{branch}_{rak_id}")
+                                    new_p = st.number_input("Harga Jual (Rp)", min_value=0, value=safe_int(data["price"], 0), step=500, key=f"p_{branch}_{rak_id}")
                                     if tier in ["Premium", "Pro"] and can_view_margin:
-                                        new_c = st.number_input("Harga Modal / HPP (Rp)", min_value=0, value=int(data.get("cost", 0)), step=500, key=f"c_{branch}_{rak_id}")
+                                        new_c = st.number_input("Harga Modal / HPP (Rp)", min_value=0, value=safe_int(data.get("cost", 0), 0), step=500, key=f"c_{branch}_{rak_id}")
                                     else:
-                                        new_c = data.get("cost", 0)
+                                        new_c = safe_int(data.get("cost", 0), 0)
 
                                     if tier in ["Premium", "Pro"]:
                                         st.caption("Diskon Cepat Per Produk:")
@@ -1635,7 +1664,7 @@ if "monitoring" in tab_map:
                                                 base_p = data["old_price"] if data.get("old_price") else data["price"]
                                                 current_inv[rak_id]["old_price"] = base_p
                                                 current_inv[rak_id]["price"] = int(base_p * (1 - pct/100))
-                                                add_log("INFO", f"[{current_user['name']}] Diskon {pct}% pada {rak_id}")
+                                                add_log("INFO", f"[{current_user['name']}] Diskon {pct}% pada {rak_id} ({branch})")
                                                 st.rerun()
                                         if d4.button("Reset", key=f"rst_{branch}_{rak_id}", use_container_width=True):
                                             if data.get("old_price"):
@@ -1644,9 +1673,11 @@ if "monitoring" in tab_map:
                                                 st.rerun()
 
                                     if st.button("💾 Simpan Harga", type="primary", key=f"sv_{branch}_{rak_id}", use_container_width=True):
-                                        current_inv[rak_id]["price"] = new_p
-                                        current_inv[rak_id]["cost"] = new_c
-                                        add_log("INFO", f"[{current_user['name']}] Update harga {rak_id} -> Rp {new_p:,}")
+                                        final_p = safe_int(new_p, data["price"])
+                                        final_c = safe_int(new_c, data.get("cost", 0))
+                                        current_inv[rak_id]["price"] = final_p
+                                        current_inv[rak_id]["cost"] = final_c
+                                        add_log("INFO", f"[{current_user['name']}] Update harga {rak_id} ({branch}) -> Rp {final_p:,}")
                                         st.rerun()
 
                                 if can_manage_products:
@@ -1676,12 +1707,12 @@ if "notif" in tab_map:
                         new_id = max([r["id"] for r in st.session_state.restock_requests], default=0) + 1
                         st.session_state.restock_requests.insert(0, {
                             "id": new_id, "branch": branch, "rak": sel_rak_req, "item": current_inv[sel_rak_req]["item"],
-                            "qty": req_qty, "by": current_user["name"], "note": req_note or "-",
+                            "qty": safe_int(req_qty, 1), "by": current_user["name"], "note": req_note.strip() or "-",
                             "status": "Belum", "created_at": get_ts(), "resolved_at": "-", "resolved_by": "-"
                         })
                         add_log("WARNING", f"[{current_user['name']}] Mengirim notifikasi restock {sel_rak_req} ({branch})")
                         st.toast("Notifikasi restock terkirim!", icon="🔔")
-                        time.sleep(0.3)
+                        time.sleep(0.25)
                         st.rerun()
                 else:
                     st.info("Tambahkan produk terlebih dahulu di beranda cabang ini.")
@@ -1703,9 +1734,9 @@ if "notif" in tab_map:
                                     req["status"] = "Sudah"
                                     req["resolved_at"] = get_ts()
                                     req["resolved_by"] = current_user["name"]
-                                    add_log("SUCCESS", f"[{current_user['name']}] Menyelesaikan notifikasi restock {req['rak']}")
+                                    add_log("SUCCESS", f"[{current_user['name']}] Menyelesaikan notifikasi restock {req['rak']} ({branch})")
                                     st.toast("Restock selesai!", icon="✅")
-                                    time.sleep(0.3)
+                                    time.sleep(0.25)
                                     st.rerun()
                             else:
                                 st.warning("⏳ Belum")
@@ -1937,7 +1968,7 @@ if "team" in tab_map:
                                     })
                                     add_log("SUCCESS", f"[{current_user['name']}] Menambahkan akun baru: {new_acc_name} ({new_acc_role})")
                                     st.success(f"Akun {new_acc_name} berhasil dibuat!")
-                                    time.sleep(0.4)
+                                    time.sleep(0.3)
                                     st.rerun()
                             else:
                                 st.warning("Nama, email, dan password (min. 4 karakter) wajib diisi.")
@@ -2003,7 +2034,7 @@ if "team" in tab_map:
                                     upd_perms[m_key] = st.checkbox(
                                         m_label,
                                         value=bool(target_r_obj["perms"].get(m_key, True)),
-                                        key=f"chk_m_{sel_edit_role}_{m_key}"
+                                        key=f"edit_m_{sel_edit_role}_{m_key}"
                                     )
 
                             st.markdown("**2. Aksi Operasional yang Bisa Dilakukan:**")
@@ -2013,12 +2044,12 @@ if "team" in tab_map:
                                     upd_perms[a_key] = st.checkbox(
                                         a_label,
                                         value=bool(target_r_obj["perms"].get(a_key, False)),
-                                        key=f"chk_a_{sel_edit_role}_{a_key}"
+                                        key=f"edit_a_{sel_edit_role}_{a_key}"
                                     )
 
                             eb1, eb2 = st.columns([2, 1])
                             with eb1:
-                                if st.button(f"💾 Simpan Perubahan Jabatan", type="primary", use_container_width=True):
+                                if st.button("💾 Simpan Perubahan Jabatan", type="primary", key=f"save_role_btn_{sel_edit_role}", use_container_width=True):
                                     clean_new_rname = upd_role_name.strip().upper()
                                     if not clean_new_rname:
                                         st.error("Nama jabatan tidak boleh kosong.")
@@ -2045,7 +2076,7 @@ if "team" in tab_map:
                                         st.rerun()
                             with eb2:
                                 in_use = any(a["role"] == sel_edit_role for a in st.session_state.accounts)
-                                if st.button("🗑️ Hapus Jabatan", disabled=in_use, use_container_width=True, help="Tidak bisa menghapus jabatan yang masih dipakai akun aktif"):
+                                if st.button("🗑️ Hapus Jabatan", key=f"del_role_btn_{sel_edit_role}", disabled=in_use, use_container_width=True, help="Tidak bisa menghapus jabatan yang masih dipakai akun aktif"):
                                     del st.session_state.roles_config[sel_edit_role]
                                     add_log("WARNING", f"[{current_user['name']}] Menghapus jabatan {sel_edit_role}")
                                     st.rerun()
@@ -2066,11 +2097,11 @@ if "team" in tab_map:
                             new_r_perms = {}
                             st.markdown("**1. Menu yang Bisa Diakses:**")
                             for m_key, m_label in ALL_MENU_ACCESS.items():
-                                new_r_perms[m_key] = st.checkbox(m_label, value=(m_key in ["menu_monitoring", "menu_notif_chat"]))
+                                new_r_perms[m_key] = st.checkbox(m_label, value=(m_key in ["menu_monitoring", "menu_notif_chat"]), key=f"new_m_{m_key}")
 
                             st.markdown("**2. Aksi yang Bisa Dilakukan:**")
                             for a_key, a_label in ALL_ACTION_PERMISSIONS.items():
-                                new_r_perms[a_key] = st.checkbox(a_label, value=(a_key in ["act_sell", "act_opname"]))
+                                new_r_perms[a_key] = st.checkbox(a_label, value=(a_key in ["act_sell", "act_opname"]), key=f"new_a_{a_key}")
 
                             if st.form_submit_button("✨ Buat Jabatan Custom", type="primary", use_container_width=True):
                                 clean_r = new_r_name.strip().upper()
