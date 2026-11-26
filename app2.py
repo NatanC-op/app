@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import base64
 import time
+import uuid
 from datetime import datetime, date, timedelta
 
 # ==========================================
@@ -14,6 +15,9 @@ def get_ts():
 
 def get_ts_sec():
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+def gen_bid():
+    return uuid.uuid4().hex[:8]
 
 ROLE_LEVEL = {"STAFF": 1, "DEVELOPER": 2, "MANAGER": 3, "OWNER": 4}
 
@@ -52,34 +56,44 @@ defaults = {
     ],
     "team_chat": [
         {"sender": "Nathalee", "role": "STAFF", "msg": "Halo kak, Rak B2 keripik singkong sudah hampir habis ya.", "time": get_ts()},
-        {"sender": "Beatrix", "role": "OWNER", "msg": "Oke siap, sudah saya catat untuk restock batch baru.", "time": get_ts()}
+        {"sender": "Beatrix", "role": "OWNER", "msg": "Oke siap, silakan tambahkan batch baru di detail produknya.", "time": get_ts()}
     ],
     "inventory": {
         "Cabang Utama": {
             "Rak A1": {
                 "item": "Kopi Sachet 25g", "category": "Minuman", "qty": 20, "cost": 11000, "price": 15000, "old_price": None,
-                "batches": [{"qty": 8, "exp": mid_exp}, {"qty": 12, "exp": safe_exp}],
+                "batches": [
+                    {"id": "b_a1_1", "qty": 8, "exp": mid_exp, "note": "Batch Awal"},
+                    {"id": "b_a1_2", "qty": 12, "exp": safe_exp, "note": "Restock Supplier"}
+                ],
                 "battery": 98, "checked_today": True,
                 "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=300",
                 "inflow": [10, 15, 20], "outflow": [5, 12, 18]
             },
             "Rak B2": {
                 "item": "Keripik Singkong 100g", "category": "Makanan", "qty": 4, "cost": 8500, "price": 12000, "old_price": None,
-                "batches": [{"qty": 4, "exp": soon_exp}],
+                "batches": [
+                    {"id": "b_b2_1", "qty": 4, "exp": soon_exp, "note": "Batch Lama"}
+                ],
                 "battery": 85, "checked_today": False,
                 "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300",
                 "inflow": [5, 8, 10], "outflow": [4, 7, 14]
             },
             "Rak C3": {
                 "item": "Air Mineral 600ml", "category": "Minuman", "qty": 15, "cost": 3000, "price": 5000, "old_price": None,
-                "batches": [{"qty": 15, "exp": safe_exp}],
+                "batches": [
+                    {"id": "b_c3_1", "qty": 15, "exp": safe_exp, "note": "Stok Gudang"}
+                ],
                 "battery": 92, "checked_today": True,
                 "image": "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=300",
                 "inflow": [15, 25, 30], "outflow": [10, 20, 25]
             },
             "Rak D4": {
                 "item": "Deterjen Bubuk 800g", "category": "Rumah Tangga", "qty": 8, "cost": 19000, "price": 25000, "old_price": None,
-                "batches": [{"qty": 3, "exp": mid_exp}, {"qty": 5, "exp": safe_exp}],
+                "batches": [
+                    {"id": "b_d4_1", "qty": 3, "exp": mid_exp, "note": "Batch 1"},
+                    {"id": "b_d4_2", "qty": 5, "exp": safe_exp, "note": "Batch 2"}
+                ],
                 "battery": 74, "checked_today": False,
                 "image": "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=300",
                 "inflow": [6, 9, 12], "outflow": [3, 7, 10]
@@ -88,14 +102,14 @@ defaults = {
         "Cabang Karawang Barat": {
             "Rak A1": {
                 "item": "Teh Botol 350ml", "category": "Minuman", "qty": 24, "cost": 3200, "price": 4500, "old_price": None,
-                "batches": [{"qty": 24, "exp": safe_exp}],
+                "batches": [{"id": "b_kb_1", "qty": 24, "exp": safe_exp, "note": "Stok Utama"}],
                 "battery": 96, "checked_today": True,
                 "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=300",
                 "inflow": [12, 24], "outflow": [6, 10]
             },
             "Rak B1": {
                 "item": "Roti Tawar Kupas", "category": "Makanan", "qty": 3, "cost": 10500, "price": 14000, "old_price": None,
-                "batches": [{"qty": 3, "exp": soon_exp}],
+                "batches": [{"id": "b_kb_2", "qty": 3, "exp": soon_exp, "note": "Batch Pagi"}],
                 "battery": 89, "checked_today": False,
                 "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300",
                 "inflow": [10, 10], "outflow": [8, 9]
@@ -111,32 +125,51 @@ for k, v in defaults.items():
 # HELPER MULTI-BATCH & FEFO (FIRST EXPIRED, FIRST OUT)
 # ==========================================
 def ensure_batches(prod):
-    """Pastikan setiap produk memiliki struktur list batches terurut berdasarkan tanggal exp terdekat."""
+    """Pastikan setiap produk memiliki struktur list batches valid terurut berdasarkan tanggal exp terdekat."""
     if "batches" not in prod or not isinstance(prod["batches"], list):
         exp_val = prod.get("exp_date", safe_exp)
-        prod["batches"] = [{"qty": prod.get("qty", 0), "exp": exp_val}] if prod.get("qty", 0) > 0 else []
-    prod["batches"] = sorted([b for b in prod["batches"] if b.get("qty", 0) > 0], key=lambda x: x["exp"])
-    prod["qty"] = sum(b["qty"] for b in prod["batches"])
+        prod["batches"] = [{"id": gen_bid(), "qty": prod.get("qty", 0), "exp": exp_val, "note": "-"}] if prod.get("qty", 0) > 0 else []
 
-def add_batch_stock(prod, add_qty, exp_str):
-    """Tambahkan stok ke batch dengan tanggal exp yang sama, atau buat batch baru jika tanggal exp berbeda."""
+    cleaned = []
+    for b in prod["batches"]:
+        q = int(b.get("qty", 0) or 0)
+        if q > 0:
+            cleaned.append({
+                "id": b.get("id") or gen_bid(),
+                "qty": q,
+                "exp": str(b.get("exp") or safe_exp),
+                "note": str(b.get("note") or "-")
+            })
+    cleaned.sort(key=lambda x: x["exp"])
+    prod["batches"] = cleaned
+    prod["qty"] = sum(b["qty"] for b in cleaned)
+
+def add_batch_stock(prod, add_qty, exp_str, note_str="-", merge_same_exp=True):
+    """Tambahkan batch restock baru ke produk. Bisa digabung jika exp sama atau dibuat baris batch terpisah."""
     ensure_batches(prod)
     if add_qty <= 0:
         return
-    for b in prod["batches"]:
-        if b["exp"] == exp_str:
-            b["qty"] += add_qty
-            break
+    clean_note = note_str.strip() if note_str and note_str.strip() else "-"
+    if merge_same_exp:
+        for b in prod["batches"]:
+            if b["exp"] == exp_str:
+                b["qty"] += int(add_qty)
+                if clean_note != "-":
+                    b["note"] = clean_note
+                break
+        else:
+            prod["batches"].append({"id": gen_bid(), "qty": int(add_qty), "exp": exp_str, "note": clean_note})
     else:
-        prod["batches"].append({"qty": add_qty, "exp": exp_str})
+        prod["batches"].append({"id": gen_bid(), "qty": int(add_qty), "exp": exp_str, "note": clean_note})
+
     prod["batches"].sort(key=lambda x: x["exp"])
     prod["qty"] = sum(b["qty"] for b in prod["batches"])
-    prod["inflow"].append(add_qty)
+    prod["inflow"].append(int(add_qty))
 
 def consume_stock_fefo(prod, reduce_qty):
-    """Kurangi stok otomatis dari batch paling cepat kedaluwarsa (FEFO). Mengembalikan list batch terpakai."""
+    """Kurangi stok otomatis dari batch paling cepat kedaluwarsa (FEFO)."""
     ensure_batches(prod)
-    rem = min(reduce_qty, prod["qty"])
+    rem = min(int(reduce_qty), prod["qty"])
     if rem <= 0:
         return []
     consumed = []
@@ -172,7 +205,6 @@ def add_log(log_type, msg):
     st.session_state.logs.insert(0, {"time": get_ts_sec(), "type": log_type, "action": msg})
 
 def needs_password_to_switch(from_role, to_role):
-    """Wajib password jika berpindah ke jabatan yang lebih tinggi (misal STAFF/DEV -> OWNER/MANAGER)."""
     return ROLE_LEVEL.get(to_role, 1) > ROLE_LEVEL.get(from_role, 1)
 
 if st.session_state.current_user_idx >= len(st.session_state.accounts):
@@ -184,7 +216,7 @@ tier = st.session_state.app_tier
 is_dark = st.session_state.dark_mode
 
 # ==========================================
-# GLOBAL THEME & FONT (CLEAN WHITE LIGHT & DEEP DARK MODE)
+# GLOBAL THEME & FONT + CUSTOM TABLE UI
 # ==========================================
 if is_dark:
     t = {
@@ -214,7 +246,6 @@ if is_dark:
         "pill_border": "rgba(96, 165, 250, 0.3)",
         "pill_text": "#93c5fd",
         "price_color": "#60a5fa",
-        "pro_price_color": "#a78bfa",
         "badge_ok_bg": "rgba(16, 185, 129, 0.16)",
         "badge_ok_txt": "#34d399",
         "badge_low_bg": "rgba(239, 68, 68, 0.18)",
@@ -227,6 +258,10 @@ if is_dark:
         "code_bg": "#1e293b",
         "code_txt": "#93c5fd",
         "divider": "#1e293b",
+        "tbl_head_bg": "#162033",
+        "tbl_row_bg": "#0f172a",
+        "tbl_row_alt": "#131c31",
+        "tbl_border": "#263349",
     }
 else:
     t = {
@@ -256,7 +291,6 @@ else:
         "pill_border": "#bfdbfe",
         "pill_text": "#1d4ed8",
         "price_color": "#2563eb",
-        "pro_price_color": "#7c3aed",
         "badge_ok_bg": "#dcfce7",
         "badge_ok_txt": "#15803d",
         "badge_low_bg": "#fee2e2",
@@ -269,6 +303,10 @@ else:
         "code_bg": "#f1f5f9",
         "code_txt": "#2563eb",
         "divider": "#e2e8f0",
+        "tbl_head_bg": "#f1f5f9",
+        "tbl_row_bg": "#ffffff",
+        "tbl_row_alt": "#f8fafc",
+        "tbl_border": "#cbd5e1",
     }
 
 st.markdown(f"""
@@ -346,6 +384,62 @@ st.markdown(f"""
     }}
     [data-testid="stVerticalBlockBorderWrapper"]:hover {{
         border-color: {t['card_hover']} !important;
+    }}
+
+    /* ENHANCED TABLE & DATA EDITOR UI */
+    [data-testid="stDataFrame"],
+    [data-testid="stDataEditor"] {{
+        border: 1.5px solid {t['tbl_border']} !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+        background-color: {t['tbl_row_bg']} !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+    }}
+    [data-testid="stDataFrame"] > div,
+    [data-testid="stDataEditor"] > div {{
+        border-radius: 14px !important;
+    }}
+    .storify-table-wrap {{
+        width: 100%;
+        overflow-x: auto;
+        border: 1.5px solid {t['tbl_border']};
+        border-radius: 14px;
+        background-color: {t['tbl_row_bg']};
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+        margin: 8px 0 14px 0;
+    }}
+    .storify-table {{
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+        text-align: left;
+    }}
+    .storify-table thead tr {{
+        background-color: {t['tbl_head_bg']};
+        border-bottom: 1.5px solid {t['tbl_border']};
+    }}
+    .storify-table th {{
+        padding: 12px 15px;
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: {t['text_muted']};
+    }}
+    .storify-table td {{
+        padding: 11px 15px;
+        border-bottom: 1px solid {t['card_border']};
+        color: {t['text_main']};
+        font-weight: 500;
+    }}
+    .storify-table tbody tr:nth-child(even) {{
+        background-color: {t['tbl_row_alt']};
+    }}
+    .storify-table tbody tr:hover {{
+        background-color: {t['pill_bg']};
+    }}
+    .storify-table tbody tr:last-child td {{
+        border-bottom: none;
     }}
 
     [data-testid="stMetric"] {{
@@ -597,9 +691,9 @@ st.markdown(f"""
         background-color: {t['code_bg']};
         color: {t['text_main']} !important;
         border: 1px solid {t['card_border']};
-        padding: 2px 8px;
-        border-radius: 7px;
-        font-size: 11px;
+        padding: 3px 9px;
+        border-radius: 8px;
+        font-size: 11.5px;
         font-weight: 600;
         margin: 2px 4px 2px 0;
     }}
@@ -608,9 +702,9 @@ st.markdown(f"""
         background-color: {t['badge_exp_bg']};
         color: {t['badge_exp_txt']} !important;
         border: 1px solid {t['badge_exp_txt']};
-        padding: 2px 8px;
-        border-radius: 7px;
-        font-size: 11px;
+        padding: 3px 9px;
+        border-radius: 8px;
+        font-size: 11.5px;
         font-weight: 700;
         margin: 2px 4px 2px 0;
     }}
@@ -631,6 +725,37 @@ st.markdown(f"""
     .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
 </style>
 """, unsafe_allow_html=True)
+
+def render_clean_table(df, badge_cols=None):
+    """Render tabel HTML bersih, rapi, dan responsif dengan styling tema Light/Dark."""
+    badge_cols = badge_cols or {}
+    headers_html = "".join(f"<th>{col}</th>" for col in df.columns)
+    rows_html = []
+    for _, row in df.iterrows():
+        cells = []
+        for col in df.columns:
+            val = row[col]
+            if col in badge_cols:
+                val_str = str(val)
+                if "❌" in val_str or "Habis" in val_str or "Tipis" in val_str:
+                    cells.append(f"<td><span class='badge-low'>{val_str}</span></td>")
+                elif "⚠️" in val_str or "Dekat" in val_str or "Belum" in val_str:
+                    cells.append(f"<td><span class='badge-exp'>{val_str}</span></td>")
+                else:
+                    cells.append(f"<td><span class='badge-ok'>{val_str}</span></td>")
+            else:
+                cells.append(f"<td>{val}</td>")
+        rows_html.append(f"<tr>{''.join(cells)}</tr>")
+
+    table_html = f"""
+    <div class="storify-table-wrap">
+        <table class="storify-table">
+            <thead><tr>{headers_html}</tr></thead>
+            <tbody>{''.join(rows_html)}</tbody>
+        </table>
+    </div>
+    """
+    st.markdown(table_html, unsafe_allow_html=True)
 
 def render_theme_toggle(key_suffix="top"):
     label = "☀️ Light Mode" if st.session_state.dark_mode else "🌙 Dark Mode"
@@ -700,17 +825,17 @@ if st.session_state.app_tier is None:
         (
             "Premium", "Manajemen Batch, Exp Date & Profit",
             "✔️ **Semua Fitur Standard**\n"
-            "✔️ **Multi-Batch Exp Date (Tanggal Exp Tiap Batch Restock)**\n"
+            "✔️ **Multi-Batch Exp Date (Custom Batch per Produk)**\n"
             "✔️ **Prioritas Stok Keluar FEFO & Expired Alert ≤7 Hari**\n"
             "✔️ **Notifikasi Stok Menipis & Rekomendasi Restock**\n"
-            "✔️ **Bulk Edit Stok & Harga Massal (Tabel Editor)**\n"
+            "✔️ **Bulk Edit Harga Massal (Tabel Editor)**\n"
             "✔️ **Kalkulator Margin Profit (HPP) & Grafik Stok**",
             "secondary"
         ),
         (
             "Pro", "Multi-Cabang & Audit Stok Lengkap",
             "✔️ **Semua Fitur Premium (Termasuk Multi-Batch Exp Date)**\n"
-            "✔️ **Manajemen Multi-Cabang & Transfer Stok**\n"
+            "✔️ **Manajemen Multi-Cabang & Transfer Stok FEFO**\n"
             "✔️ **Ringkasan Perbandingan Stok Semua Cabang**\n"
             "✔️ **Kustomisasi Tema Layar E-Paper**\n"
             "✔️ **LED Locator (Tes Kedip Label Rak)**\n"
@@ -782,7 +907,7 @@ if is_privileged and active_notifs:
     st.warning(f"🔔 **Notifikasi Masuk ({branch}):** Ada **{len(active_notifs)} permintaan restock** berstatus **Belum**. Buka tab **📩 Notifikasi & Chat** untuk menandai **Sudah**.", icon="📢")
 
 # ==========================================
-# 5. SIDEBAR KONTROL RINGKAS
+# 5. SIDEBAR KONTROL RINGKAS (AKUN & CABANG)
 # ==========================================
 with st.sidebar:
     st.markdown("<h3 style='margin-bottom: 10px;'>⚙️ Panel Kontrol</h3>", unsafe_allow_html=True)
@@ -817,20 +942,6 @@ with st.sidebar:
                     st.session_state.current_user_idx = sel_idx
                     add_log("INFO", f"{current_user['name']} berpindah ke akun {target_acc['name']} ({target_acc['role']})")
                     st.rerun()
-
-    # Restock Batch Baru (Multi-Batch Exp Date)
-    if current_inv:
-        with st.expander("📥 Restock Batch Baru (Multi-Batch)", expanded=False):
-            st.caption("Tambah stok restock tanpa menimpa tanggal kedaluwarsa batch lama.")
-            rs_rak = st.selectbox("Pilih Produk:", list(current_inv.keys()), format_func=lambda r: f"{r} - {current_inv[r]['item']} (Total: {current_inv[r]['qty']})", key="sb_rs_rak")
-            rs_qty = st.number_input("Jumlah Restock (Pcs)", min_value=1, value=10, step=1, key="sb_rs_qty")
-            rs_exp = st.date_input("Exp Date Batch Baru", value=date.today() + timedelta(days=90), key="sb_rs_exp")
-            if st.button("➕ Simpan Batch Restock", type="primary", use_container_width=True, key="sb_rs_btn"):
-                exp_s = rs_exp.strftime("%Y-%m-%d")
-                add_batch_stock(current_inv[rs_rak], rs_qty, exp_s)
-                add_log("SUCCESS", f"[{current_user['name']}] Restock +{rs_qty} pcs {current_inv[rs_rak]['item']} ({rs_rak}) — Batch Exp: {exp_s}")
-                st.toast(f"Batch baru +{rs_qty} pcs (Exp: {exp_s}) berhasil ditambahkan!", icon="📦")
-                st.rerun()
 
     # Fitur Khusus PRO: Multi-Cabang & Transfer Stok (FEFO)
     if tier == "Pro":
@@ -878,59 +989,17 @@ with st.sidebar:
                                     "outflow": [0]
                                 }
                             for mb in moved_batches:
-                                add_batch_stock(dest_inv[tr_rak], mb["qty"], mb["exp"])
+                                add_batch_stock(dest_inv[tr_rak], mb["qty"], mb["exp"], note_str=f"Transfer dari {branch}")
                             add_log("INFO", f"[{current_user['name']}] Transfer {tr_qty} pcs {current_inv[tr_rak]['item']} ({branch} -> {tr_dest})")
                             st.toast("Transfer stok per batch berhasil!", icon="🚚")
                             st.rerun()
                     else:
                         st.caption("⚠️ Stok produk asal kosong (0 pcs).")
 
-    if is_privileged:
-        with st.expander("➕ Tambah Produk & Label Baru"):
-            new_rak = st.text_input("Kode Rak", f"Rak E{len(current_inv)+1}")
-            new_item = st.text_input("Nama Produk", "Susu UHT 250ml")
-            existing_cats = sorted(list(set(d["category"] for d in current_inv.values()))) if current_inv else ["Minuman", "Makanan"]
-            cat_choice = st.selectbox("Kategori", existing_cats + ["+ Kategori Baru"])
-            new_cat = st.text_input("Nama Kategori Baru", "Produk Susu") if cat_choice == "+ Kategori Baru" else cat_choice
-
-            img_opt = st.radio("Foto Produk:", ["Link URL", "Upload File"], horizontal=True)
-            final_img = "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300"
-            if img_opt == "Upload File":
-                up_file = st.file_uploader("Pilih Gambar", type=["png", "jpg", "jpeg"])
-                if up_file:
-                    b64 = base64.b64encode(up_file.getvalue()).decode("utf-8")
-                    final_img = f"data:image/jpeg;base64,{b64}"
-            else:
-                url_in = st.text_input("URL Gambar", final_img)
-                if url_in:
-                    final_img = url_in
-
-            new_qty = st.number_input("Stok Batch Awal", min_value=1, value=15)
-            new_cost = st.number_input("Harga Modal / HPP (Rp)", min_value=0, value=5500, step=500)
-            new_price = st.number_input("Harga Jual E-Paper (Rp)", min_value=0, value=7500, step=500)
-            if tier in ["Premium", "Pro"] and new_price > 0:
-                margin_rp = new_price - new_cost
-                margin_pct = (margin_rp / new_price) * 100
-                st.caption(f"💰 Estimasi Margin: **Rp {margin_rp:,}** ({margin_pct:.1f}%)")
-            new_exp = st.date_input("Exp Date Batch Awal", value=date.today() + timedelta(days=60))
-
-            if st.button("Simpan & Pasang Label", type="primary", use_container_width=True):
-                if new_rak.strip() and new_item.strip():
-                    exp_init = new_exp.strftime("%Y-%m-%d")
-                    current_inv[new_rak.strip()] = {
-                        "item": new_item.strip(), "category": new_cat.strip(), "qty": new_qty,
-                        "cost": new_cost, "price": new_price, "old_price": None,
-                        "batches": [{"qty": new_qty, "exp": exp_init}],
-                        "battery": 100, "checked_today": True,
-                        "image": final_img, "inflow": [new_qty], "outflow": [0]
-                    }
-                    add_log("SUCCESS", f"[{current_user['name']}] Menambah {new_item} di {new_rak} ({branch}) — Batch Exp: {exp_init}")
-                    st.rerun()
-
-        if tier == "Pro":
-            with st.expander("🎨 Kustomisasi Layar E-Paper (Pro)"):
-                st.session_state.epaper_style = st.selectbox("Tema Layar Label", ["Klasik Terang", "Mode Gelap Merah (Promo)"])
-                st.session_state.epaper_footer = st.text_input("Teks Bawah Label", st.session_state.epaper_footer)
+    if is_privileged and tier == "Pro":
+        with st.expander("🎨 Kustomisasi Layar E-Paper (Pro)"):
+            st.session_state.epaper_style = st.selectbox("Tema Layar Label", ["Klasik Terang", "Mode Gelap Merah (Promo)"])
+            st.session_state.epaper_footer = st.text_input("Teks Bawah Label", st.session_state.epaper_footer)
 
     with st.expander("🔐 Sesi & Lisensi"):
         if st.button("🔄 Ganti Paket Lisensi", use_container_width=True):
@@ -942,7 +1011,7 @@ with st.sidebar:
             st.rerun()
 
 # ==========================================
-# 6. HALAMAN DETAIL PRODUK, RINCIAN BATCH & PREVIEW E-PAPER
+# 6. HALAMAN DETAIL BATCH & CUSTOM EDITOR KHUSUS PRODUK
 # ==========================================
 if st.session_state.page == "detail":
     rak_key = st.session_state.selected_rak
@@ -952,7 +1021,7 @@ if st.session_state.page == "detail":
     prod = current_inv[rak_key]
     ensure_batches(prod)
 
-    if st.button("⬅️ Kembali ke Dashboard"):
+    if st.button("⬅️ Kembali ke Beranda"):
         st.session_state.page = "home"
         st.rerun()
 
@@ -997,32 +1066,111 @@ if st.session_state.page == "detail":
         """, unsafe_allow_html=True)
 
     st.write("")
-    # Rincian Batch Stok & Tanggal Kedaluwarsa
-    with st.container(border=True):
-        st.subheader("📅 Rincian Stok per Batch & Tanggal Kedaluwarsa (Urutan FEFO)")
-        st.caption("Sistem otomatis mengeluarkan stok dari batch paling atas (tanggal kedaluwarsa terdekat) saat barang terjual.")
-        if prod["batches"]:
-            batch_rows = []
+
+    # FORM TAMBAH BATCH KHUSUS PRODUK INI
+    col_add_b, col_edit_b = st.columns([1, 1.65], gap="large")
+    with col_add_b:
+        with st.container(border=True):
+            st.subheader(f"➕ Restock Batch Baru")
+            st.caption(f"Khusus untuk produk **{prod['item']} ({rak_key})**")
+            with st.form(f"form_add_batch_{branch}_{rak_key}", clear_on_submit=True):
+                new_b_qty = st.number_input("Jumlah Stok Masuk (Pcs)", min_value=1, value=10, step=1)
+                new_b_exp = st.date_input("Tanggal Kedaluwarsa (Exp Date)", value=date.today() + timedelta(days=90))
+                new_b_note = st.text_input("Keterangan Batch (Opsional)", placeholder="Contoh: Restock Pagi / Batch #2")
+                merge_opt = st.checkbox("Gabungkan otomatis jika tanggal exp sama", value=False)
+                if st.form_submit_button(f"📥 Tambahkan ke {prod['item']}", type="primary", use_container_width=True):
+                    exp_str_b = new_b_exp.strftime("%Y-%m-%d")
+                    add_batch_stock(prod, new_b_qty, exp_str_b, note_str=new_b_note, merge_same_exp=merge_opt)
+                    add_log("SUCCESS", f"[{current_user['name']}] Tambah batch +{new_b_qty} pcs untuk {prod['item']} ({rak_key}) — Exp: {exp_str_b}")
+                    st.toast(f"Batch baru +{new_b_qty} pcs (Exp: {exp_str_b}) ditambahkan ke {prod['item']}!", icon="✅")
+                    st.rerun()
+
+    # CUSTOM TABEL BATCH EDITOR (BISA EDIT QTY, EDIT TANGGAL EXP, TAMBAH BARIS, HAPUS BARIS)
+    with col_edit_b:
+        with st.container(border=True):
+            st.subheader(f"🗂️ Custom Tabel Batch — {prod['item']}")
+            st.caption("Edit langsung **Jumlah (Pcs)**, **Tanggal Kedaluwarsa**, **Keterangan**, tambah baris batch baru di bagian bawah tabel, atau pilih baris untuk dihapus.")
+
+            batch_edit_rows = []
             for idx_b, b in enumerate(prod["batches"], start=1):
                 try:
-                    d_left = (datetime.strptime(b["exp"], "%Y-%m-%d").date() - date.today()).days
+                    exp_obj = datetime.strptime(b["exp"], "%Y-%m-%d").date()
+                    d_left = (exp_obj - date.today()).days
                     if d_left < 0:
-                        st_b = f"❌ Sudah Kedaluwarsa ({abs(d_left)} hari lalu)"
+                        st_lbl = f"❌ Expired ({abs(d_left)} hr lalu)"
                     elif d_left <= 7:
-                        st_b = f"⚠️ Dekat Exp ({d_left} hari lagi)"
+                        st_lbl = f"⚠️ Dekat Exp ({d_left} hr lagi)"
                     else:
-                        st_b = f"✔️ Aman ({d_left} hari lagi)"
+                        st_lbl = f"✔️ Aman ({d_left} hr lagi)"
                 except ValueError:
-                    st_b = "-"
-                batch_rows.append({
-                    "Prioritas Keluar": f"Batch #{idx_b}" + (" (Keluar Pertama)" if idx_b == 1 else ""),
-                    "Tanggal Kedaluwarsa (Exp Date)": b["exp"],
-                    "Jumlah Stok Batch": f"{b['qty']} Pcs",
-                    "Status Masa Simpan": st_b
+                    exp_obj = date.today() + timedelta(days=30)
+                    st_lbl = "-"
+
+                batch_edit_rows.append({
+                    "Urutan FEFO": f"Batch #{idx_b}" + (" (Keluar 1st)" if idx_b == 1 else ""),
+                    "Jumlah (Pcs)": int(b["qty"]),
+                    "Exp Date": exp_obj,
+                    "Keterangan": b.get("note", "-"),
+                    "Status": st_lbl
                 })
-            st.dataframe(pd.DataFrame(batch_rows), use_container_width=True, hide_index=True)
-        else:
-            st.warning("Stok kosong (0 Pcs). Tambahkan batch restock baru melalui sidebar atau menu Kelola Barang.")
+
+            if not batch_edit_rows:
+                batch_edit_rows = [{
+                    "Urutan FEFO": "Batch Baru",
+                    "Jumlah (Pcs)": 0,
+                    "Exp Date": date.today() + timedelta(days=60),
+                    "Keterangan": "-",
+                    "Status": "-"
+                }]
+
+            df_batches_edit = pd.DataFrame(batch_edit_rows)
+            edited_batches_df = st.data_editor(
+                df_batches_edit,
+                use_container_width=True,
+                hide_index=True,
+                num_rows="dynamic",
+                disabled=["Urutan FEFO", "Status"],
+                column_config={
+                    "Urutan FEFO": st.column_config.TextColumn("Urutan FEFO", width="medium"),
+                    "Jumlah (Pcs)": st.column_config.NumberColumn("Jumlah (Pcs)", min_value=0, step=1, required=True),
+                    "Exp Date": st.column_config.DateColumn("Tanggal Kedaluwarsa (Exp)", format="YYYY-MM-DD", required=True),
+                    "Keterangan": st.column_config.TextColumn("Keterangan Batch"),
+                    "Status": st.column_config.TextColumn("Status Masa Simpan", width="medium"),
+                },
+                key=f"custom_batch_editor_{branch}_{rak_key}"
+            )
+
+            if st.button("💾 Simpan Perubahan Custom Batch", type="primary", use_container_width=True):
+                old_total = prod["qty"]
+                updated_list = []
+                for _, row in edited_batches_df.iterrows():
+                    q_val = row.get("Jumlah (Pcs)")
+                    exp_val = row.get("Exp Date")
+                    if pd.notna(q_val) and int(q_val) > 0 and pd.notna(exp_val):
+                        if isinstance(exp_val, (datetime, date, pd.Timestamp)):
+                            exp_str_clean = exp_val.strftime("%Y-%m-%d")
+                        else:
+                            exp_str_clean = str(exp_val)[:10]
+                        note_clean = str(row.get("Keterangan") or "-").strip() or "-"
+                        updated_list.append({
+                            "id": gen_bid(),
+                            "qty": int(q_val),
+                            "exp": exp_str_clean,
+                            "note": note_clean
+                        })
+
+                updated_list.sort(key=lambda x: x["exp"])
+                prod["batches"] = updated_list
+                prod["qty"] = sum(x["qty"] for x in updated_list)
+                diff_total = prod["qty"] - old_total
+                if diff_total > 0:
+                    prod["inflow"].append(diff_total)
+                elif diff_total < 0:
+                    prod["outflow"].append(abs(diff_total))
+
+                add_log("SUCCESS", f"[{current_user['name']}] Custom update batch {prod['item']} ({rak_key}): {len(updated_list)} batch, Total {prod['qty']} pcs")
+                st.toast(f"Data batch {prod['item']} berhasil disimpan!", icon="✅")
+                st.rerun()
 
     st.write("")
     if tier in ["Premium", "Pro"]:
@@ -1036,7 +1184,7 @@ if st.session_state.page == "detail":
     st.stop()
 
 # ==========================================
-# 7. SISTEM TAB UTAMA DASHBOARD (TANPA SHIFT)
+# 7. SISTEM TAB UTAMA DASHBOARD
 # ==========================================
 notif_badge = f" ({len(active_notifs)})" if active_notifs else ""
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -1047,13 +1195,12 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 # ------------------------------------------
-# TAB 1: MONITORING RAK & MULTI-BATCH STOK
+# TAB 1: BERANDA — TAMBAH PRODUK & MONITORING RAK
 # ------------------------------------------
 with tab1:
     inv_list = list(current_inv.values())
     low_raks = [k for k, v in current_inv.items() if v["qty"] <= 5]
     checked_count = sum(1 for v in inv_list if v.get("checked_today", False))
-
     near_exp_raks = [k for k, v in current_inv.items() if len(get_exp_alert_batches(v, 7)) > 0]
 
     m1, m2, m3, m4 = st.columns(4)
@@ -1063,8 +1210,61 @@ with tab1:
     m4.metric("Cek Fisik (Opname)", f"{checked_count} / {len(inv_list)} Rak", delta=f"{len(low_raks)} stok tipis" if low_raks else "Semua aman", delta_color="inverse")
 
     if tier in ["Premium", "Pro"] and near_exp_raks:
-        st.warning(f"📅 **Peringatan Batch Kedaluwarsa (≤7 Hari):** Terdapat batch mendekati kedaluwarsa pada **{', '.join(near_exp_raks)}**. Prioritaskan penjualan batch tersebut.", icon="⏳")
+        st.warning(f"📅 **Peringatan Batch Kedaluwarsa (≤7 Hari):** Terdapat batch mendekati kedaluwarsa pada **{', '.join(near_exp_raks)}**. Klik **📊 Detail Batch** untuk mengatur batch.", icon="⏳")
 
+    # TAMBAH PRODUK & LABEL BARU DI BERANDA AWAL
+    if is_privileged:
+        with st.expander("➕ Tambah Produk & Label Rak Baru di Beranda", expanded=False):
+            with st.form(f"form_add_product_home_{branch}", clear_on_submit=True):
+                p_c1, p_c2, p_c3 = st.columns([1, 1.5, 1.2])
+                with p_c1:
+                    new_rak = st.text_input("Kode Rak", value=f"Rak E{len(current_inv)+1}")
+                    new_qty = st.number_input("Stok Batch Awal (Pcs)", min_value=1, value=15, step=1)
+                with p_c2:
+                    new_item = st.text_input("Nama Produk", placeholder="Contoh: Susu UHT Cokelat 250ml")
+                    existing_cats = sorted(list(set(d["category"] for d in current_inv.values()))) if current_inv else ["Minuman", "Makanan", "Rumah Tangga"]
+                    cat_choice = st.selectbox("Kategori Produk", existing_cats + ["+ Kategori Baru"])
+                with p_c3:
+                    new_cost = st.number_input("Harga Modal / HPP (Rp)", min_value=0, value=5500, step=500)
+                    new_price = st.number_input("Harga Jual E-Paper (Rp)", min_value=0, value=7500, step=500)
+
+                p_c4, p_c5, p_c6 = st.columns([1.2, 1.5, 1.2])
+                with p_c4:
+                    new_exp = st.date_input("Exp Date Batch Awal", value=date.today() + timedelta(days=60))
+                with p_c5:
+                    new_cat_custom = st.text_input("Jika '+ Kategori Baru', tulis di sini:", placeholder="Contoh: Produk Susu")
+                with p_c6:
+                    url_in = st.text_input("URL Gambar Produk", value="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300")
+
+                up_file = st.file_uploader("Atau Upload Foto Produk dari Perangkat (Opsional)", type=["png", "jpg", "jpeg"])
+
+                if st.form_submit_button("💾 Simpan Produk & Pasang Smart Label", type="primary", use_container_width=True):
+                    rk_clean = new_rak.strip()
+                    it_clean = new_item.strip()
+                    if not rk_clean or not it_clean:
+                        st.error("Kode Rak dan Nama Produk wajib diisi.")
+                    elif rk_clean in current_inv:
+                        st.warning(f"Kode Rak **{rk_clean}** sudah terpakai. Gunakan kode rak lain atau kelola produk yang ada.")
+                    else:
+                        final_cat = new_cat_custom.strip() if (cat_choice == "+ Kategori Baru" and new_cat_custom.strip()) else (cat_choice if cat_choice != "+ Kategori Baru" else "Umum")
+                        final_img = url_in.strip() or "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300"
+                        if up_file:
+                            b64 = base64.b64encode(up_file.getvalue()).decode("utf-8")
+                            final_img = f"data:image/jpeg;base64,{b64}"
+
+                        exp_init = new_exp.strftime("%Y-%m-%d")
+                        current_inv[rk_clean] = {
+                            "item": it_clean, "category": final_cat, "qty": int(new_qty),
+                            "cost": int(new_cost), "price": int(new_price), "old_price": None,
+                            "batches": [{"id": gen_bid(), "qty": int(new_qty), "exp": exp_init, "note": "Batch Awal"}],
+                            "battery": 100, "checked_today": True,
+                            "image": final_img, "inflow": [int(new_qty)], "outflow": [0]
+                        }
+                        add_log("SUCCESS", f"[{current_user['name']}] Menambah produk baru {it_clean} di {rk_clean} ({branch}) — Batch Exp: {exp_init}")
+                        st.toast(f"Produk {it_clean} berhasil ditambahkan ke {rk_clean}!", icon="✅")
+                        st.rerun()
+
+    # FILTER & EXPORT
     fc1, fc2, fc3, fc4 = st.columns([1.3, 1.3, 1.8, 1])
     with fc1:
         cats = ["Semua Kategori"] + sorted(list(set(d["category"] for d in inv_list)))
@@ -1097,7 +1297,17 @@ with tab1:
                         {"Kode Rak": k, "Produk": v["item"], "Total Stok": v["qty"], "Harga Modal": v.get("cost", 0), "Harga Jual (Rp)": v["price"]}
                         for k, v in current_inv.items()
                     ])
-                    edited_df = st.data_editor(bulk_df, disabled=["Kode Rak", "Produk", "Total Stok"], use_container_width=True, hide_index=True, key=f"bulk_{branch}")
+                    edited_df = st.data_editor(
+                        bulk_df,
+                        disabled=["Kode Rak", "Produk", "Total Stok"],
+                        use_container_width=True,
+                        hide_index=True,
+                        column_config={
+                            "Harga Modal": st.column_config.NumberColumn("Harga Modal (Rp)", min_value=0, step=500),
+                            "Harga Jual (Rp)": st.column_config.NumberColumn("Harga Jual (Rp)", min_value=0, step=500),
+                        },
+                        key=f"bulk_{branch}"
+                    )
                     if st.button("💾 Terapkan Semua Perubahan Harga", type="primary"):
                         for _, row in edited_df.iterrows():
                             rk = row["Kode Rak"]
@@ -1113,12 +1323,12 @@ with tab1:
                     {"Kode Rak": k, "Nama Produk": v["item"], "Kategori": v["category"], "Harga Resmi": f"Rp {v['price']:,}"}
                     for k, v in current_inv.items()
                 ])
-                st.dataframe(df_catalog, use_container_width=True, hide_index=True)
+                render_clean_table(df_catalog)
 
     st.write("")
 
     if not current_inv:
-        st.info(f"Belum ada produk terdaftar di **{branch}**. Tambahkan produk melalui menu **➕ Tambah Produk & Label Baru** di sidebar.")
+        st.info(f"Belum ada produk terdaftar di **{branch}**. Klik **➕ Tambah Produk & Label Rak Baru di Beranda** di atas untuk mulai menambahkan.")
     else:
         for rak_id, data in list(current_inv.items()):
             ensure_batches(data)
@@ -1143,7 +1353,6 @@ with tab1:
                     bat_icon = "🪫" if bat < 80 else "🔋"
                     st.caption(f"📂 {data['category']} | {bat_icon} {bat}% | 🗂️ {len(data['batches'])} Batch Aktif")
 
-                    # Tampilkan chip rincian exp date tiap batch
                     if data["batches"]:
                         chips_html = []
                         for b_item in data["batches"]:
@@ -1185,7 +1394,7 @@ with tab1:
                 with c_act:
                     b_c1, b_c2 = st.columns(2)
                     with b_c1:
-                        if st.button("📊 Detail Batch", key=f"det_{branch}_{rak_id}", use_container_width=True):
+                        if st.button("📊 Detail Batch", key=f"det_{branch}_{rak_id}", type="primary", use_container_width=True):
                             st.session_state.selected_rak = rak_id
                             st.session_state.page = "detail"
                             st.rerun()
@@ -1201,43 +1410,12 @@ with tab1:
                             add_log("INFO", f"[{current_user['name']}] Terjual 1 pcs {data['item']} ({rak_id}, Batch Exp: {exp_used})")
                             st.rerun()
 
-                    with st.popover("⚙️ Kelola Batch & Harga", use_container_width=True):
-                        st.markdown("**📥 Tambah Batch Restock Baru**")
-                        add_b_qty = st.number_input("Jumlah Masuk (Pcs)", min_value=1, value=10, key=f"abq_{branch}_{rak_id}")
-                        add_b_exp = st.date_input("Exp Date Batch Ini", value=date.today() + timedelta(days=90), key=f"abe_{branch}_{rak_id}")
-                        if st.button("➕ Tambah ke Stok (Batch Baru)", type="primary", key=f"abb_{branch}_{rak_id}", use_container_width=True):
-                            exp_str_new = add_b_exp.strftime("%Y-%m-%d")
-                            add_batch_stock(current_inv[rak_id], add_b_qty, exp_str_new)
-                            add_log("SUCCESS", f"[{current_user['name']}] Restock +{add_b_qty} pcs {rak_id} (Batch Exp: {exp_str_new})")
-                            st.rerun()
-
-                        if data["batches"]:
-                            st.divider()
-                            st.markdown("**🗂️ Edit / Koreksi Batch yang Ada**")
-                            for idx_eb, b_eb in enumerate(list(data["batches"])):
-                                ec1, ec2 = st.columns([1.3, 1])
-                                with ec1:
-                                    st.caption(f"Batch #{idx_eb+1} • Exp: `{b_eb['exp']}`")
-                                with ec2:
-                                    upd_bq = st.number_input("Qty", min_value=0, value=b_eb["qty"], key=f"ebq_{branch}_{rak_id}_{idx_eb}", label_visibility="collapsed")
-                                if upd_bq != b_eb["qty"]:
-                                    diff_q = upd_bq - b_eb["qty"]
-                                    if diff_q > 0:
-                                        current_inv[rak_id]["inflow"].append(diff_q)
-                                    else:
-                                        current_inv[rak_id]["outflow"].append(abs(diff_q))
-                                    b_eb["qty"] = upd_bq
-                                    ensure_batches(current_inv[rak_id])
-                                    add_log("INFO", f"[{current_user['name']}] Koreksi stok batch Exp {b_eb['exp']} ({rak_id}) -> {upd_bq} pcs")
-                                    st.rerun()
-
-                        if is_privileged:
-                            st.divider()
-                            st.markdown("**🏷️ Pengaturan Harga E-Paper**")
+                    if is_privileged:
+                        with st.popover("🏷️ Kelola Harga & Rak", use_container_width=True):
                             new_p = st.number_input("Harga Jual (Rp)", min_value=0, value=int(data["price"]), step=500, key=f"p_{branch}_{rak_id}")
                             if tier in ["Premium", "Pro"]:
                                 new_c = st.number_input("Harga Modal (Rp)", min_value=0, value=int(data.get("cost", 0)), step=500, key=f"c_{branch}_{rak_id}")
-                                st.caption("Diskon Cepat Per Produk (Misal Mendekati Exp):")
+                                st.caption("Diskon Cepat Per Produk:")
                                 d1, d2, d3, d4 = st.columns(4)
                                 for col_d, pct in zip([d1, d2, d3], [10, 20, 50]):
                                     if col_d.button(f"-{pct}%", key=f"d{pct}_{branch}_{rak_id}", use_container_width=True):
@@ -1293,7 +1471,7 @@ with tab2:
                     time.sleep(0.3)
                     st.rerun()
             else:
-                st.info("Tambahkan produk terlebih dahulu di cabang ini.")
+                st.info("Tambahkan produk terlebih dahulu di beranda cabang ini.")
 
         st.write(f"**Antrean Notifikasi Masuk ({len(active_notifs)}):**")
         if not active_notifs:
@@ -1343,7 +1521,7 @@ with tab2:
                 st.rerun()
 
 # ------------------------------------------
-# TAB 3: HISTORY & LAPORAN OPERASIONAL
+# TAB 3: HISTORY & LAPORAN OPERASIONAL (TABEL UI BERSIH)
 # ------------------------------------------
 with tab3:
     st.subheader(f"📊 Riwayat & Laporan Operasional ({branch})")
@@ -1367,13 +1545,13 @@ with tab3:
             b_inv = st.session_state.inventory.get(b_name, {})
             b_sales_total = sum(s["total"] for s in st.session_state.sales_history if s.get("branch") == b_name)
             branch_summary.append({
-                "Nama Cabang": b_name,
-                "Jumlah Rak": len(b_inv),
-                "Total Stok Fisik": sum(d["qty"] for d in b_inv.values()),
+                "Nama Cabang": f"<b>{b_name}</b>",
+                "Jumlah Rak": f"{len(b_inv)} Rak",
+                "Total Stok Fisik": f"{sum(d['qty'] for d in b_inv.values())} Pcs",
                 "Nilai Aset Barang": f"Rp {sum(d['qty'] * d['price'] for d in b_inv.values()):,}",
-                "Total Penjualan Tercatat": f"Rp {b_sales_total:,}"
+                "Total Penjualan": f"Rp {b_sales_total:,}"
             })
-        st.dataframe(pd.DataFrame(branch_summary), use_container_width=True, hide_index=True)
+        render_clean_table(pd.DataFrame(branch_summary))
         st.divider()
 
     st.markdown("### ✅ Pencatatan Permintaan Restock (Sudah Diproses)")
@@ -1384,39 +1562,64 @@ with tab3:
             {
                 "Waktu Permintaan": r["created_at"],
                 "Waktu Selesai": r["resolved_at"],
-                "Kode Rak": r["rak"],
-                "Produk": r["item"],
-                "Jumlah (Pcs)": r["qty"],
+                "Kode Rak": f"<code>{r['rak']}</code>",
+                "Produk": f"<b>{r['item']}</b>",
+                "Jumlah": f"{r['qty']} Pcs",
                 "Diminta Oleh": r["by"],
                 "Diproses Oleh": r["resolved_by"],
-                "Catatan": r["note"]
+                "Status": "✔️ Selesai"
             }
             for r in history_reqs
         ])
-        st.dataframe(df_hist_req, use_container_width=True, hide_index=True)
+        render_clean_table(df_hist_req, badge_cols={"Status": True})
+
+        df_hist_csv = pd.DataFrame([
+            {
+                "Waktu Permintaan": r["created_at"], "Waktu Selesai": r["resolved_at"],
+                "Kode Rak": r["rak"], "Produk": r["item"], "Jumlah (Pcs)": r["qty"],
+                "Diminta Oleh": r["by"], "Diproses Oleh": r["resolved_by"], "Catatan": r["note"]
+            }
+            for r in history_reqs
+        ])
         st.download_button(
             "📥 Download Pencatatan Restock (CSV)",
-            df_hist_req.to_csv(index=False).encode("utf-8"),
+            df_hist_csv.to_csv(index=False).encode("utf-8"),
             f"pencatatan_restock_{branch}.csv",
             "text/csv"
         )
 
     st.divider()
 
-    col_h_sales, col_h_logs = st.columns(2)
+    col_h_sales, col_h_logs = st.columns([1.2, 1])
     with col_h_sales:
         st.markdown("### 🛒 Pencatatan Barang Terjual")
         if branch_sales:
-            df_sales = pd.DataFrame(branch_sales)[["time", "rak", "item", "qty", "total", "cashier"]]
-            df_sales.columns = ["Waktu", "Rak", "Produk", "Qty", "Total (Rp)", "Petugas"]
-            st.dataframe(df_sales, use_container_width=True, hide_index=True)
+            df_sales_view = pd.DataFrame([
+                {
+                    "Waktu": s["time"],
+                    "Rak": f"<code>{s['rak']}</code>",
+                    "Produk": f"<b>{s['item']}</b>",
+                    "Qty": f"{s['qty']} Pcs",
+                    "Total": f"Rp {s['total']:,}",
+                    "Petugas": s["cashier"]
+                }
+                for s in branch_sales
+            ])
+            render_clean_table(df_sales_view)
         else:
             st.info("Belum ada pencatatan penjualan di cabang ini.")
 
     with col_h_logs:
         st.markdown("### 📜 Log Aktivitas & Mutasi Stok")
-        for l in st.session_state.logs[:15]:
-            st.text(f"{l['time']} [{l['type']}] >> {l['action']}")
+        df_logs_view = pd.DataFrame([
+            {
+                "Waktu": l["time"],
+                "Tipe": l["type"],
+                "Aktivitas": l["action"]
+            }
+            for l in st.session_state.logs[:15]
+        ])
+        render_clean_table(df_logs_view)
 
 # ------------------------------------------
 # TAB 4: MANAJEMEN AKUN TIM (DENGAN PROTEKSI JABATAN)
