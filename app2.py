@@ -384,12 +384,12 @@ else:
         "card_border": "#e2e8f0",
         "card_shadow": "0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.03)",
         "text_main": "#0f172a",
-        "text_muted": "#64748b",
+        "text_muted": "#475569",
         "input_bg": "#ffffff",
         "input_border": "#cbd5e1",
         "popover_bg": "#ffffff",
         "tab_bg": "#e2e8f0",
-        "tab_text": "#475569",
+        "tab_text": "#334155",
         "tab_active_bg": "#ffffff",
         "tab_active_text": "#2563eb",
         "sec_btn_bg": "#ffffff",
@@ -449,6 +449,7 @@ st.markdown(f"""
         font-weight: 800 !important;
         letter-spacing: -0.025em !important;
         color: {t['text_main']} !important;
+        opacity: 1 !important;
     }}
 
     .stApp {{
@@ -456,19 +457,44 @@ st.markdown(f"""
         background-image: {t['bg_grad']} !important;
         color: {t['text_main']} !important;
     }}
-    .stApp p, .stApp span, .stApp label, .stApp li {{
-        color: {t['text_main']};
+
+    /* PAKSA SEMUA TEKS BIASA SOLID 100% (ANTI TRANSPARAN) */
+    .stApp p,
+    .stApp span,
+    .stApp label,
+    .stApp li,
+    .stApp strong,
+    .stApp b,
+    .stMarkdown p,
+    .stMarkdown span,
+    .stMarkdown li,
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] label,
+    [data-testid="stCheckbox"] label p,
+    [data-testid="stExpander"] summary p,
+    [data-testid="stExpander"] summary span {{
+        color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
+        opacity: 1 !important;
     }}
-    .stCaption, [data-testid="stCaptionContainer"] p {{
+
+    .stCaption,
+    [data-testid="stCaptionContainer"] p,
+    [data-testid="stCaptionContainer"] span {{
         color: {t['text_muted']} !important;
+        -webkit-text-fill-color: {t['text_muted']} !important;
+        opacity: 1 !important;
     }}
+
     code {{
         background-color: {t['code_bg']} !important;
         color: {t['code_txt']} !important;
+        -webkit-text-fill-color: {t['code_txt']} !important;
         border: 1px solid {t['card_border']} !important;
         border-radius: 6px !important;
         padding: 2px 6px !important;
         font-weight: 700 !important;
+        opacity: 1 !important;
     }}
     header[data-testid="stHeader"] {{
         background-color: transparent !important;
@@ -482,7 +508,9 @@ st.markdown(f"""
         border-right: 1px solid {t['card_border']} !important;
     }}
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
-        color: {t['text_main']};
+        color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
+        opacity: 1 !important;
     }}
 
     [data-testid="stVerticalBlockBorderWrapper"] {{
@@ -586,12 +614,16 @@ st.markdown(f"""
     [data-testid="stMetricLabel"] p {{
         font-weight: 600 !important;
         color: {t['text_muted']} !important;
+        -webkit-text-fill-color: {t['text_muted']} !important;
         font-size: 13px !important;
+        opacity: 1 !important;
     }}
     [data-testid="stMetricValue"] div {{
         font-weight: 800 !important;
         color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
         letter-spacing: -0.02em !important;
+        opacity: 1 !important;
     }}
     [data-testid="stMetricDelta"] {{
         background-color: {t['badge_low_bg']} !important;
@@ -601,28 +633,34 @@ st.markdown(f"""
     }}
     [data-testid="stMetricDelta"] div, [data-testid="stMetricDelta"] svg {{
         color: {t['badge_low_txt']} !important;
+        -webkit-text-fill-color: {t['badge_low_txt']} !important;
         fill: {t['badge_low_txt']} !important;
         font-weight: 700 !important;
+        opacity: 1 !important;
     }}
 
-    /* TOMBOL UTAMA (PRIMARY) */
+    /* TOMBOL UTAMA (PRIMARY BIRU) */
     .stButton > button[kind="primary"],
     button[kind="primaryFormSubmit"],
     [data-testid="stFormSubmitButton"] > button[kind="primary"] {{
         background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         border: 1px solid #2563eb !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
         padding: 0.52rem 1.05rem !important;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+        opacity: 1 !important;
         transition: all 0.18s ease !important;
     }}
     .stButton > button[kind="primary"] *,
     button[kind="primaryFormSubmit"] *,
     [data-testid="stFormSubmitButton"] > button[kind="primary"] * {{
         color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         fill: #ffffff !important;
+        opacity: 1 !important;
     }}
     .stButton > button[kind="primary"]:hover,
     button[kind="primaryFormSubmit"]:hover,
@@ -632,20 +670,23 @@ st.markdown(f"""
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
     }}
 
-    /* TOMBOL SEKUNDER (SERAGAM PUTIH BERSIH DI LIGHT MODE / SLATE DI DARK MODE) */
+    /* TOMBOL SEKUNDER (PUTIH BERSIH DI LIGHT MODE / SLATE DI DARK MODE) */
     .stButton > button[kind="secondary"],
     button[kind="secondaryFormSubmit"],
     [data-testid="stFormSubmitButton"] > button[kind="secondary"],
     .stDownloadButton > button,
     [data-testid="stPopover"] > div > button,
+    [data-testid="stPopover"] button,
     button[data-testid="baseButton-secondary"] {{
         background-color: {t['sec_btn_bg']} !important;
-        background-image: none !important;
+        background: {t['sec_btn_bg']} !important;
         color: {t['sec_btn_text']} !important;
+        -webkit-text-fill-color: {t['sec_btn_text']} !important;
         border: 1px solid {t['sec_btn_border']} !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+        opacity: 1 !important;
         transition: all 0.18s ease !important;
     }}
     .stButton > button[kind="secondary"] *,
@@ -653,19 +694,25 @@ st.markdown(f"""
     [data-testid="stFormSubmitButton"] > button[kind="secondary"] *,
     .stDownloadButton > button *,
     [data-testid="stPopover"] > div > button *,
+    [data-testid="stPopover"] button *,
     button[data-testid="baseButton-secondary"] * {{
         color: {t['sec_btn_text']} !important;
+        -webkit-text-fill-color: {t['sec_btn_text']} !important;
         fill: {t['sec_btn_text']} !important;
+        opacity: 1 !important;
     }}
     .stButton > button[kind="secondary"]:hover,
     button[kind="secondaryFormSubmit"]:hover,
     [data-testid="stFormSubmitButton"] > button[kind="secondary"]:hover,
     .stDownloadButton > button:hover,
     [data-testid="stPopover"] > div > button:hover,
+    [data-testid="stPopover"] button:hover,
     button[data-testid="baseButton-secondary"]:hover {{
         background-color: {t['sec_btn_hover_bg']} !important;
+        background: {t['sec_btn_hover_bg']} !important;
         border-color: #3b82f6 !important;
         color: {t['sec_btn_hover_txt']} !important;
+        -webkit-text-fill-color: {t['sec_btn_hover_txt']} !important;
         transform: translateY(-1px);
     }}
     .stButton > button[kind="secondary"]:hover *,
@@ -673,18 +720,20 @@ st.markdown(f"""
     [data-testid="stFormSubmitButton"] > button[kind="secondary"]:hover *,
     .stDownloadButton > button:hover *,
     [data-testid="stPopover"] > div > button:hover *,
+    [data-testid="stPopover"] button:hover *,
     button[data-testid="baseButton-secondary"]:hover * {{
         color: {t['sec_btn_hover_txt']} !important;
+        -webkit-text-fill-color: {t['sec_btn_hover_txt']} !important;
         fill: {t['sec_btn_hover_txt']} !important;
     }}
     .stButton > button:disabled,
     button:disabled {{
-        opacity: 0.45 !important;
+        opacity: 0.52 !important;
         cursor: not-allowed !important;
         transform: none !important;
     }}
 
-    /* TOMBOL UPLOAD FILE & INPUT FORM AGAR SERAGAM PUTIH DI LIGHT MODE */
+    /* TOMBOL UPLOAD FILE AGAR SERAGAM PUTIH DI LIGHT MODE */
     [data-testid="stFileUploaderDropzone"],
     [data-testid="stFileUploaderDropzone"] > div {{
         background-color: {t['input_bg']} !important;
@@ -695,9 +744,11 @@ st.markdown(f"""
     [data-testid="stFileUploaderDropzone"] button {{
         background-color: {t['sec_btn_bg']} !important;
         color: {t['sec_btn_text']} !important;
+        -webkit-text-fill-color: {t['sec_btn_text']} !important;
         border: 1px solid {t['sec_btn_border']} !important;
         border-radius: 10px !important;
         font-weight: 700 !important;
+        opacity: 1 !important;
     }}
 
     /* PAKSA SEMUA DROPDOWN (SELECTBOX: KATEGORI, STATUS, KARYAWAN) JADI PUTIH DI LIGHT MODE */
@@ -712,6 +763,7 @@ st.markdown(f"""
         border-color: {t['input_border']} !important;
         color: {t['text_main']} !important;
         border-radius: 12px !important;
+        opacity: 1 !important;
     }}
     .stSelectbox [data-baseweb="select"] > div {{
         border: 1px solid {t['input_border']} !important;
@@ -724,6 +776,7 @@ st.markdown(f"""
         color: {t['text_main']} !important;
         -webkit-text-fill-color: {t['text_main']} !important;
         fill: {t['text_main']} !important;
+        opacity: 1 !important;
     }}
 
     /* INPUT TEKS, ANGKA, TANGGAL & TOMBOL +/- NUMBER INPUT */
@@ -737,29 +790,30 @@ st.markdown(f"""
         border-color: {t['input_border']} !important;
         border-radius: 12px !important;
         color: {t['text_main']} !important;
+        opacity: 1 !important;
     }}
     .stTextInput input, .stNumberInput input, .stDateInput input {{
         background-color: transparent !important;
         color: {t['text_main']} !important;
         -webkit-text-fill-color: {t['text_main']} !important;
         font-weight: 500 !important;
+        opacity: 1 !important;
     }}
     .stTextInput input::placeholder {{
         color: {t['text_muted']} !important;
         -webkit-text-fill-color: {t['text_muted']} !important;
-        opacity: 0.85 !important;
+        opacity: 0.9 !important;
     }}
     .stNumberInput button,
     .stNumberInput [data-testid="stNumberInputStepDown"],
-    .stNumberInput [data-testid="stNumberInputStepUp"],
-    [data-testid="stPopover"] button {{
+    .stNumberInput [data-testid="stNumberInputStepUp"] {{
         background-color: {t['sec_btn_bg']} !important;
         background: {t['sec_btn_bg']} !important;
         color: {t['sec_btn_text']} !important;
         border-color: {t['sec_btn_border']} !important;
+        opacity: 1 !important;
     }}
-    .stNumberInput button svg,
-    [data-testid="stPopover"] button svg {{
+    .stNumberInput button svg {{
         fill: {t['sec_btn_text']} !important;
         color: {t['sec_btn_text']} !important;
     }}
@@ -781,11 +835,14 @@ st.markdown(f"""
     ul[role="listbox"] li div {{
         background-color: transparent !important;
         color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
+        opacity: 1 !important;
     }}
     ul[role="listbox"] li:hover,
     ul[role="listbox"] li[aria-selected="true"] {{
         background-color: {t['pill_bg']} !important;
         color: {t['pill_text']} !important;
+        -webkit-text-fill-color: {t['pill_text']} !important;
     }}
 
     [data-testid="stAlert"],
@@ -802,6 +859,8 @@ st.markdown(f"""
     [data-testid="stAlert"] strong,
     [data-testid="stAlert"] div {{
         color: {t['warn_txt']} !important;
+        -webkit-text-fill-color: {t['warn_txt']} !important;
+        opacity: 1 !important;
     }}
 
     .stTabs [data-baseweb="tab-list"] {{
@@ -821,6 +880,8 @@ st.markdown(f"""
     }}
     .stTabs [data-baseweb="tab"] p, .stTabs [data-baseweb="tab"] span {{
         color: {t['tab_text']} !important;
+        -webkit-text-fill-color: {t['tab_text']} !important;
+        opacity: 1 !important;
     }}
     .stTabs [aria-selected="true"] {{
         background-color: {t['tab_active_bg']} !important;
@@ -828,6 +889,8 @@ st.markdown(f"""
     }}
     .stTabs [aria-selected="true"] p, .stTabs [aria-selected="true"] span {{
         color: {t['tab_active_text']} !important;
+        -webkit-text-fill-color: {t['tab_active_text']} !important;
+        opacity: 1 !important;
     }}
     .stTabs [data-baseweb="tab-highlight"] {{
         display: none !important;
@@ -859,6 +922,7 @@ st.markdown(f"""
         background-color: {t['pill_bg']};
         border: 1px solid {t['pill_border']};
         color: {t['pill_text']} !important;
+        -webkit-text-fill-color: {t['pill_text']} !important;
         padding: 6px 14px;
         border-radius: 9999px;
         font-size: 12px;
@@ -870,31 +934,32 @@ st.markdown(f"""
     .gradient-title {{
         background: linear-gradient(90deg, #2563eb, #7c3aed);
         -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-text-fill-color: transparent !important;
         font-weight: 800;
     }}
     .badge-pro {{
         background: linear-gradient(90deg, #2563eb, #7c3aed);
-        color: white !important; padding: 4px 12px; border-radius: 9999px;
+        color: white !important; -webkit-text-fill-color: white !important; padding: 4px 12px; border-radius: 9999px;
         font-size: 11px; font-weight: 800; letter-spacing: 0.03em; display: inline-block;
     }}
     .badge-prm {{
-        background: #2563eb; color: white !important; padding: 4px 12px;
+        background: #2563eb; color: white !important; -webkit-text-fill-color: white !important; padding: 4px 12px;
         border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
     }}
     .badge-std {{
-        background: #475569; color: white !important; padding: 4px 12px;
+        background: #475569; color: white !important; -webkit-text-fill-color: white !important; padding: 4px 12px;
         border-radius: 9999px; font-size: 11px; font-weight: 800; display: inline-block;
     }}
-    .badge-ok {{ background: {t['badge_ok_bg']}; color: {t['badge_ok_txt']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
-    .badge-low {{ background: {t['badge_low_bg']}; color: {t['badge_low_txt']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
-    .badge-exp {{ background: {t['badge_exp_bg']}; color: {t['badge_exp_txt']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
-    .badge-info {{ background: {t['pill_bg']}; color: {t['pill_text']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
+    .badge-ok {{ background: {t['badge_ok_bg']}; color: {t['badge_ok_txt']} !important; -webkit-text-fill-color: {t['badge_ok_txt']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
+    .badge-low {{ background: {t['badge_low_bg']}; color: {t['badge_low_txt']} !important; -webkit-text-fill-color: {t['badge_low_txt']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
+    .badge-exp {{ background: {t['badge_exp_bg']}; color: {t['badge_exp_txt']} !important; -webkit-text-fill-color: {t['badge_exp_txt']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
+    .badge-info {{ background: {t['pill_bg']}; color: {t['pill_text']} !important; -webkit-text-fill-color: {t['pill_text']} !important; padding: 4px 11px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }}
 
     .batch-chip {{
         display: inline-block;
         background-color: {t['code_bg']};
         color: {t['text_main']} !important;
+        -webkit-text-fill-color: {t['text_main']} !important;
         border: 1px solid {t['card_border']};
         padding: 3px 9px;
         border-radius: 8px;
@@ -906,6 +971,7 @@ st.markdown(f"""
         display: inline-block;
         background-color: {t['badge_exp_bg']};
         color: {t['badge_exp_txt']} !important;
+        -webkit-text-fill-color: {t['badge_exp_txt']} !important;
         border: 1px solid {t['badge_exp_txt']};
         padding: 3px 9px;
         border-radius: 8px;
@@ -913,86 +979,21 @@ st.markdown(f"""
         font-weight: 700;
         margin: 2px 4px 2px 0;
     }}
-    .price-text {{ color: {t['price_color']} !important; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }}
-    .old-price {{ text-decoration: line-through; color: {t['text_muted']} !important; font-size: 13px; font-weight: 600; margin-right: 6px; }}
+    .price-text {{ color: {t['price_color']} !important; -webkit-text-fill-color: {t['price_color']} !important; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }}
+    .old-price {{ text-decoration: line-through; color: {t['text_muted']} !important; -webkit-text-fill-color: {t['text_muted']} !important; font-size: 13px; font-weight: 600; margin-right: 6px; }}
 
     .epaper-light {{
         background-color: #f4f4f0; color: #111111 !important; border: 6px solid #334155;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
         box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     }}
-    .epaper-light * {{ font-family: 'Courier New', monospace !important; color: #111111 !important; }}
+    .epaper-light * {{ font-family: 'Courier New', monospace !important; color: #111111 !important; -webkit-text-fill-color: #111111 !important; }}
     .epaper-dark {{
         background-color: #18181b; color: #f4f4f5 !important; border: 6px solid #ef4444;
         border-radius: 14px; padding: 18px; font-family: 'Courier New', monospace !important;
         box-shadow: 0 8px 20px rgba(239,68,68,0.22);
     }}
-    .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; }}
-        /* PAKSA SEMUA TEKS BIASA & TEKS DALAM BUTTON SOLID 100% (ANTI TRANSPARAN) */
-    .stApp p,
-    .stApp span,
-    .stApp label,
-    .stApp li,
-    .stApp strong,
-    .stApp b,
-    .stMarkdown p,
-    .stMarkdown span,
-    .stMarkdown li,
-    [data-testid="stWidgetLabel"] p,
-    [data-testid="stWidgetLabel"] label,
-    [data-testid="stCheckbox"] label p,
-    [data-testid="stExpander"] summary p,
-    [data-testid="stExpander"] summary span {
-        color: {t['text_main']} !important;
-        -webkit-text-fill-color: {t['text_main']} !important;
-        opacity: 1 !important;
-    }
-
-    /* KHUSUS TEKS CAPTION / SUB-TEKS AGAR TETAP RAPI NAMUN JELAS TERBACA */
-    .stCaption,
-    [data-testid="stCaptionContainer"] p,
-    [data-testid="stCaptionContainer"] span {
-        color: {t['text_muted']} !important;
-        -webkit-text-fill-color: {t['text_muted']} !important;
-        opacity: 1 !important;
-    }
-
-    /* TEKS DALAM SEMUA BUTTON SEKUNDER (PUTIH DI LIGHT MODE / GELAP DI DARK MODE) */
-    .stButton > button[kind="secondary"] p,
-    .stButton > button[kind="secondary"] span,
-    .stButton > button[kind="secondary"] div,
-    button[kind="secondaryFormSubmit"] p,
-    button[kind="secondaryFormSubmit"] span,
-    [data-testid="stFormSubmitButton"] > button[kind="secondary"] p,
-    .stDownloadButton > button p,
-    .stDownloadButton > button span,
-    [data-testid="stPopover"] button p,
-    [data-testid="stPopover"] button span,
-    [data-testid="stFileUploaderDropzone"] button {
-        color: {t['sec_btn_text']} !important;
-        -webkit-text-fill-color: {t['sec_btn_text']} !important;
-        opacity: 1 !important;
-    }
-
-    /* TEKS DALAM SEMUA BUTTON UTAMA (PRIMARY BIRU) */
-    .stButton > button[kind="primary"] p,
-    .stButton > button[kind="primary"] span,
-    .stButton > button[kind="primary"] div,
-    button[kind="primaryFormSubmit"] p,
-    button[kind="primaryFormSubmit"] span,
-    [data-testid="stFormSubmitButton"] > button[kind="primary"] p {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        opacity: 1 !important;
-    }
-
-    /* HANYA TOMBOL YANG BENAR-BENAR DISABLED (STOK 0) YANG SEDIKIT REDUP */
-    .stButton > button:disabled p,
-    .stButton > button:disabled span,
-    button:disabled p,
-    button:disabled span {
-        opacity: 0.55 !important;
-    }
+    .epaper-dark * {{ font-family: 'Courier New', monospace !important; color: #f4f4f5 !important; -webkit-text-fill-color: #f4f4f5 !important; }}
 </style>
 """, unsafe_allow_html=True)
 
