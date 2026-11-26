@@ -1333,23 +1333,40 @@ if st.session_state.page == "detail":
                     if st.button("🔦 Tes Kedip LED Label Rak", use_container_width=True):
                         st.toast(f"Lampu LED pada perangkat {rak_key} berkedip hijau selama 10 detik!", icon="💡")
 
-    with c_det2:
+  with c_det2:
         st.caption("📟 **Simulasi Layar Fisik Smart Label (E-Ink):**")
-        promo_tag = "🔥 DISKON" if prod.get("old_price") else "HARGA NORMAL"
-        old_p_html = f"<div style='font-size:14px; text-decoration:line-through;'>Rp {prod['old_price']:,}</div>" if prod.get("old_price") else ""
-        box_cls = "epaper-dark" if (tier == "Pro" and st.session_state.epaper_style == "Mode Gelap Merah (Promo)") else "epaper-light"
+        is_promo = bool(prod.get("old_price"))
+        is_red_theme = (tier == "Pro" and st.session_state.epaper_style == "Mode Gelap Merah (Promo)")
+
+        promo_tag = "🔥 PROMO" if is_promo else "HARGA NORMAL"
+        promo_bg = "#dc2626" if (is_promo or is_red_theme) else ("#f4f4f5" if is_red_theme else "#111111")
+        promo_fg = "#ffffff" if (is_promo or is_red_theme or not is_red_theme) else "#111111"
+        if not is_promo and is_red_theme:
+            promo_bg = "#f4f4f5"
+            promo_fg = "#18181b"
+
+        old_p_html = f"<div style='font-size:13px; text-decoration:line-through; opacity:0.75;'>Rp {prod['old_price']:,}</div>" if is_promo else ""
+        box_cls = "epaper-dark" if is_red_theme else "epaper-light"
         footer_txt = st.session_state.epaper_footer if tier == "Pro" else f"ID-{rak_key.replace(' ', '')}-2026"
+        img_filter = "grayscale(100%) contrast(130%)"
+
         st.markdown(f"""
         <div class="{box_cls}">
-            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; border-bottom:2px solid currentColor; padding-bottom:4px;">
-                <span>{rak_key.upper()}</span>
-                <span>{promo_tag}</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:bold; border-bottom:2px solid currentColor; padding-bottom:6px; margin-bottom:10px;">
+                <span>📍 {rak_key.upper()}</span>
+                <span style="background:{promo_bg}; color:{promo_fg} !important; -webkit-text-fill-color:{promo_fg} !important; padding:2px 8px; border-radius:4px; font-size:11px;">{promo_tag}</span>
             </div>
-            <div style="font-size:16px; font-weight:bold; margin-top:8px;">{prod['item']}</div>
-            {old_p_html}
-            <div style="font-size:30px; font-weight:900; margin:4px 0;">Rp {prod['price']:,}</div>
-            <div style="font-size:11px; border-top:1px dashed currentColor; padding-top:4px;">
-                |||| || ||| |||| ||| &nbsp; {footer_txt}
+            <div style="display:flex; gap:12px; align-items:center;">
+                <img src="{prod['image']}" style="width:74px; height:74px; object-fit:cover; border-radius:8px; border:2px solid currentColor; filter:{img_filter}; flex-shrink:0;" />
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:15px; font-weight:900; line-height:1.25; margin-bottom:4px;">{prod['item']}</div>
+                    {old_p_html}
+                    <div style="font-size:26px; font-weight:900; line-height:1.1;">Rp {prod['price']:,}</div>
+                </div>
+            </div>
+            <div style="margin-top:10px; padding-top:6px; border-top:1px dashed currentColor; display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                <span style="letter-spacing:2px; font-weight:900;">▌▌▌ ▌▌ ▌▌▌▌ ▌▌</span>
+                <span>{footer_txt}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
